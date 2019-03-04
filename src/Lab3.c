@@ -51,14 +51,7 @@ long x[64], y[64];        // input and output arrays for FFT
 
 //---------------------User debugging-----------------------
 unsigned long DataLost; // data sent by Producer, but not received by Consumer
-#if Lab2
-long MaxJitter; // largest time jitter between interrupts in usec
-#define JITTERSIZE 64
-unsigned long const JitterSize = JITTERSIZE;
-unsigned long JitterHistogram[JITTERSIZE] = {
-    0,
-};
-#endif
+
 unsigned long TotalWithI1;
 unsigned short MaxWithI1;
 
@@ -120,47 +113,6 @@ long Filter(long data)
 // inputs:  none
 // outputs: none
 unsigned long DASoutput;
-#if Lab2
-void DAS(void)
-{
-  unsigned long input;
-  unsigned static long LastTime; // time at previous ADC sample
-  unsigned long thisTime;        // time at current ADC sample
-  long jitter;                   // time between measured and expected, in us
-  if (NumSamples < RUNLENGTH)
-  { // finite time run
-    PE0 ^= 0x01;
-    input = ADC_In(); // channel set when calling ADC_Init
-    PE0 ^= 0x01;
-    thisTime = OS_Time(); // current time, 12.5 ns
-    DASoutput = Filter(input);
-    FilterWork++; // calculation finished
-    if (FilterWork > 1)
-    { // ignore timing of first interrupt
-      unsigned long diff = OS_TimeDifference(LastTime, thisTime);
-      if (diff > PERIOD)
-      {
-        jitter = (diff - PERIOD + 4) / 8; // in 0.1 usec
-      }
-      else
-      {
-        jitter = (PERIOD - diff + 4) / 8; // in 0.1 usec
-      }
-      if (jitter > MaxJitter)
-      {
-        MaxJitter = jitter; // in usec
-      }                     // jitter should be 0
-      if (jitter >= JitterSize)
-      {
-        jitter = JITTERSIZE - 1;
-      }
-      JitterHistogram[jitter]++;
-    }
-    LastTime = thisTime;
-    PE0 ^= 0x01;
-  }
-}
-#endif
 #if Lab3
 void DAS(void)
 {
