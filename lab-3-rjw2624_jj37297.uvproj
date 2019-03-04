@@ -441,11 +441,6 @@
               <FilePath>.\src\OS.c</FilePath>
             </File>
             <File>
-              <FileName>Lab2.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\Lab2.c</FilePath>
-            </File>
-            <File>
               <FileName>cr4_fft_64_stm32.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\src\cr4_fft_64_stm32.s</FilePath>
@@ -469,6 +464,11 @@
               <FileName>Switch.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\Switch.c</FilePath>
+            </File>
+            <File>
+              <FileName>Lab3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\Lab3.c</FilePath>
             </File>
           </Files>
         </Group>
