@@ -1,0 +1,9 @@
+*.o
+*.elf
+*.i
+*.map
+*.hex
+*.lst
+*.uvgui.*
+*.bak
+

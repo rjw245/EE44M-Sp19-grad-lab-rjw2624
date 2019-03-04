@@ -1,0 +1,42 @@
+\hypertarget{interpreter_8h}{}\section{inc/interpreter.h File Reference}
+\label{interpreter_8h}\index{inc/interpreter.\+h@{inc/interpreter.\+h}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{interpreter_8h_a0cf6f7b20306bd53e7f61b3ead179154}{interpreter\+\_\+task} (void)\hypertarget{interpreter_8h_a0cf6f7b20306bd53e7f61b3ead179154}{}\label{interpreter_8h_a0cf6f7b20306bd53e7f61b3ead179154}
+
+\begin{DoxyCompactList}\small\item\em OS Task that sends characters to the interpreter. \end{DoxyCompactList}\item 
+void \hyperlink{interpreter_8h_ad36afca5c99ec60b995fae704d95d014}{interpreter\+\_\+cmd} (char $\ast$cmd\+\_\+str)
+\begin{DoxyCompactList}\small\item\em Pass user input to the interpreter and act on their command. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+List of commands
+\begin{DoxyItemize}
+\item adc
+\begin{DoxyItemize}
+\item Prints 2 consecutive A\+DC samples of channel 0 to the L\+CD and U\+A\+R\+T0
+\end{DoxyItemize}
+\item lcd
+\begin{DoxyItemize}
+\item Prints strings on each line of each logical display on the L\+CD. 
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsection{Function Documentation}
+\index{interpreter.\+h@{interpreter.\+h}!interpreter\+\_\+cmd@{interpreter\+\_\+cmd}}
+\index{interpreter\+\_\+cmd@{interpreter\+\_\+cmd}!interpreter.\+h@{interpreter.\+h}}
+\subsubsection[{\texorpdfstring{interpreter\+\_\+cmd(char $\ast$cmd\+\_\+str)}{interpreter_cmd(char *cmd_str)}}]{\setlength{\rightskip}{0pt plus 5cm}void interpreter\+\_\+cmd (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{cmd\+\_\+str}
+\end{DoxyParamCaption}
+)}\hypertarget{interpreter_8h_ad36afca5c99ec60b995fae704d95d014}{}\label{interpreter_8h_ad36afca5c99ec60b995fae704d95d014}
+
+
+Pass user input to the interpreter and act on their command. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em cmd\+\_\+str} & String containing the entire user command. \\
+\hline
+\end{DoxyParams}
