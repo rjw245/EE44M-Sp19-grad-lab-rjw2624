@@ -43,7 +43,7 @@ unsigned long PIDWork;      // current number of PID calculations finished
 unsigned long FilterWork;   // number of digital filter calculations finished
 unsigned long NumSamples;   // incremented every ADC sample, in Producer
 #define FS 400              // producer/consumer sampling
-#define RUNLENGTH (1 * FS) // display results and quit when NumSamples==RUNLENGTH
+#define RUNLENGTH (20 * FS) // display results and quit when NumSamples==RUNLENGTH
 // 20-sec finite time experiment duration
 
 #define PERIOD TIME_500US // DAS 2kHz sampling period in system time units
@@ -206,7 +206,6 @@ void ButtonWork(void)
 // background threads execute once and return
 void SW1Push(void)
 {
-	PE1 ^= 1;
   if (OS_MsTime() > 20)
   { // debounce
     if (OS_AddThread(&ButtonWork, 100, 2))
@@ -537,17 +536,13 @@ int Lost;
 void BackgroundThread1c(void)
 { // called at 1000 Hz
   Count1++;
-	PE1 = 1<<1;
   OS_Signal(&Readyc);
-	PE1 = 0;
 }
 void Thread5c(void)
 {
   for (;;)
   {
-		PE2 = 1<<2;
     OS_Wait(&Readyc);
-		PE2 = 0;
     Count5++; // Count2 + Count5 should equal Count1
     Lost = Count1 - Count5 - Count2;
   }
@@ -562,9 +557,7 @@ void Thread2c(void)
   OS_AddPeriodicThread(&BackgroundThread1c, TIME_1MS, 0);
   for (;;)
   {
-		PE0 = 1;
     OS_Wait(&Readyc);
-		PE0 = 0;
     Count2++; // Count2 + Count5 should equal Count1
   }
 }
