@@ -20,7 +20,6 @@
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
-
 bool save_ctx_global = true;
 static tcb_t *tcb_list_head = 0;
 static tcb_t *tcb_sleep_head = 0;
@@ -28,11 +27,10 @@ tcb_t *cur_tcb = 0;
 tcb_t *next_tcb = 0;
 
 void pushq(tcb_t *node);
-void pop_sema(tcb_t* semahead);
-void push_semaq(tcb_t *node, tcb_t *semahead);
+void pop_sema(tcb_t **semahead);
+void push_semaq(tcb_t *node, tcb_t **semahead);
 uint32_t peek_priority(tcb_t *head);
 static void insert_tcb(tcb_t *new_tcb);
-
 
 static void ContextSwitch(bool save_ctx)
 {
@@ -53,7 +51,6 @@ static void IdleTask(void)
     }
   }
 }
-
 
 static uint64_t get_system_time(void)
 {
@@ -128,39 +125,38 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value)
 
 void OS_Wait(Sema4Type *semaPt)
 {
-	tcb_t *iter = tcb_list_head;
-	long sr = StartCritical();
-	semaPt->Value--;
-	if(semaPt->Value<0)
-	{
-		do
-		{
-			// Until we wrap around to head
-			if (iter->next == cur_tcb)
-			{
-				iter->next = cur_tcb->next;
-				break;
-			}
-			iter = iter->next;
-		} while (iter != tcb_list_head);
-		// remove from active TCB	
-		cur_tcb->next = 0;
-		push_semaq(cur_tcb,semaPt->head);
-		NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
-		ContextSwitch(true);
-	}	
-	EndCritical(sr);	
+  tcb_t *iter = tcb_list_head;
+  long sr = StartCritical();
+  semaPt->Value--;
+  if (semaPt->Value < 0)
+  {
+    do
+    {
+      // Until we wrap around to head
+      if (iter->next == cur_tcb)
+      {
+        iter->next = cur_tcb->next;
+        break;
+      }
+      iter = iter->next;
+    } while (iter != tcb_list_head);
+    // remove from active TCB
+    cur_tcb->next = 0;
+    push_semaq(cur_tcb, &semaPt->head);
+    NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+    ContextSwitch(true);
+  }
+  EndCritical(sr);
 }
 
 void OS_Signal(Sema4Type *semaPt)
 {
-	long sr = StartCritical();
-	semaPt->Value++;
-	if(semaPt->Value <=0)
-	{
-		pop_sema(semaPt->head);
-	}
-	
+  long sr = StartCritical();
+  semaPt->Value++;
+  if (semaPt->Value <= 0)
+  {
+    pop_sema(&semaPt->head);
+  }
 }
 
 void OS_bWait(Sema4Type *semaPt)
@@ -215,9 +211,10 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
-		tcb_list_head->next = tcb_list_head;
+    tcb_list_head->next = tcb_list_head;
   }
-	else{
+  else
+  {
     while (tcb_list_head->next != 0 && tcb_list_head->next->priority <= new_tcb->priority)
     {
       tcb_list_head = tcb_list_head->next;
@@ -424,7 +421,7 @@ void OS_Sleep(unsigned long sleepTime)
   long sr = StartCritical();
   sleepTime *= TIME_1MS;
   cur_tcb->wake_time = ((sleepTime));
-	tcb_t *iter = tcb_list_head;
+  tcb_t *iter = tcb_list_head;
   do
   {
     // Until we wrap around to head
@@ -435,7 +432,7 @@ void OS_Sleep(unsigned long sleepTime)
     }
     iter = iter->next;
   } while (iter != tcb_list_head);
-	// remove from active TCB //
+  // remove from active TCB //
   cur_tcb->next = 0;
   pushq(cur_tcb);
   NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
@@ -665,13 +662,11 @@ void Timer3A_Handler()
   pop();
 }
 
-
-
-void pop_sema(tcb_t* semahead)
+void pop_sema(tcb_t **semahead)
 {
   long sr = StartCritical();
 
-  tcb_t *head = semahead;
+  tcb_t *head = *semahead;
   tcb_t *tmpinq = head;
   if (head == 0)
   {
@@ -681,30 +676,33 @@ void pop_sema(tcb_t* semahead)
 
   tmpinq = head->next;
   insert_tcb(head);
-	
-	// if poped priority is higher than existing one,
-  if(cur_tcb->priority>head->priority){
-		next_tcb = head;
-		NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
-		ContextSwitch(true);
-	}else if(cur_tcb->next != 0 && cur_tcb->next->priority > head->priority)
-	{
-		next_tcb = head;
-	}// if poped one is not higher than current one, but higher than next one. order should be changed
 
-  semahead = tmpinq;
+  // if poped priority is higher than existing one,
+  if (cur_tcb->priority > head->priority)
+  {
+    next_tcb = head;
+    NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+    ContextSwitch(true);
+  }
+  else if (cur_tcb->next != 0 && cur_tcb->next->priority > head->priority)
+  {
+    next_tcb = head;
+  } // if poped one is not higher than current one, but higher than next one. order should be changed
+
+  *semahead = tmpinq;
   EndCritical(sr);
 }
 
-void push_semaq(tcb_t *node, tcb_t *semahead)
+void push_semaq(tcb_t *node, tcb_t **semahead)
 {
   // outside is already disinterrupted && set node
-  tcb_t *start = semahead;
-  if (semahead == 0)
+  tcb_t *start = *semahead;
+  if (*semahead == 0)
   {
-    semahead = node;
+    *semahead = node;
   }
-	else{
+  else
+  {
     while (start->next != 0 && start->next->priority <= node->priority)
     {
       start = start->next;
@@ -713,4 +711,3 @@ void push_semaq(tcb_t *node, tcb_t *semahead)
     start->next = node;
   }
 }
-
