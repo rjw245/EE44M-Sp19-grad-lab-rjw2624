@@ -145,7 +145,6 @@ void OS_Wait(Sema4Type *semaPt)
       iter = iter->next;
     } while (iter != tcb_list_head);
     // remove from active TCB
-    cur_tcb->next = 0;
     push_semaq(cur_tcb, &semaPt->head);
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
     ContextSwitch(true);
@@ -439,7 +438,6 @@ void OS_Sleep(unsigned long sleepTime)
     iter = iter->next;
   } while (iter != tcb_list_head);
   // remove from active TCB //
-  cur_tcb->next = 0;
   pushq(cur_tcb);
   NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
   ContextSwitch(true);
@@ -632,6 +630,7 @@ void pushq(tcb_t *node)
 {
   // outside is already disinterrupted
   tcb_t *start = tcb_sleep_head;
+  node->next = 0;
   if (tcb_sleep_head == 0)
   {
     TIMER3_TAILR_R = node->wake_time;
@@ -703,6 +702,7 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
 {
   // outside is already disinterrupted && set node
   tcb_t *start = *semahead;
+  node->next = 0;
   if (*semahead == 0)
   {
     *semahead = node;
