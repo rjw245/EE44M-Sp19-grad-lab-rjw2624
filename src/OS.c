@@ -28,6 +28,11 @@ tcb_t *cur_tcb = 0;
 tcb_t *next_tcb = 0;
 
 void pushq(tcb_t *node);
+void pop_sema(tcb_t* semahead);
+void push_semaq(tcb_t *node, tcb_t *semahead);
+uint32_t peek_priority(tcb_t *head);
+static void insert_tcb(tcb_t *new_tcb);
+
 
 static void ContextSwitch(bool save_ctx)
 {
@@ -123,27 +128,39 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value)
 
 void OS_Wait(Sema4Type *semaPt)
 {
-
-  int oldval;
-
-  // read the semaphore value
-  oldval = __ldrex(&(semaPt->Value));
-  // loop again if it is locked and we are blocking
-  // or setting it with strex failed
-  while (!(oldval > 0) || __strex(oldval - 1, &(semaPt->Value)) != 0)
-  {
-   // OS_Suspend();
-    oldval = __ldrex(&(semaPt->Value));
-  }
+	tcb_t *iter = tcb_list_head;
+	long sr = StartCritical();
+	semaPt->Value--;
+	if(semaPt->Value<0)
+	{
+		do
+		{
+			// Until we wrap around to head
+			if (iter->next == cur_tcb)
+			{
+				iter->next = cur_tcb->next;
+				break;
+			}
+			iter = iter->next;
+		} while (iter != tcb_list_head);
+		// remove from active TCB	
+		cur_tcb->next = 0;
+		push_semaq(cur_tcb,semaPt->head);
+		NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+		ContextSwitch(true);
+	}	
+	EndCritical(sr);	
 }
 
 void OS_Signal(Sema4Type *semaPt)
 {
-  int oldval;
-  do
-  {
-    oldval = __ldrex(&(semaPt->Value));
-  } while (__strex(oldval + 1, &(semaPt->Value)) != 0);
+	long sr = StartCritical();
+	semaPt->Value++;
+	if(semaPt->Value <=0)
+	{
+		pop_sema(semaPt->head);
+	}
+	
 }
 
 void OS_bWait(Sema4Type *semaPt)
@@ -193,15 +210,21 @@ static void remove_tcb(tcb_t *tcb)
   } while (iter != tcb_list_head);
 }
 
-static void insert_tcb(tcb_t *new_tcb)
+static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
-    tcb_list_head->next = tcb_list_head;
+		tcb_list_head->next = tcb_list_head;
   }
-  new_tcb->next = tcb_list_head->next;
-  tcb_list_head->next = new_tcb;
+	else{
+    while (tcb_list_head->next != 0 && tcb_list_head->next->priority <= new_tcb->priority)
+    {
+      tcb_list_head = tcb_list_head->next;
+    }
+    new_tcb->next = tcb_list_head->next;
+    tcb_list_head->next = new_tcb;
+  }
 }
 
 #define MAX_TASKS (10)
@@ -401,7 +424,7 @@ void OS_Sleep(unsigned long sleepTime)
   long sr = StartCritical();
   sleepTime *= TIME_1MS;
   cur_tcb->wake_time = ((sleepTime));
-  tcb_t *iter = tcb_list_head;
+	tcb_t *iter = tcb_list_head;
   do
   {
     // Until we wrap around to head
@@ -412,6 +435,7 @@ void OS_Sleep(unsigned long sleepTime)
     }
     iter = iter->next;
   } while (iter != tcb_list_head);
+	// remove from active TCB //
   cur_tcb->next = 0;
   pushq(cur_tcb);
   NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
@@ -565,9 +589,14 @@ void OS_Launch(unsigned long theTimeSlice)
   EnableInterrupts();
 }
 
-uint32_t peek(tcb_t *head)
+uint32_t peek_waketime(tcb_t *head)
 {
   return head->wake_time;
+}
+
+uint32_t peek_priority(tcb_t *head)
+{
+  return head->priority;
 }
 
 void pop()
@@ -635,3 +664,53 @@ void Timer3A_Handler()
   TIMER3_ICR_R = TIMER_ICR_TATOCINT;
   pop();
 }
+
+
+
+void pop_sema(tcb_t* semahead)
+{
+  long sr = StartCritical();
+
+  tcb_t *head = semahead;
+  tcb_t *tmpinq = head;
+  if (head == 0)
+  {
+    EndCritical(sr);
+    return;
+  }
+
+  tmpinq = head->next;
+  insert_tcb(head);
+	
+	// if poped priority is higher than existing one,
+  if(cur_tcb->priority>head->priority){
+		next_tcb = head;
+		NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+		ContextSwitch(true);
+	}else if(cur_tcb->next != 0 && cur_tcb->next->priority > head->priority)
+	{
+		next_tcb = head;
+	}// if poped one is not higher than current one, but higher than next one. order should be changed
+
+  semahead = tmpinq;
+  EndCritical(sr);
+}
+
+void push_semaq(tcb_t *node, tcb_t *semahead)
+{
+  // outside is already disinterrupted && set node
+  tcb_t *start = semahead;
+  if (semahead == 0)
+  {
+    semahead = node;
+  }
+	else{
+    while (start->next != 0 && start->next->priority <= node->priority)
+    {
+      start = start->next;
+    }
+    node->next = start->next;
+    start->next = node;
+  }
+}
+

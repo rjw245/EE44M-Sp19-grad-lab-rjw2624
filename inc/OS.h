@@ -48,6 +48,7 @@ typedef struct _tcb_s
 struct Sema4
 {
   long Value; // >0 means free, otherwise means busy
+	struct _tcb_s   *head;
   // add other components here, if necessary to implement blocking
 };
 typedef struct Sema4 Sema4Type;

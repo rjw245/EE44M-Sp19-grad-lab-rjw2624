@@ -136,7 +136,8 @@ void DAS(void)
 // foreground treads run for 2 sec and die
 // ***********ButtonWork*************
 #if Lab3
-extern unsigned long MaxJitter;
+//extern unsigned long MaxJitter;
+ unsigned long MaxJitter;
 #endif
 void ButtonWork(void)
 {
