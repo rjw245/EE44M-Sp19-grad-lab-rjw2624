@@ -73,6 +73,10 @@ static uint64_t get_system_time(void)
 void SysTick_Handler(void)
 {
   ContextSwitch(true);
+	if(cur_tcb->next->priority == cur_tcb->priority)
+		next_tcb = cur_tcb->next;
+	else
+		next_tcb = tcb_list_head;
 }
 
 static void TaskReturn(void)
@@ -117,7 +121,7 @@ void OS_Init(void)
   WTIMER0_TBPR_R = 0;          // prescale value for trigger
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
-  // OS_AddThread(IdleTask, 128, 5);
+  OS_AddThread(IdleTask, 128, 5);
 }
 
 void OS_InitSemaphore(Sema4Type *semaPt, long value)
@@ -160,7 +164,7 @@ void OS_Signal(Sema4Type *semaPt)
 	{
 		pop_sema(semaPt->head);
 	}
-	
+	EndCritical(sr);
 }
 
 void OS_bWait(Sema4Type *semaPt)
@@ -212,18 +216,19 @@ static void remove_tcb(tcb_t *tcb)
 
 static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
+	tcb_t *tmp = tcb_list_head;
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
-		tcb_list_head->next = tcb_list_head;
+		tcb_list_head->next = 0;
   }
 	else{
-    while (tcb_list_head->next != 0 && tcb_list_head->next->priority <= new_tcb->priority)
+    while (tmp->next != 0 && tmp->next->priority <= new_tcb->priority)
     {
-      tcb_list_head = tcb_list_head->next;
+      tmp = tmp->next;
     }
-    new_tcb->next = tcb_list_head->next;
-    tcb_list_head->next = new_tcb;
+    new_tcb->next = tmp->next;
+    tmp->next = new_tcb;
   }
 }
 
@@ -485,7 +490,7 @@ void OS_Fifo_Init(unsigned long size)
 int OS_Fifo_Put(unsigned long data)
 {
   int ret = 0;
-  OS_bWait(&fifo_wr_mutex);
+  OS_Wait(&fifo_wr_mutex);
   if ((OSPutI + 1) % OSFIFOSIZE == OSGetI)
   {
     ret = (0); // Failed, fifo full
@@ -497,7 +502,7 @@ int OS_Fifo_Put(unsigned long data)
     ret = (1);
     OS_Signal(&fifo_level); // Signal 1 more queue item
   }
-  OS_bSignal(&fifo_wr_mutex);
+  OS_Signal(&fifo_wr_mutex);
   return ret;
 }
 
@@ -505,10 +510,10 @@ unsigned long OS_Fifo_Get(void)
 {
   unsigned long result = 0;
   OS_Wait(&fifo_level); // Wait for 1+ items to be in queue
-  OS_bWait(&fifo_rd_mutex);
+  OS_Wait(&fifo_rd_mutex);
   result = OSFifo[OSGetI];
   OSGetI = (OSGetI + 1) % OSFIFOSIZE; // Success, update
-  OS_bSignal(&fifo_rd_mutex);
+  OS_Signal(&fifo_rd_mutex);
   return result;
 }
 
@@ -530,19 +535,19 @@ void OS_MailBox_Init(void)
 
 void OS_MailBox_Send(unsigned long data)
 {
-  OS_bWait(&mailboxMutex);
+  OS_Wait(&mailboxMutex);
   mailBox = data;
-  OS_bSignal(&mailboxFull);
-  OS_bSignal(&mailboxMutex);
+  OS_Signal(&mailboxFull);
+  OS_Signal(&mailboxMutex);
 }
 
 unsigned long OS_MailBox_Recv(void)
 {
   unsigned long data;
-  OS_bWait(&mailboxFull);
-  OS_bWait(&mailboxMutex);
+  OS_Wait(&mailboxFull);
+  OS_Wait(&mailboxMutex);
   data = mailBox;
-  OS_bSignal(&mailboxMutex);
+  OS_Signal(&mailboxMutex);
   return data;
 }
 

@@ -31,7 +31,7 @@ I (./inc/OS.h)(0x5C7DDD37)
 I (./inc/tm4c123gh6pm.h)(0x5C7DDAB8)
 I (./inc/ST7735.h)(0x5C7DDAB8)
 I (./inc/misc_macros.h)(0x5C7DDAB8)
-F (.\src\OS.c)(0x5C7DE98D)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O0 --apcs=interwork --split_sections --signed_chars -I./inc/ --C99-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\TI\TM4C123-Drvmdk -DPART_LM4F120H5QR -DTM4C123GH6PM-o .\obj\os.o --omf_browse .\obj\os.crf --depend .\obj\os.d)
+F (.\src\OS.c)(0x5C7DFB98)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O0 --apcs=interwork --split_sections --signed_chars -I./inc/ --C99-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\TI\TM4C123-Drvmdk -DPART_LM4F120H5QR -DTM4C123GH6PM-o .\obj\os.o --omf_browse .\obj\os.crf --depend .\obj\os.d)
 I (C:\Keil\ARM\ARMCC\include\stdint.h)(0x51C87C24)
 I (C:\Keil\ARM\ARMCC\include\stdbool.h)(0x51C87C24)
 I (C:\Keil\ARM\ARMCC\include\assert.h)(0x51C87C24)
@@ -47,7 +47,7 @@ F (.\src\assert.s)(0x5C7DDAB8)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs
 F (.\src\Switch.c)(0x5C7DDAB8)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O0 --apcs=interwork --split_sections --signed_chars -I./inc/ --C99-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\TI\TM4C123-Drvmdk -DPART_LM4F120H5QR -DTM4C123GH6PM-o .\obj\switch.o --omf_browse .\obj\switch.crf --depend .\obj\switch.d)
 I (C:\Keil\ARM\ARMCC\include\stdint.h)(0x51C87C24)
 I (./inc/tm4c123gh6pm.h)(0x5C7DDAB8)
-F (.\src\Lab3.c)(0x5C7DE9D3)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O0 --apcs=interwork --split_sections --signed_chars -I./inc/ --C99-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\TI\TM4C123-Drvmdk -DPART_LM4F120H5QR -DTM4C123GH6PM-o .\obj\lab3.o --omf_browse .\obj\lab3.crf --depend .\obj\lab3.d)
+F (.\src\Lab3.c)(0x5C7DF544)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O0 --apcs=interwork --split_sections --signed_chars -I./inc/ --C99-I C:\Keil\ARM\RV31\INC-I C:\Keil\ARM\CMSIS\Include-I C:\Keil\ARM\Inc\TI\TM4C123-Drvmdk -DPART_LM4F120H5QR -DTM4C123GH6PM-o .\obj\lab3.o --omf_browse .\obj\lab3.crf --depend .\obj\lab3.d)
 I (./inc/OS.h)(0x5C7DDD37)
 I (C:\Keil\ARM\ARMCC\include\stdint.h)(0x51C87C24)
 I (./inc/tm4c123gh6pm.h)(0x5C7DDAB8)
