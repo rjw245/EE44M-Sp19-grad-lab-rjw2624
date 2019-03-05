@@ -122,7 +122,7 @@ void OS_Init(void)
 
 void OS_InitSemaphore(Sema4Type *semaPt, long value)
 {
-
+  semaPt->head = 0;
   semaPt->Value = value;
 }
 
