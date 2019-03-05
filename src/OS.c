@@ -682,6 +682,7 @@ void Timer3A_Handler()
 void pop_sema(tcb_t **semahead)
 {
   long sr = StartCritical();
+  tcb_t *next_in_wait = 0;
 
   tcb_t *head = *semahead;
   if (head == 0)
@@ -690,10 +691,11 @@ void pop_sema(tcb_t **semahead)
     return;
   }
 
+  next_in_wait = head->next;
   insert_tcb(head);
 
   choose_next();
-  *semahead = head->next;
+  *semahead = next_in_wait;
   EndCritical(sr);
 }
 
