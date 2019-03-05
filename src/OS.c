@@ -20,6 +20,8 @@
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
+#define PRIORITY_SCHED 1 // 0 for round robin, 1 for priority scheduler
+
 bool save_ctx_global = true;
 static tcb_t *tcb_list_head = 0;
 static tcb_t *tcb_sleep_head = 0;
@@ -31,6 +33,18 @@ void pop_sema(tcb_t **semahead);
 void push_semaq(tcb_t *node, tcb_t **semahead);
 uint32_t peek_priority(tcb_t *head);
 static void insert_tcb(tcb_t *new_tcb);
+
+static void choose_next(void)
+{
+#if PRIORITY_SCHED
+  if (cur_tcb->next->priority == tcb_list_head->priority)
+    next_tcb = cur_tcb->next;
+  else
+    next_tcb = tcb_list_head;
+#else
+  next_tcb = cur_tcb->next; // Round robin
+#endif
+}
 
 static void ContextSwitch(bool save_ctx)
 {
@@ -70,10 +84,7 @@ static uint64_t get_system_time(void)
 void SysTick_Handler(void)
 {
   ContextSwitch(true);
-	if(cur_tcb->next->priority == cur_tcb->priority)
-		next_tcb = cur_tcb->next;
-	else
-		next_tcb = tcb_list_head;
+  choose_next();
 }
 
 static void TaskReturn(void)
@@ -160,7 +171,7 @@ void OS_Signal(Sema4Type *semaPt)
   {
     pop_sema(&semaPt->head);
   }
-	EndCritical(sr);
+  EndCritical(sr);
 }
 
 void OS_bWait(Sema4Type *semaPt)
@@ -212,7 +223,7 @@ static void remove_tcb(tcb_t *tcb)
 
 static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
-	tcb_t *tmp = tcb_list_head;
+  tcb_t *tmp = tcb_list_head;
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
@@ -614,6 +625,7 @@ void pop()
 
   tmpinq = head->next;
   insert_tcb(head);
+  choose_next();
   head->wake_time = 0;
   tcb_sleep_head = tmpinq;
   head = tmpinq;
@@ -672,29 +684,16 @@ void pop_sema(tcb_t **semahead)
   long sr = StartCritical();
 
   tcb_t *head = *semahead;
-  tcb_t *tmpinq = head;
   if (head == 0)
   {
     EndCritical(sr);
     return;
   }
 
-  tmpinq = head->next;
   insert_tcb(head);
 
-  // if poped priority is higher than existing one,
-  if (cur_tcb->priority > head->priority)
-  {
-    next_tcb = head;
-    NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
-    ContextSwitch(true);
-  }
-  else if (cur_tcb->next != 0 && cur_tcb->next->priority > head->priority)
-  {
-    next_tcb = head;
-  } // if poped one is not higher than current one, but higher than next one. order should be changed
-
-  *semahead = tmpinq;
+  choose_next();
+  *semahead = head->next;
   EndCritical(sr);
 }
 

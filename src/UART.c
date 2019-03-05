@@ -129,6 +129,7 @@ char UART_InChar(void)
   char letter;
   while (RxFifo_Get(&letter) == FIFOFAIL)
   {
+    OS_Sleep(100);
   };
   OS_Signal(&uartIn_sema);
   return (letter);
