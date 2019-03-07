@@ -17,10 +17,20 @@
 #include "misc_macros.h"
 #include "priorityqueue.h"
 #include "Switch.h"
+#include "ST7735.h"
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
 #define PRIORITY_SCHED 1 // 0 for round robin, 1 for priority scheduler
+#define JITTERSIZE 64
+unsigned long const JitterSize = JITTERSIZE;
+unsigned long JitterHistogram1[JITTERSIZE] = {
+    0,
+};
+unsigned long JitterHistogram2[JITTERSIZE] = {
+    0,
+};
+
 
 bool save_ctx_global = true;
 static tcb_t *tcb_list_head = 0;
@@ -361,12 +371,77 @@ int numPeriodicTasks = 0;
 void (*WTimer1ATask)(void) = 0;
 void (*WTimer1BTask)(void) = 0;
 
+unsigned long MaxJitter = 0;
+
+void Jitter(void)
+{
+	ST7735_Message(1, 4, "Max Jitter 0.1us=", MaxJitter);
+	
+}
+
+void JitterGet(unsigned long PERIOD,int timer)
+{
+  static unsigned long LastTime1=0; // time at previous ADC sample
+  static unsigned long thisTime1=0;        // time at current ADC sample
+ static unsigned long LastTime2=0; // time at previous ADC sample
+  static unsigned long thisTime2=0;        // time at current ADC sample
+
+
+  long jitter;                   // time between measured and expected, in us
+  
+	thisTime1 = OS_Time(); // current time, 12.5 ns
+  
+	static unsigned long  diff;
+	
+	if(timer ==1){
+		thisTime1 = OS_Time(); // current time, 12.5 ns
+		diff = OS_TimeDifference(LastTime1, thisTime1);
+
+	}
+	else{
+		thisTime2 = OS_Time(); // current time, 12.5 ns
+		diff = OS_TimeDifference(LastTime2, thisTime2);
+	}
+	
+  if (diff > PERIOD)
+      {
+        jitter = (diff - PERIOD + 4) / 8; // in 0.1 usec
+      }
+      else
+      {
+        jitter = (PERIOD - diff + 4) / 8; // in 0.1 usec
+      }
+      if (jitter > MaxJitter)
+      {
+        MaxJitter = jitter; // in usec
+      }                     // jitter should be 0
+      if (jitter >= JitterSize)
+      {
+        jitter = JITTERSIZE - 1;
+      }
+			
+		if(timer == 1){
+			JitterHistogram1[jitter]++;
+			    LastTime1 = thisTime1;
+		}
+		else
+		{
+			JitterHistogram2[jitter]++;
+			LastTime2 = thisTime2;
+		}
+    
+
+	
+}
+
+
 void WideTimer1A_Handler(void)
 {
   WTIMER1_ICR_R = 1;    // Clear Wtimer 1A timeout interrupt
   NVIC_ST_CTRL_R &= ~1; // Stop systick
   if (WTimer1ATask)
   {
+		JitterGet(WTIMER1_TAILR_R,1);
     WTimer1ATask();
   }
   NVIC_ST_CTRL_R |= 1; // Stop systick
@@ -378,6 +453,7 @@ void WideTimer1B_Handler(void)
   NVIC_ST_CTRL_R &= ~1;   // Stop systick
   if (WTimer1BTask)
   {
+		JitterGet(WTIMER1_TBILR_R,2);
     WTimer1BTask();
   }
   NVIC_ST_CTRL_R |= 1; // Stop systick

@@ -137,7 +137,7 @@ void DAS(void)
 // ***********ButtonWork*************
 #if Lab3
 //extern unsigned long MaxJitter;
- unsigned long MaxJitter;
+ extern unsigned long MaxJitter;
 #endif
 void ButtonWork(void)
 {
@@ -717,9 +717,7 @@ void Thread6(void)
   }
 }
 
-extern void Jitter(void){
-
-}; // prints jitter information (write this)
+extern void Jitter(void); // prints jitter information (write this)
 
 void Thread7(void)
 { // foreground thread
