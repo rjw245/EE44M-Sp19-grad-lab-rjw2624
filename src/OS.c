@@ -33,6 +33,7 @@ void pop_sema(tcb_t **semahead);
 void push_semaq(tcb_t *node, tcb_t **semahead);
 uint32_t peek_priority(tcb_t *head);
 static void insert_tcb(tcb_t *new_tcb);
+static void remove_tcb(tcb_t *tcb, bool free_mem);
 
 static void choose_next(void)
 {
@@ -140,21 +141,11 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value)
 
 void OS_Wait(Sema4Type *semaPt)
 {
-  tcb_t *iter = tcb_list_head;
   long sr = StartCritical();
   semaPt->Value--;
   if (semaPt->Value < 0)
   {
-    do
-    {
-      // Until we wrap around to head
-      if (iter->next == cur_tcb)
-      {
-        iter->next = cur_tcb->next;
-        break;
-      }
-      iter = iter->next;
-    } while (iter != tcb_list_head);
+    remove_tcb(cur_tcb, false);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
@@ -169,41 +160,57 @@ void OS_Signal(Sema4Type *semaPt)
   semaPt->Value++;
   if (semaPt->Value <= 0)
   {
+    bool need_ctx_switch = (semaPt->head->priority < cur_tcb->priority);
     pop_sema(&semaPt->head);
+#if PRIORITY_SCHED
+    if (need_ctx_switch)
+      ContextSwitch(true);
+#endif
   }
   EndCritical(sr);
 }
 
 void OS_bWait(Sema4Type *semaPt)
 {
-
-  int oldval;
-
-  // read the semaphore value
-  oldval = __ldrex(&(semaPt->Value));
-  // loop again if it is locked and we are blocking
-  // or setting it with strex failed
-  while (!(oldval > 0) || __strex(oldval & 0, &(semaPt->Value)) != 0)
+  long sr = StartCritical();
+  semaPt->Value--;
+  if (semaPt->Value < 0)
   {
-    OS_Suspend();
-    oldval = __ldrex(&(semaPt->Value));
+    remove_tcb(cur_tcb, false);
+    // remove from active TCB
+    push_semaq(cur_tcb, &semaPt->head);
+    NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+    choose_next();
+    ContextSwitch(true);
   }
+  EndCritical(sr);
 }
 
 void OS_bSignal(Sema4Type *semaPt)
 {
-  int oldval;
-  do
+  long sr = StartCritical();
+  if (semaPt->Value < 1)
+    semaPt->Value++;
+  if (semaPt->Value <= 0)
   {
-    oldval = __ldrex(&(semaPt->Value));
-  } while (__strex(oldval | 1, &(semaPt->Value)) != 0);
+    bool need_ctx_switch = (semaPt->head->priority < cur_tcb->priority);
+    pop_sema(&semaPt->head);
+#if PRIORITY_SCHED
+    if (need_ctx_switch)
+      ContextSwitch(true);
+#endif
+  }
+  EndCritical(sr);
 }
 
-static void remove_tcb(tcb_t *tcb)
+static void remove_tcb(tcb_t *tcb, bool free_mem)
 {
+  long sr = StartCritical();
   if (tcb_list_head->next == tcb_list_head)
   {
     // One task in list
+    if (free_mem)
+      tcb_list_head->magic = 0; // Free this TCB, return to pool
     tcb_list_head = 0;
     return;
   }
@@ -214,16 +221,17 @@ static void remove_tcb(tcb_t *tcb)
     if (iter->next == tcb)
     {
       iter->next = tcb->next;
-      tcb->magic = 0; // Free this TCB, return to pool
+      if (free_mem)
+        tcb->magic = 0; // Free this TCB, return to pool
       return;
     }
     iter = iter->next;
   } while (iter != tcb_list_head);
+  EndCritical(sr);
 }
 
 static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
-  tcb_t *tmp = tcb_list_head;
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
@@ -231,12 +239,19 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   }
   else
   {
+#if PRIORITY_SCHED
+    // Maintain priority order
+    tcb_t *tmp = tcb_list_head;
     while (tmp->next != 0 && tmp->next->priority <= new_tcb->priority)
     {
       tmp = tmp->next;
     }
     new_tcb->next = tmp->next;
     tmp->next = new_tcb;
+#else
+    new_tcb->next = tcb_list_head->next;
+    tcb_list_head->next = new_tcb;
+#endif
   }
 }
 
@@ -437,17 +452,7 @@ void OS_Sleep(unsigned long sleepTime)
   long sr = StartCritical();
   sleepTime *= TIME_1MS;
   cur_tcb->wake_time = ((sleepTime));
-  tcb_t *iter = tcb_list_head;
-  do
-  {
-    // Until we wrap around to head
-    if (iter->next == cur_tcb)
-    {
-      iter->next = cur_tcb->next;
-      break;
-    }
-    iter = iter->next;
-  } while (iter != tcb_list_head);
+  remove_tcb(cur_tcb, false);
   // remove from active TCB //
   pushq(cur_tcb);
   NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
@@ -459,7 +464,7 @@ void OS_Kill(void)
 {
   long sr = StartCritical();
   //  tcb_t *next_tcb = cur_tcb->next;
-  remove_tcb(cur_tcb);
+  remove_tcb(cur_tcb, true);
   cur_tcb = next_tcb;
   next_tcb = cur_tcb->next;
   numTasks--;
