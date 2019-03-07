@@ -20,11 +20,13 @@
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
-#define PRIORITY_SCHED 1 // 0 for round robin, 1 for priority scheduler
+#define PRIORITY_SCHED 0 // 0 for round robin, 1 for priority scheduler
+
+#define BLOCKING_SEMAS 0 // 0 for spin-waiting semaphores, 1 for blocking semaphores
 
 bool save_ctx_global = true;
-static tcb_t *tcb_list_head = 0;
-static tcb_t *tcb_sleep_head = 0;
+tcb_t *tcb_list_head = 0;
+tcb_t *tcb_sleep_head = 0;
 tcb_t *cur_tcb = 0;
 tcb_t *next_tcb = 0;
 
@@ -143,37 +145,7 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value)
 
 void OS_Wait(Sema4Type *semaPt)
 {
-  long sr = StartCritical();
-  semaPt->Value--;
-  if (semaPt->Value < 0)
-  {
-    remove_tcb(cur_tcb, false);
-    // remove from active TCB
-    push_semaq(cur_tcb, &semaPt->head);
-    NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
-    ContextSwitch(true);
-  }
-  EndCritical(sr);
-}
-
-void OS_Signal(Sema4Type *semaPt)
-{
-  long sr = StartCritical();
-  semaPt->Value++;
-  if (semaPt->Value <= 0)
-  {
-    bool need_ctx_switch = (semaPt->head->priority < cur_tcb->priority);
-    pop_sema(&semaPt->head);
-#if PRIORITY_SCHED
-    if (need_ctx_switch)
-      ContextSwitch(true);
-#endif
-  }
-  EndCritical(sr);
-}
-
-void OS_bWait(Sema4Type *semaPt)
-{
+#if BLOCKING_SEMAS
   long sr = StartCritical();
   semaPt->Value--;
   if (semaPt->Value < 0)
@@ -188,10 +160,82 @@ void OS_bWait(Sema4Type *semaPt)
     ContextSwitch(true);
   }
   EndCritical(sr);
+#else
+  int oldval;
+
+  // read the semaphore value
+  oldval = __ldrex(&(semaPt->Value));
+  // loop again if it is locked and we are blocking
+  // or setting it with strex failed
+  while (!(oldval > 0) || __strex(oldval - 1, &(semaPt->Value)) != 0)
+  {
+   // OS_Suspend();
+    oldval = __ldrex(&(semaPt->Value));
+  }
+#endif
+}
+
+void OS_Signal(Sema4Type *semaPt)
+{
+#if BLOCKING_SEMAS
+  long sr = StartCritical();
+  semaPt->Value++;
+  if (semaPt->Value <= 0)
+  {
+    bool need_ctx_switch = (semaPt->head->priority < cur_tcb->priority);
+    pop_sema(&semaPt->head);
+#if PRIORITY_SCHED
+    if (need_ctx_switch)
+      ContextSwitch(true);
+#endif
+  }
+  EndCritical(sr);
+#else
+
+  int oldval;
+  do
+  {
+    oldval = __ldrex(&(semaPt->Value));
+  } while (__strex(oldval + 1, &(semaPt->Value)) != 0);
+#endif
+}
+
+void OS_bWait(Sema4Type *semaPt)
+{
+#if BLOCKING_SEMAS
+  long sr = StartCritical();
+  semaPt->Value--;
+  if (semaPt->Value < 0)
+  {
+#if PRIORITY_SCHED
+    choose_next_with_prio();
+#endif
+    remove_tcb(cur_tcb, false);
+    // remove from active TCB
+    push_semaq(cur_tcb, &semaPt->head);
+    NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+    ContextSwitch(true);
+  }
+  EndCritical(sr);
+#else
+
+  int oldval;
+
+  // read the semaphore value
+  oldval = __ldrex(&(semaPt->Value));
+  // loop again if it is locked and we are blocking
+  // or setting it with strex failed
+  while (!(oldval > 0) || __strex(oldval & 0, &(semaPt->Value)) != 0)
+  {
+    OS_Suspend();
+    oldval = __ldrex(&(semaPt->Value));
+  }
+#endif
 }
 
 void OS_bSignal(Sema4Type *semaPt)
 {
+#if BLOCKING_SEMAS
   long sr = StartCritical();
   if (semaPt->Value < 1)
     semaPt->Value++;
@@ -205,6 +249,13 @@ void OS_bSignal(Sema4Type *semaPt)
 #endif
   }
   EndCritical(sr);
+#else
+  int oldval;
+  do
+  {
+    oldval = __ldrex(&(semaPt->Value));
+  } while (__strex(oldval | 1, &(semaPt->Value)) != 0);
+#endif
 }
 
 static void remove_tcb(tcb_t *tcb, bool free_mem)
