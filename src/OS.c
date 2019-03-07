@@ -35,17 +35,15 @@ uint32_t peek_priority(tcb_t *head);
 static void insert_tcb(tcb_t *new_tcb);
 static void remove_tcb(tcb_t *tcb, bool free_mem);
 
-static void choose_next(void)
-{
 #if PRIORITY_SCHED
+static void choose_next_with_prio(void)
+{
   if (cur_tcb->next->priority == tcb_list_head->priority)
     next_tcb = cur_tcb->next;
   else
     next_tcb = tcb_list_head;
-#else
-  next_tcb = cur_tcb->next; // Round robin
-#endif
 }
+#endif
 
 static void ContextSwitch(bool save_ctx)
 {
@@ -85,7 +83,11 @@ static uint64_t get_system_time(void)
 void SysTick_Handler(void)
 {
   ContextSwitch(true);
-  choose_next();
+#if PRIORITY_SCHED
+  // Need to make sure we wrap to list head
+  // if we reach the end of the set of highest prio tasks
+  choose_next_with_prio();
+#endif
 }
 
 static void TaskReturn(void)
@@ -176,11 +178,13 @@ void OS_bWait(Sema4Type *semaPt)
   semaPt->Value--;
   if (semaPt->Value < 0)
   {
+#if PRIORITY_SCHED
+    choose_next_with_prio();
+#endif
     remove_tcb(cur_tcb, false);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
-    choose_next();
     ContextSwitch(true);
   }
   EndCritical(sr);
@@ -630,7 +634,9 @@ void pop()
 
   tmpinq = head->next;
   insert_tcb(head);
-  choose_next();
+#if PRIORITY_SCHED
+  choose_next_with_prio();
+#endif
   head->wake_time = 0;
   tcb_sleep_head = tmpinq;
   head = tmpinq;
@@ -699,7 +705,11 @@ void pop_sema(tcb_t **semahead)
   next_in_wait = head->next;
   insert_tcb(head);
 
-  choose_next();
+#if PRIORITY_SCHED
+  // Need to update next_tcb in case
+  // popped task is higher prio than current.
+  choose_next_with_prio();
+#endif
   *semahead = next_in_wait;
   EndCritical(sr);
 }
