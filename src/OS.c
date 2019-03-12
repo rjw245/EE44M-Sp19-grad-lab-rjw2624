@@ -541,7 +541,6 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
                               unsigned long priority,
                               char *task_name)
 {
-  priority = 0;
   long sr = StartCritical();
   if (numPeriodicTasks == 0)
   {
@@ -560,7 +559,7 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
     WTimer1BTask_name = task_name;
 
     // Set up interrupt controller, interrupt 97
-    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFF1FFF) | (0 << 13);
+    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFF1FFF) | (priority << 13);
 
     // Kick off Wtimer
     WTIMER1_CTL_R |= 1 << 8; // enable Wtimer1B 32-b, periodic, no interrupts
