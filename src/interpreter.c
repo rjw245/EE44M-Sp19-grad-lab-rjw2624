@@ -62,7 +62,7 @@ void interpreter_task(void)
   }
 }
 
-static void print_event(event_t* event)
+static void print_event(const event_t* event)
 {
     char event_str[80];
     char *event_types[EVENT_NUM_TYPES] = {
@@ -70,7 +70,7 @@ static void print_event(event_t* event)
       [EVENT_PTH_START] = "PT START",
       [EVENT_PTH_END] = "PT END",
     };
-    sprintf(event_str, "Name: %s  Time: %llu  Type: %s\r\n",
+    sprintf(event_str, "Name: %s  Time: %llu cycles  Type: %s\r\n",
             event->name, event->timestamp, event_types[event->type]);
     UART_OutString(event_str);
 }
@@ -117,10 +117,11 @@ void interpreter_cmd(char *cmd_str)
   {
     float res = getDisablePercent();
   }
-	else if (strcmp(cmd, "clean") == 0)
-  {
-    timeMeasureInit();
-		timeMeasurestart();
-  }
 	*/
+  else if (strcmp(cmd, "clear") == 0)
+  {
+    Profiler_Clear();
+	//    timeMeasureInit();
+	//	timeMeasurestart();
+  }
 }
