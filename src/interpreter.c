@@ -112,16 +112,19 @@ void interpreter_cmd(char *cmd_str)
   {
     Profiler_Foreach(print_event);
   }
-	/*
+	
 	else if (strcmp(cmd, "critical") == 0)
   {
-    float res = getDisablePercent();
+		char time[64];
+    int res = getDisablePercent();
+    sprintf(time, "critical time: %d percent\r\n", res);
+		UART_OutString(time);
   }
-	*/
+	
   else if (strcmp(cmd, "clear") == 0)
   {
     Profiler_Clear();
-	//    timeMeasureInit();
-	//	timeMeasurestart();
+	  timeMeasureInit();
+	  timeMeasurestart();
   }
 }

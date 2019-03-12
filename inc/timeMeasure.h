@@ -5,16 +5,16 @@
 
 
 
-void timeMeasureInit();  // initialize time measurement. At main, it should be exist
+void timeMeasureInit(void);  // initialize time measurement. At main, it should be exist
 	
-void timeMeasurestart();
+void timeMeasurestart(void);
 
 
-void disableTimeget();
+void disableTimeget(void);
 
-void enableTimeget();
+void enableTimeget(void);
 
-float getDisablePercent();
+int getDisablePercent(void);
 
 
 
