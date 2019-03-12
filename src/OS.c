@@ -18,6 +18,7 @@
 #include "priorityqueue.h"
 #include "Switch.h"
 #include "ST7735.h"
+#include "profiler.h"
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
@@ -60,6 +61,7 @@ static void ContextSwitch(bool save_ctx)
 {
   save_ctx_global = save_ctx;
   NVIC_INT_CTRL_R |= NVIC_INT_CTRL_PEND_SV;
+  Profiler_Event(EVENT_FGTH_START, cur_tcb->task_name);
 }
 
 unsigned int numTasks = 0;
@@ -144,6 +146,7 @@ void OS_Init(void)
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
   OS_AddThread(IdleTask, 128, 5);
+  Profiler_Init();
 }
 
 void OS_InitSemaphore(Sema4Type *semaPt, long value)
@@ -327,9 +330,10 @@ static tcb_t tcb_pool[MAX_TASKS];
 // Stacks need to be dword aligned
 static long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
 
-int OS_AddThread(void (*task)(void),
+int OS_AddThread_priv(void (*task)(void),
                  unsigned long stackSize,
-                 unsigned long priority)
+                 unsigned long priority,
+                 char *task_name)
 {
   unsigned long stackDWords = (stackSize / 8) + (stackSize % 8 == 0 ? 0 : 1); // Round up integer div
   tcb_t *tcb = 0;
@@ -406,6 +410,7 @@ int OS_AddThread(void (*task)(void),
   tcb->next = 0;
   tcb->magic = TCB_MAGIC; // Write magic to mark valid
   tcb->task = task;
+  tcb->task_name = task_name;
   insert_tcb(tcb);
   numTasks++;
   EndCritical(sr);
@@ -416,10 +421,6 @@ unsigned long OS_Id(void)
 {
   return cur_tcb->id;
 }
-
-int numPeriodicTasks = 0;
-void (*WTimer1ATask)(void) = 0;
-void (*WTimer1BTask)(void) = 0;
 
 unsigned long MaxJitter = 0;
 
@@ -479,6 +480,13 @@ void JitterGet(unsigned long cur_time, unsigned long PERIOD, int timer)
   *last_time = cur_time;
 }
 
+
+static int numPeriodicTasks = 0;
+static void (*WTimer1ATask)(void) = 0;
+static void (*WTimer1BTask)(void) = 0;
+static char *WTimer1ATask_name = 0;
+static char *WTimer1BTask_name = 0;
+
 void WideTimer1A_Handler(void)
 {
   WTIMER1_ICR_R = 1;    // Clear Wtimer 1A timeout interrupt
@@ -486,7 +494,9 @@ void WideTimer1A_Handler(void)
   if (WTimer1ATask)
   {
     JitterGet(OS_Time(), WTIMER1_TAILR_R, 1);
+    Profiler_Event(EVENT_PTH_START, WTimer1ATask_name);
     WTimer1ATask();
+    Profiler_Event(EVENT_PTH_END, WTimer1ATask_name);
   }
   NVIC_ST_CTRL_R |= 1; // Stop systick
 }
@@ -498,13 +508,17 @@ void WideTimer1B_Handler(void)
   if (WTimer1BTask)
   {
     JitterGet(OS_Time(), WTIMER1_TBILR_R, 2);
+    Profiler_Event(EVENT_PTH_START, WTimer1BTask_name);
     WTimer1BTask();
+    Profiler_Event(EVENT_PTH_END, WTimer1BTask_name);
   }
   NVIC_ST_CTRL_R |= 1; // Stop systick
 }
 
-int OS_AddPeriodicThread(void (*task)(void),
-                         unsigned long period, unsigned long priority)
+int OS_AddPeriodicThread_priv(void (*task)(void),
+                              unsigned long period,
+                              unsigned long priority,
+                              char *task_name)
 {
   priority = 0;
   long sr = StartCritical();
@@ -522,6 +536,7 @@ int OS_AddPeriodicThread(void (*task)(void),
     WTIMER1_TBILR_R = period - 1; // start value for trigger
     WTIMER1_IMR_R |= 1 << 8;      // enable Wtimer 1B time-out interrupt
     WTimer1BTask = task;
+    WTimer1BTask_name = task_name;
 
     // Set up interrupt controller, interrupt 97
     NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFF1FFF) | (0 << 13);
@@ -540,6 +555,7 @@ int OS_AddPeriodicThread(void (*task)(void),
     WTIMER1_TAILR_R = period - 1; // start value for trigger
     WTIMER1_IMR_R |= 1;           // enable Wtimer 1A time-out interrupt
     WTimer1ATask = task;
+    WTimer1ATask_name = task_name;
 
     // Set up interrupt controller, interrupt 96
     NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFFFF1F) | (0 << 5);

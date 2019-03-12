@@ -42,6 +42,7 @@ typedef struct _tcb_s
   //! magic field must contain TCB_MAGIC for TCB to be valid
   unsigned long magic;
   void (*task)(void);
+  char * task_name;
 } tcb_t;
 
 // feel free to change the type of semaphore, there are lots of good solutions
@@ -95,6 +96,11 @@ void OS_bWait(Sema4Type *semaPt);
  */
 void OS_bSignal(Sema4Type *semaPt);
 
+int OS_AddThread_priv(void (*task)(void),
+                      unsigned long stackSize,
+                      unsigned long priority,
+                      char *task_name);
+
 /**
  * add a foregound thread to the scheduler
  * stack size must be divisable by 8 (aligned to double word boundary)
@@ -105,15 +111,21 @@ void OS_bSignal(Sema4Type *semaPt);
  * @param priority Priority of the task. 0 is highest, 5 is lowest.
  * @return 1 if successful, 0 if this thread can not be added
  */
-int OS_AddThread(void (*task)(void),
-                 unsigned long stackSize,
-                 unsigned long priority);
+#define OS_AddThread(task, stackSize, priority) OS_AddThread_priv(task, stackSize, priority, #task)
+
+
 
 /**
  * returns the thread ID for the currently running thread
  * @return Thread ID, number greater than zero 
  */
 unsigned long OS_Id(void);
+
+
+int OS_AddPeriodicThread_priv(void (*task)(void),
+                         unsigned long period,
+                         unsigned long priority,
+                         char *task_name);
 
 /**
  * Add a background periodic task.
@@ -133,9 +145,7 @@ unsigned long OS_Id(void);
  * @param priority 0 is the highest, 5 is the lowest
  * @return 1 if successful, 0 if this thread can not be added
  */
-int OS_AddPeriodicThread(void (*task)(void),
-                         unsigned long period,
-                         unsigned long priority);
+#define OS_AddPeriodicThread(task, period, priority) OS_AddPeriodicThread_priv(task, period, priority, #task)
 
 /**
  * add a background task to run whenever the SW1 (PF4) button is pushed
