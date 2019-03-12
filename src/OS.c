@@ -53,10 +53,12 @@ static void remove_tcb(tcb_t *tcb, bool free_mem);
 #if PRIORITY_SCHED
 static void choose_next_with_prio(void)
 {
+  long sr = StartCritical();
   if (cur_tcb->next->priority == tcb_list_head->priority)
     next_tcb = cur_tcb->next;
   else
     next_tcb = tcb_list_head;
+  EndCritical(sr);
 }
 #endif
 
@@ -279,12 +281,19 @@ void OS_bSignal(Sema4Type *semaPt)
 static void remove_tcb(tcb_t *tcb, bool free_mem)
 {
   long sr = StartCritical();
+  if(tcb_list_head == 0)
+  {
+    // Empty list
+    EndCritical(sr);
+    return;
+  }
   if (tcb_list_head->next == tcb_list_head)
   {
     // One task in list
     if (free_mem)
       tcb_list_head->magic = 0; // Free this TCB, return to pool
     tcb_list_head = 0;
+    EndCritical(sr);
     return;
   }
   tcb_t *iter = tcb_list_head;
@@ -293,9 +302,14 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
     // Until we wrap around to head
     if (iter->next == tcb)
     {
+      if(tcb == tcb_list_head)
+      {
+        tcb_list_head = tcb->next;
+      }
       iter->next = tcb->next;
       if (free_mem)
         tcb->magic = 0; // Free this TCB, return to pool
+      EndCritical(sr);
       return;
     }
     iter = iter->next;
