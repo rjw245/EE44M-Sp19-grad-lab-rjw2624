@@ -31,7 +31,7 @@ unsigned long JitterHistogram2[JITTERSIZE] = {
     0,
 };
 
-#define BLOCKING_SEMAS 0 // 0 for spin-waiting semaphores, 1 for blocking semaphores
+#define BLOCKING_SEMAS 1 // 0 for spin-waiting semaphores, 1 for blocking semaphores
 
 bool save_ctx_global = true;
 tcb_t *tcb_list_head = 0;
@@ -440,9 +440,13 @@ void JitterGet(unsigned long PERIOD,int timer)
 
   long jitter;                   // time between measured and expected, in us
   
-	thisTime1 = OS_Time(); // current time, 12.5 ns
-  
 	static unsigned long  diff;
+	
+	if(LastTime1==0)
+		LastTime1 = OS_Time();
+	
+	if(LastTime2 ==0)
+		LastTime2 = OS_Time();
 	
 	if(timer ==1){
 		thisTime1 = OS_Time(); // current time, 12.5 ns
