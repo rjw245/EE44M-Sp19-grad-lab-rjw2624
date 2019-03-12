@@ -31,6 +31,8 @@
 #include "UART.h"
 #include "interpreter.h"
 #include <string.h>
+#include "timeMeasure.h"
+
 #define Lab2 0
 #define Lab3 1
 //*********Prototype for FFT in cr4_fft_64_stm32.s, STMicroelectronics

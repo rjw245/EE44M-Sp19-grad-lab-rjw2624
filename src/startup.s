@@ -589,11 +589,24 @@ PWM1Fault_Handler
 ; Useful functions.
 ;
 ;******************************************************************************
-        EXPORT  DisableInterrupts
+        EXPORT  FIRST_DisableInterrupts
+        EXPORT  FIRST_EnableInterrupts
+		EXPORT  DisableInterrupts
         EXPORT  EnableInterrupts
         EXPORT  StartCritical
         EXPORT  EndCritical
         EXPORT  WaitForInterrupt
+		EXTERN disableTimeget
+		EXTERN enableTimeget
+
+
+
+FIRST_DisableInterrupts
+        CPSID  I
+		BX     LR
+FIRST_EnableInterrupts
+		CPSIE  I
+        BX     LR
 
 ;*********** DisableInterrupts ***************
 ; disable interrupts
@@ -601,14 +614,22 @@ PWM1Fault_Handler
 ; outputs: none
 DisableInterrupts
         CPSID  I
-        BX     LR
+		PUSH {R14}
+
+		BL enableTimeget
+		POP {R14}
+		BX     LR
 
 ;*********** EnableInterrupts ***************
 ; disable interrupts
 ; inputs:  none
 ; outputs: none
 EnableInterrupts
-        CPSIE  I
+		PUSH {R14}
+
+		BL enableTimeget
+		POP {R14}
+		CPSIE  I
         BX     LR
 
 ;*********** StartCritical ************************
@@ -616,15 +637,24 @@ EnableInterrupts
 ; inputs:  none
 ; outputs: previous I bit
 StartCritical
+
         MRS    R0, PRIMASK  ; save old status
-        CPSID  I            ; mask all (except faults)
-        BX     LR
+		CPSID  I            ; mask all (except faults)
+		PUSH {R14}
+
+		BL disableTimeget
+		POP {R14}
+		BX     LR
 
 ;*********** EndCritical ************************
 ; using the copy of previous I bit, restore I bit to previous value
 ; inputs:  previous I bit
 ; outputs: none
 EndCritical
+		PUSH {R14}
+
+		BL disableTimeget
+		POP {R14}
         MSR    PRIMASK, R0
         BX     LR
 

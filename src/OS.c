@@ -9,6 +9,7 @@
  * by Jonathan Valvano
  */
 
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -18,6 +19,7 @@
 #include "priorityqueue.h"
 #include "Switch.h"
 #include "ST7735.h"
+
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
@@ -111,7 +113,7 @@ static void TaskReturn(void)
 
 void OS_Init(void)
 {
-  DisableInterrupts();
+  FIRST_DisableInterrupts();
   // Activate PendSV interrupt with lowest priority
   NVIC_SYS_PRI3_R |= (7 << 21);
   // Activate Systick interrupt with 2nd lowest priority
@@ -143,7 +145,11 @@ void OS_Init(void)
   WTIMER0_TBPR_R = 0;          // prescale value for trigger
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
+	
+	timeMeasureInit();
+
   OS_AddThread(IdleTask, 128, 5);
+	
 }
 
 void OS_InitSemaphore(Sema4Type *semaPt, long value)
@@ -727,7 +733,9 @@ void OS_Launch(unsigned long theTimeSlice)
   NVIC_EN3_R |= 1 << 1;        // Enable wtimerB interrupt
 
   ContextSwitch(false);
-  EnableInterrupts();
+	timeMeasurestart();
+	
+  FIRST_EnableInterrupts();
 }
 
 uint32_t peek_waketime(tcb_t *head)
