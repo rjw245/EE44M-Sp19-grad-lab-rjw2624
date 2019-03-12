@@ -2,11 +2,13 @@
 #include <stdint.h>
 #include "ADC.h"
 #include "tm4c123gh6pm.h"
+#include "profiler.h"
 
 static void (*sample_handler)(unsigned long) = 0;
 
 void ADC0Seq0_Handler(void)
 {
+  Profiler_Event(EVENT_PTH_START, "ADC");
   while (!(ADC0_SSFSTAT0_R & (1 << 8))) // FIFO not empty and still need more samples
   {
    // if(sample_handler)
@@ -14,6 +16,7 @@ void ADC0Seq0_Handler(void)
 			sample_handler(ADC0_SSFIFO0_R); // 12-bit result
 		}
   }
+  Profiler_Event(EVENT_PTH_END, "ADC");
   ADC0_ISC_R = 0x01; // acknowledge ADC sequence 0 completion
 }
 
