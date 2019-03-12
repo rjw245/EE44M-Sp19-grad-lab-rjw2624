@@ -425,6 +425,7 @@ unsigned long MaxJitter = 0;
 
 void Jitter(void)
 {
+	
 	ST7735_Message(1, 4, "Max Jitter 0.1us=", MaxJitter);
 	
 }
