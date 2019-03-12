@@ -25,7 +25,7 @@
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
-#define PRIORITY_SCHED 0 // 0 for round robin, 1 for priority scheduler
+#define PRIORITY_SCHED 1 // 0 for round robin, 1 for priority scheduler
 #define JITTERSIZE 64
 unsigned long const JitterSize = JITTERSIZE;
 unsigned long JitterHistogram1[JITTERSIZE] = {
@@ -35,7 +35,7 @@ unsigned long JitterHistogram2[JITTERSIZE] = {
     0,
 };
 
-#define BLOCKING_SEMAS 0 // 0 for spin-waiting semaphores, 1 for blocking semaphores
+#define BLOCKING_SEMAS 1 // 0 for spin-waiting semaphores, 1 for blocking semaphores
 
 bool save_ctx_global = true;
 tcb_t *tcb_list_head = 0;
@@ -526,7 +526,6 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
                               unsigned long priority,
                               char *task_name)
 {
-  priority = 0;
   long sr = StartCritical();
   if (numPeriodicTasks == 0)
   {
@@ -545,7 +544,7 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
     WTimer1BTask_name = task_name;
 
     // Set up interrupt controller, interrupt 97
-    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFF1FFF) | (0 << 13);
+    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFF1FFF) | (priority << 13);
 
     // Kick off Wtimer
     WTIMER1_CTL_R |= 1 << 8; // enable Wtimer1B 32-b, periodic, no interrupts
