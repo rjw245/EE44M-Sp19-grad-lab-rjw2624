@@ -10,6 +10,7 @@
 #include "ST7735.h"
 #include "misc_macros.h"
 #include "profiler.h"
+#include "timeMeasure.h"
 
 #define MAX_LINE_LENGTH (128)
 
@@ -111,4 +112,15 @@ void interpreter_cmd(char *cmd_str)
   {
     Profiler_Foreach(print_event);
   }
+	/*
+	else if (strcmp(cmd, "critical") == 0)
+  {
+    float res = getDisablePercent();
+  }
+	else if (strcmp(cmd, "clean") == 0)
+  {
+    timeMeasureInit();
+		timeMeasurestart();
+  }
+	*/
 }
