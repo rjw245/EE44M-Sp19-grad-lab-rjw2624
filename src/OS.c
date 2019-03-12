@@ -178,7 +178,7 @@ void OS_Wait(Sema4Type *semaPt)
   // or setting it with strex failed
   while (!(oldval > 0) || __strex(oldval - 1, &(semaPt->Value)) != 0)
   {
-   // OS_Suspend();
+    // OS_Suspend();
     oldval = __ldrex(&(semaPt->Value));
   }
 #endif
@@ -425,70 +425,59 @@ unsigned long MaxJitter = 0;
 
 void Jitter(void)
 {
-	
-	ST7735_Message(1, 4, "Max Jitter 0.1us=", MaxJitter);
-	
+
+  ST7735_Message(1, 4, "Max Jitter 0.1us=", MaxJitter);
 }
 
-void JitterGet(unsigned long PERIOD,int timer)
+void JitterGet(unsigned long cur_time, unsigned long PERIOD, int timer)
 {
-  static unsigned long LastTime1=0; // time at previous ADC sample
-  static unsigned long thisTime1=0;        // time at current ADC sample
- static unsigned long LastTime2=0; // time at previous ADC sample
-  static unsigned long thisTime2=0;        // time at current ADC sample
+  static unsigned long LastTime1 = 0; // time at previous ADC sample
+  static unsigned long LastTime2 = 0; // time at previous ADC sample
 
+  long jitter; // time between measured and expected, in us
 
-  long jitter;                   // time between measured and expected, in us
-  
-	static unsigned long  diff;
-	
-	if(LastTime1==0)
-		LastTime1 = OS_Time();
-	
-	if(LastTime2 ==0)
-		LastTime2 = OS_Time();
-	
-	if(timer ==1){
-		thisTime1 = OS_Time(); // current time, 12.5 ns
-		diff = OS_TimeDifference(LastTime1, thisTime1);
+  unsigned long *last_time;
+  unsigned long *histogram;
 
-	}
-	else{
-		thisTime2 = OS_Time(); // current time, 12.5 ns
-		diff = OS_TimeDifference(LastTime2, thisTime2);
-	}
-	
-  if (diff > PERIOD)
-      {
-        jitter = (diff - PERIOD + 4) / 8; // in 0.1 usec
-      }
-      else
-      {
-        jitter = (PERIOD - diff + 4) / 8; // in 0.1 usec
-      }
-      if (jitter > MaxJitter)
-      {
-        MaxJitter = jitter; // in usec
-      }                     // jitter should be 0
-      if (jitter >= JitterSize)
-      {
-        jitter = JITTERSIZE - 1;
-      }
-			
-		if(timer == 1){
-			JitterHistogram1[jitter]++;
-			    LastTime1 = thisTime1;
-		}
-		else
-		{
-			JitterHistogram2[jitter]++;
-			LastTime2 = thisTime2;
-		}
-    
+  if (timer == 1)
+  {
+    last_time = &LastTime1;
+    histogram = JitterHistogram1;
+  }
+  else
+  {
+    last_time = &LastTime2;
+    histogram = JitterHistogram2;
+  }
 
-	
+  unsigned long diff = OS_TimeDifference(*last_time, cur_time);
+
+  if (*last_time != 0)
+  {
+    if (diff > PERIOD)
+    {
+      jitter = (diff - PERIOD + 4) / 8; // in 0.1 usec
+    }
+    else
+    {
+      jitter = (PERIOD - diff + 4) / 8; // in 0.1 usec
+    }
+
+    if (jitter > MaxJitter)
+    {
+      MaxJitter = jitter; // in usec
+    }                     // jitter should be 0
+
+    if (jitter >= JitterSize)
+    {
+      jitter = JITTERSIZE - 1;
+    }
+
+    histogram[jitter]++;
+  }
+
+  *last_time = cur_time;
 }
-
 
 void WideTimer1A_Handler(void)
 {
@@ -496,7 +485,7 @@ void WideTimer1A_Handler(void)
   NVIC_ST_CTRL_R &= ~1; // Stop systick
   if (WTimer1ATask)
   {
-		JitterGet(WTIMER1_TAILR_R,1);
+    JitterGet(OS_Time(), WTIMER1_TAILR_R, 1);
     WTimer1ATask();
   }
   NVIC_ST_CTRL_R |= 1; // Stop systick
@@ -508,7 +497,7 @@ void WideTimer1B_Handler(void)
   NVIC_ST_CTRL_R &= ~1;   // Stop systick
   if (WTimer1BTask)
   {
-		JitterGet(WTIMER1_TBILR_R,2);
+    JitterGet(OS_Time(), WTIMER1_TBILR_R, 2);
     WTimer1BTask();
   }
   NVIC_ST_CTRL_R |= 1; // Stop systick
