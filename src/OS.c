@@ -20,6 +20,7 @@
 #include "Switch.h"
 #include "ST7735.h"
 #include "profiler.h"
+#include "timeMeasure.h"
 
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
@@ -746,11 +747,10 @@ void OS_Launch(unsigned long theTimeSlice)
   NVIC_EN1_R = 1 << (35 - 32); // 9) enable IRQ 35 in NVIC
   NVIC_EN3_R |= 1 << 0;        // Enable wtimer1A interrupt
   NVIC_EN3_R |= 1 << 1;        // Enable wtimerB interrupt
-
-  ContextSwitch(false);
-	timeMeasurestart();
 	
-  FIRST_EnableInterrupts();
+	timeMeasurestart();
+  ContextSwitch(false);
+
 }
 
 uint32_t peek_waketime(tcb_t *head)
