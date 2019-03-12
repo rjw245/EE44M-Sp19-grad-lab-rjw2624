@@ -13,7 +13,6 @@ void Profiler_Init(void)
 int Profiler_Event(event_type_e etype, char *event_name)
 {
   unsigned long long timestamp = OS_Time(); // Capture time first thing
-
   if(elog_idx >= MAX_EVENTS)
   {
     return -1;
@@ -36,6 +35,12 @@ void Profiler_Clear(void)
 
 void Profiler_Foreach(void (*f)(const event_t *))
 {
+  if(elog_idx < MAX_EVENTS)
+  {
+    // Log not full, still recording, can't proceed
+    return;
+  }
+
   for(int i=0; i<MAX_EVENTS; i++)
   {
     if(elog[i].magic != EVENT_MAGIC)

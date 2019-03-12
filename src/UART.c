@@ -141,6 +141,7 @@ void UART_OutChar(char data)
   OS_Wait(&uartOut_sema);
   while (TxFifo_Put(data) == FIFOFAIL)
   {
+    OS_Sleep(10);
   };
   UART0_IM_R &= ~UART_IM_TXIM; // disable TX FIFO interrupt
   copySoftwareToHardware();
