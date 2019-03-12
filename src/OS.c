@@ -305,6 +305,7 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
 
 static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
+  long sr = StartCritical();
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
@@ -315,17 +316,31 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
 #if PRIORITY_SCHED
     // Maintain priority order
     tcb_t *tmp = tcb_list_head;
-    while (tmp->next != 0 && tmp->next->priority <= new_tcb->priority)
+    if(tcb_list_head->priority > new_tcb->priority)
     {
-      tmp = tmp->next;
+      new_tcb->next = tcb_list_head;
+      // Find node pointing to head, point it at new_tcb
+      while (tmp->next != tcb_list_head)
+      {
+        tmp = tmp->next;
+      }
+      tmp->next = new_tcb;
+      tcb_list_head = new_tcb;
     }
-    new_tcb->next = tmp->next;
-    tmp->next = new_tcb;
+    else{
+      while (tmp->next != tcb_list_head && tmp->next->priority <= new_tcb->priority)
+      {
+        tmp = tmp->next;
+      }
+      new_tcb->next = tmp->next;
+      tmp->next = new_tcb;
+    }
 #else
     new_tcb->next = tcb_list_head->next;
     tcb_list_head->next = new_tcb;
 #endif
   }
+  EndCritical(sr);
 }
 
 #define MAX_TASKS (10)

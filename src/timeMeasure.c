@@ -13,7 +13,7 @@ static int enabled;
 static int start ;
 
 
-void timeMeasureInit()
+void timeMeasureInit(void)
 {
 	enabled = 0;
 	start = 0;
@@ -21,14 +21,14 @@ void timeMeasureInit()
 	__total_interupt_time = 0;
 } // initialize time measurement. At main, it should be exist
 	
-void timeMeasurestart()
+void timeMeasurestart(void)
 {
 	start = 1;
 	enabled =1;
 }
 
 
-void disableTimeget()
+void disableTimeget(void)
 {
 	if(start == 1&& enabled == 1){
 		enabled = 0;
@@ -36,7 +36,7 @@ void disableTimeget()
 	}
 }
 
-void enableTimeget()
+void enableTimeget(void)
 {
 	if (start == 1){
 	unsigned long long cur = OS_Time();
@@ -46,13 +46,13 @@ void enableTimeget()
 	}
 }
 
-int getDisablePercent()
+float getDisablePercent(void)
 {
 	if (start ){
 	unsigned long long cur = OS_Time();
 	unsigned long long diff = OS_TimeDifference(__startTime,cur);
 
-	return (__total_interupt_time* 100) / diff ;
+	return (float)__total_interupt_time / diff * 100;
 	}
 	else 
 		return 0;
