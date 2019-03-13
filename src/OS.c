@@ -9,7 +9,6 @@
  * by Jonathan Valvano
  */
 
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -21,7 +20,6 @@
 #include "ST7735.h"
 #include "profiler.h"
 #include "timeMeasure.h"
-
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
@@ -55,9 +53,19 @@ static void choose_next_with_prio(void)
 {
   long sr = StartCritical();
   if (cur_tcb->next->priority == tcb_list_head->priority)
+  {
     next_tcb = cur_tcb->next;
+  }
   else
+  {
     next_tcb = tcb_list_head;
+  }
+
+  if (tcb_list_head == 0 || next_tcb == 0)
+  {
+    // Test point, effectively a conditional breakpoint:
+    volatile uint32_t breakpoint = 0;
+  }
   EndCritical(sr);
 }
 #endif
@@ -150,8 +158,8 @@ void OS_Init(void)
   WTIMER0_TBPR_R = 0;          // prescale value for trigger
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
-	
-	timeMeasureInit();
+
+  timeMeasureInit();
 
   OS_AddThread(IdleTask, 128, 5);
   Profiler_Init();
@@ -206,7 +214,9 @@ void OS_Signal(Sema4Type *semaPt)
     pop_sema(&semaPt->head);
 #if PRIORITY_SCHED
     if (need_ctx_switch)
+    {
       ContextSwitch(true);
+    }
 #endif
   }
   EndCritical(sr);
@@ -258,14 +268,18 @@ void OS_bSignal(Sema4Type *semaPt)
 #if BLOCKING_SEMAS
   long sr = StartCritical();
   if (semaPt->Value < 1)
+  {
     semaPt->Value++;
+  }
   if (semaPt->Value <= 0)
   {
     bool need_ctx_switch = (semaPt->head->priority < cur_tcb->priority);
     pop_sema(&semaPt->head);
 #if PRIORITY_SCHED
     if (need_ctx_switch)
+    {
       ContextSwitch(true);
+    }
 #endif
   }
   EndCritical(sr);
@@ -291,7 +305,10 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
   {
     // One task in list
     if (free_mem)
-      tcb_list_head->magic = 0; // Free this TCB, return to pool
+    {
+      // Free this TCB, return to pool
+      tcb_list_head->magic = 0;
+    }
     tcb_list_head = 0;
     EndCritical(sr);
     return;
@@ -308,7 +325,10 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
       }
       iter->next = tcb->next;
       if (free_mem)
-        tcb->magic = 0; // Free this TCB, return to pool
+      {
+        // Free this TCB, return to pool
+        tcb->magic = 0;
+      }
       EndCritical(sr);
       return;
     }
@@ -366,9 +386,9 @@ static tcb_t tcb_pool[MAX_TASKS];
 static long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
 
 int OS_AddThread_priv(void (*task)(void),
-                 unsigned long stackSize,
-                 unsigned long priority,
-                 char *task_name)
+                      unsigned long stackSize,
+                      unsigned long priority,
+                      char *task_name)
 {
   unsigned long stackDWords = (stackSize / 8) + (stackSize % 8 == 0 ? 0 : 1); // Round up integer div
   tcb_t *tcb = 0;
@@ -514,7 +534,6 @@ void JitterGet(unsigned long cur_time, unsigned long PERIOD, int timer)
 
   *last_time = cur_time;
 }
-
 
 static int numPeriodicTasks = 0;
 static void (*WTimer1ATask)(void) = 0;
@@ -775,10 +794,9 @@ void OS_Launch(unsigned long theTimeSlice)
   NVIC_EN1_R = 1 << (35 - 32); // 9) enable IRQ 35 in NVIC
   NVIC_EN3_R |= 1 << 0;        // Enable wtimer1A interrupt
   NVIC_EN3_R |= 1 << 1;        // Enable wtimerB interrupt
-	
-	timeMeasurestart();
-  ContextSwitch(false);
 
+  timeMeasurestart();
+  ContextSwitch(false);
 }
 
 uint32_t peek_waketime(tcb_t *head)

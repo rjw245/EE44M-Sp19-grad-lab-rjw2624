@@ -910,5 +910,5 @@ int Testmain7(void)
 
 int main(void)
 {
-	return Testmain6();
+	return realmain();
 }
