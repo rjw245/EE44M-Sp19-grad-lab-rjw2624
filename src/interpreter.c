@@ -47,7 +47,7 @@ void interpreter_task(void)
     UART_InString(uart_in_buf, lengthof(uart_in_buf) - 1);
     UART_OutString("\r\n");
     interpreter_cmd(uart_in_buf);
-
+		OS_Sleep(100);
     // UART_OutString("\r\n");
     // UART_OutString(uart_in_buf);
     // UART_OutString("\r\n");

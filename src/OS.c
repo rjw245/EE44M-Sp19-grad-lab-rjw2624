@@ -31,7 +31,7 @@ unsigned long JitterHistogram2[JITTERSIZE] = {
     0,
 };
 
-#define BLOCKING_SEMAS 0 // 0 for spin-waiting semaphores, 1 for blocking semaphores
+#define BLOCKING_SEMAS 1 // 0 for spin-waiting semaphores, 1 for blocking semaphores
 
 bool save_ctx_global = true;
 tcb_t *tcb_list_head = 0;
@@ -49,10 +49,10 @@ static void remove_tcb(tcb_t *tcb, bool free_mem);
 #if PRIORITY_SCHED
 static void choose_next_with_prio(void)
 {
-  if (cur_tcb->next->priority == tcb_list_head->priority)
+  if (cur_tcb->next->priority == tcb_list_head->next->priority)
     next_tcb = cur_tcb->next;
   else
-    next_tcb = tcb_list_head;
+    next_tcb = tcb_list_head->next;
 }
 #endif
 
@@ -143,7 +143,7 @@ void OS_Init(void)
   WTIMER0_TBPR_R = 0;          // prescale value for trigger
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
-  OS_AddThread(IdleTask, 128, 5);
+  OS_AddThread(IdleTask, 128, 255);
 }
 
 void OS_InitSemaphore(Sema4Type *semaPt, long value)
@@ -276,6 +276,7 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
     if (free_mem)
       tcb_list_head->magic = 0; // Free this TCB, return to pool
     tcb_list_head = 0;
+		EndCritical(sr);
     return;
   }
   tcb_t *iter = tcb_list_head;
@@ -287,6 +288,7 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
       iter->next = tcb->next;
       if (free_mem)
         tcb->magic = 0; // Free this TCB, return to pool
+			EndCritical(sr);
       return;
     }
     iter = iter->next;
@@ -305,13 +307,15 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   {
 #if PRIORITY_SCHED
     // Maintain priority order
-    tcb_t *tmp = tcb_list_head;
-    while (tmp->next != 0 && tmp->next->priority <= new_tcb->priority)
+    tcb_t *tmp = tcb_list_head->next;
+		tcb_t *prev = tcb_list_head;
+    while (tmp != tcb_list_head && tmp->priority <= new_tcb->priority)
     {
+			prev = prev->next;
       tmp = tmp->next;
     }
-    new_tcb->next = tmp->next;
-    tmp->next = new_tcb;
+    new_tcb->next = tmp;
+    prev->next = new_tcb;
 #else
     new_tcb->next = tcb_list_head->next;
     tcb_list_head->next = new_tcb;
@@ -342,7 +346,7 @@ int OS_AddThread(void (*task)(void),
     EndCritical(sr);
     return 0; // Fail
   }
-  if (priority > 5)
+  if (priority > 5 && task != IdleTask)
   {
     // Invalid priority
     EndCritical(sr);
@@ -623,39 +627,40 @@ void OS_Fifo_Init(unsigned long size)
   long sr;
   sr = StartCritical(); // make atomic
   OSPutI = OSGetI = 0;  // Empty
-  OS_InitSemaphore(&fifo_wr_mutex, 1);
-  OS_InitSemaphore(&fifo_rd_mutex, 1);
-  OS_InitSemaphore(&fifo_level, 0);
+  //OS_InitSemaphore(&fifo_mutex, 1);
+  //OS_InitSemaphore(&fifo_level, 0);
   EndCritical(sr);
 }
 
 int OS_Fifo_Put(unsigned long data)
 {
   int ret = 0;
-  OS_Wait(&fifo_wr_mutex);
-  if ((OSPutI + 1) % OSFIFOSIZE == OSGetI)
+  //OS_Wait(&fifo_mutex);
+  if ((OSPutI - OSGetI) & ~(OSFIFOSIZE - 1))
   {
     ret = (0); // Failed, fifo full
   }
   else
   {
-    OSFifo[OSPutI] = data;              // put
-    OSPutI = (OSPutI + 1) % OSFIFOSIZE; // Success, update
+    OSFifo[OSPutI & (OSFIFOSIZE - 1)] = data; // put
+    OSPutI++;                                 // Success, update
     ret = (1);
-    OS_Signal(&fifo_level); // Signal 1 more queue item
+    //OS_Signal(&fifo_level); // Signal 1 more queue item
   }
-  OS_Signal(&fifo_wr_mutex);
+ // OS_Signal(&fifo_mutex);
   return ret;
 }
 
 unsigned long OS_Fifo_Get(void)
 {
   unsigned long result = 0;
-  OS_Wait(&fifo_level); // Wait for 1+ items to be in queue
-  OS_Wait(&fifo_rd_mutex);
-  result = OSFifo[OSGetI];
-  OSGetI = (OSGetI + 1) % OSFIFOSIZE; // Success, update
-  OS_Signal(&fifo_rd_mutex);
+  //OS_Wait(&fifo_level); // Wait for something to be in queue
+  //OS_Wait(&fifo_mutex);
+	if(OSGetI<OSPutI){
+  result = OSFifo[OSGetI & (OSFIFOSIZE - 1)];
+  OSGetI++; // Success, update
+	}
+//  OS_Signal(&fifo_mutex);
   return result;
 }
 
@@ -664,32 +669,28 @@ long OS_Fifo_Size(void)
   return ((uint32_t)(OSPutI - OSGetI));
 }
 
-Sema4Type mailboxFull;
-Sema4Type mailboxMutex;
+Sema4Type mailKey;
 unsigned long mailBox;
 
 void OS_MailBox_Init(void)
 {
   mailBox = 0;
-  OS_InitSemaphore(&mailboxFull, 0);
-  OS_InitSemaphore(&mailboxMutex, 1);
+  OS_InitSemaphore(&mailKey, 1);
 }
 
 void OS_MailBox_Send(unsigned long data)
 {
-  OS_Wait(&mailboxMutex);
+  OS_Wait(&mailKey);
   mailBox = data;
-  OS_Signal(&mailboxFull);
-  OS_Signal(&mailboxMutex);
+  OS_Signal(&mailKey);
 }
 
 unsigned long OS_MailBox_Recv(void)
 {
   unsigned long data;
-  OS_Wait(&mailboxFull);
-  OS_Wait(&mailboxMutex);
+  OS_Wait(&mailKey);
   data = mailBox;
-  OS_Signal(&mailboxMutex);
+  OS_Signal(&mailKey);
   return data;
 }
 
