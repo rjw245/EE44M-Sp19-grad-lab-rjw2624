@@ -159,13 +159,14 @@ void OS_Wait(Sema4Type *semaPt)
   semaPt->Value--;
   if (semaPt->Value < 0)
   {
-#if PRIORITY_SCHED
-    choose_next_with_prio();
-#endif
+
     remove_tcb(cur_tcb, false);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+#if PRIORITY_SCHED
+    choose_next_with_prio();
+#endif
     ContextSwitch(true);
   }
   EndCritical(sr);
@@ -216,13 +217,14 @@ void OS_bWait(Sema4Type *semaPt)
   semaPt->Value--;
   if (semaPt->Value < 0)
   {
-#if PRIORITY_SCHED
-    choose_next_with_prio();
-#endif
     remove_tcb(cur_tcb, false);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+		
+#if PRIORITY_SCHED
+    choose_next_with_prio();
+#endif
     ContextSwitch(true);
   }
   EndCritical(sr);
@@ -273,9 +275,9 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
   if (tcb_list_head->next == tcb_list_head)
   {
     // One task in list
-    if (free_mem)
-      tcb_list_head->magic = 0; // Free this TCB, return to pool
-    tcb_list_head = 0;
+    //if (free_mem)
+     // tcb_list_head->magic = 0; // Free this TCB, return to pool
+    //tcb_list_head = 0;
 		EndCritical(sr);
     return;
   }
@@ -288,6 +290,7 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
       iter->next = tcb->next;
       if (free_mem)
         tcb->magic = 0; // Free this TCB, return to pool
+			tcb->next = 0;
 			EndCritical(sr);
       return;
     }
@@ -761,9 +764,7 @@ void pop()
 
   tmpinq = head->next;
   insert_tcb(head);
-#if PRIORITY_SCHED
-  choose_next_with_prio();
-#endif
+
   head->wake_time = 0;
   tcb_sleep_head = tmpinq;
   head = tmpinq;
@@ -773,6 +774,9 @@ void pop()
     TIMER3_TAILR_R = head->wake_time;
     TIMER3_CTL_R |= 0x1;
   }
+	#if PRIORITY_SCHED
+  choose_next_with_prio();
+#endif
   EndCritical(sr);
 }
 
