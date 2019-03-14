@@ -24,9 +24,9 @@
 PendSV_Handler
 	CPSID IF ; Disable interrupts
 
-	PUSH {R14}
+	PUSH {R0-R3,R14}
 	BL disableTimeget
-	POP {R14}
+	POP {R0-R3,R14}
 
     LDR R0, =cur_tcb ; RO <= &cur_tcb
     LDR R1, [R0]     ; R1 <= cur_tcb
@@ -55,9 +55,9 @@ Load_Ctx
     LDR SP, [R1]    ; SP <= cur_tcb->sp
     POP {R4-R11}
 	
-	PUSH {R14}
+	PUSH {R0-R3,R14}
 	BL enableTimeget
-	POP {R14}
+	POP {R0-R3,R14}
 	
 	CPSIE IF ; Enable interrupts
 	BX LR

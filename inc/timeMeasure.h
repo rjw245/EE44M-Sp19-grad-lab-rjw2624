@@ -11,7 +11,7 @@ void disableTimeget(void);
 
 void enableTimeget(void);
 
-float getDisablePercent(void);
+int getDisablePercent(void);
 
 
 

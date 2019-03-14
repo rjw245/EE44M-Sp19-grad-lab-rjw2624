@@ -51,14 +51,15 @@ static void remove_tcb(tcb_t *tcb, bool free_mem);
 #if PRIORITY_SCHED
 static void choose_next_with_prio(void)
 {
+  
   long sr = StartCritical();
-  if (cur_tcb->next->priority == tcb_list_head->priority)
+  if (cur_tcb->next->priority == tcb_list_head->next->priority)
   {
     next_tcb = cur_tcb->next;
   }
   else
   {
-    next_tcb = tcb_list_head;
+    next_tcb = tcb_list_head->next;
   }
 
   if (tcb_list_head == 0 || next_tcb == 0)
@@ -140,7 +141,8 @@ void OS_Init(void)
   TIMER3_TAPR_R = 0;          // prescale value for trigger
   TIMER3_TAILR_R = -1;        // start value for trigger
   TIMER3_IMR_R = 0x00000001;  // disable timer 3A time-out interrupt
-  TIMER3_CTL_R |= 0x0;        // disable timer 3A
+  TIMER3_CTL_R |= 1<<1;       // Stall timer 3 when CPU halted by debugger
+  TIMER3_CTL_R &= ~(1);       // disable timer 3A
 
   //Enable it when it needs
 
@@ -157,11 +159,13 @@ void OS_Init(void)
   WTIMER0_TAMR_R = 0x00000012; // configure for periodic mode, count up
   WTIMER0_TBPR_R = 0;          // prescale value for trigger
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
+  WTIMER0_CTL_R |= 1 << 1;     // Stall Wtimer0 on CPU debugger halt
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
+
 
   timeMeasureInit();
 
-  OS_AddThread(IdleTask, 128, 5);
+  OS_AddThread(IdleTask, 128, 255);
   Profiler_Init();
 }
 
@@ -174,17 +178,18 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value)
 void OS_Wait(Sema4Type *semaPt)
 {
 #if BLOCKING_SEMAS
+
   long sr = StartCritical();
   semaPt->Value--;
   if (semaPt->Value < 0)
   {
-#if PRIORITY_SCHED
-    choose_next_with_prio();
-#endif
     remove_tcb(cur_tcb, false);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+#if PRIORITY_SCHED
+    choose_next_with_prio();
+#endif
     ContextSwitch(true);
   }
   EndCritical(sr);
@@ -205,6 +210,7 @@ void OS_Wait(Sema4Type *semaPt)
 
 void OS_Signal(Sema4Type *semaPt)
 {
+
 #if BLOCKING_SEMAS
   long sr = StartCritical();
   semaPt->Value++;
@@ -237,13 +243,14 @@ void OS_bWait(Sema4Type *semaPt)
   semaPt->Value--;
   if (semaPt->Value < 0)
   {
-#if PRIORITY_SCHED
-    choose_next_with_prio();
-#endif
     remove_tcb(cur_tcb, false);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
+		
+#if PRIORITY_SCHED
+    choose_next_with_prio();
+#endif
     ContextSwitch(true);
   }
   EndCritical(sr);
@@ -319,17 +326,11 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
     // Until we wrap around to head
     if (iter->next == tcb)
     {
-      if(tcb == tcb_list_head)
-      {
-        tcb_list_head = tcb->next;
-      }
       iter->next = tcb->next;
       if (free_mem)
-      {
-        // Free this TCB, return to pool
-        tcb->magic = 0;
-      }
-      EndCritical(sr);
+        tcb->magic = 0; // Free this TCB, return to pool
+			tcb->next = 0;
+			EndCritical(sr);
       return;
     }
     iter = iter->next;
@@ -340,6 +341,7 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
 static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
   long sr = StartCritical();
+	new_tcb->next = 0;
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
@@ -347,33 +349,23 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   }
   else
   {
+		tcb_t *tmp = tcb_list_head->next;
+		tcb_t *prev = tcb_list_head;
 #if PRIORITY_SCHED
     // Maintain priority order
-    tcb_t *tmp = tcb_list_head;
-    if(tcb_list_head->priority > new_tcb->priority)
+    while (tmp != tcb_list_head && tmp->priority <= new_tcb->priority)
     {
-      new_tcb->next = tcb_list_head;
-      // Find node pointing to head, point it at new_tcb
-      while (tmp->next != tcb_list_head)
-      {
-        tmp = tmp->next;
-      }
-      tmp->next = new_tcb;
-      tcb_list_head = new_tcb;
+			prev = prev->next;
+      tmp = tmp->next;
     }
-    else{
-      while (tmp->next != tcb_list_head && tmp->next->priority <= new_tcb->priority)
-      {
-        tmp = tmp->next;
-      }
-      new_tcb->next = tmp->next;
-      tmp->next = new_tcb;
-    }
+    new_tcb->next = tmp;
+    prev->next = new_tcb;
 #else
     new_tcb->next = tcb_list_head->next;
     tcb_list_head->next = new_tcb;
 #endif
   }
+	
   EndCritical(sr);
 }
 
@@ -401,7 +393,7 @@ int OS_AddThread_priv(void (*task)(void),
     EndCritical(sr);
     return 0; // Fail
   }
-  if (priority > 5)
+  if (priority > 5 && task != IdleTask)
   {
     // Invalid priority
     EndCritical(sr);
@@ -588,6 +580,7 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
     WTIMER1_TBPR_R = 0;           // prescale value for trigger
     WTIMER1_TBILR_R = period - 1; // start value for trigger
     WTIMER1_IMR_R |= 1 << 8;      // enable Wtimer 1B time-out interrupt
+    WTIMER1_CTL_R |= 1 << 9;      // Stall Wtimer 1B on CPU debugger halt
     WTimer1BTask = task;
     WTimer1BTask_name = task_name;
 
@@ -607,11 +600,12 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
     WTIMER1_TAPR_R = 0;           // prescale value for trigger
     WTIMER1_TAILR_R = period - 1; // start value for trigger
     WTIMER1_IMR_R |= 1;           // enable Wtimer 1A time-out interrupt
+    WTIMER1_CTL_R |= 1 << 1;      // Stall Wtimer 1A on CPU debugger halt
     WTimer1ATask = task;
     WTimer1ATask_name = task_name;
 
     // Set up interrupt controller, interrupt 96
-    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFFFF1F) | (0 << 5);
+    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFFFF1F) | (priority << 5);
 
     // Kick off Wtimer
     WTIMER1_CTL_R |= 1; // enable Wtimer1A 32-b, periodic, no interrupts
@@ -797,6 +791,7 @@ void OS_Launch(unsigned long theTimeSlice)
 
   timeMeasurestart();
   ContextSwitch(false);
+  EnableInterrupts();
 }
 
 uint32_t peek_waketime(tcb_t *head)
@@ -823,18 +818,21 @@ void pop()
 
   tmpinq = head->next;
   insert_tcb(head);
-#if PRIORITY_SCHED
-  choose_next_with_prio();
-#endif
+
   head->wake_time = 0;
   tcb_sleep_head = tmpinq;
   head = tmpinq;
 
   if (head != 0)
   {
+    TIMER3_CTL_R &= ~(1); // disable timer 3
     TIMER3_TAILR_R = head->wake_time;
+    TIMER3_TAV_R = head->wake_time;
     TIMER3_CTL_R |= 0x1;
   }
+	#if PRIORITY_SCHED
+  choose_next_with_prio();
+#endif
   EndCritical(sr);
 }
 
@@ -842,35 +840,54 @@ void pushq(tcb_t *node)
 {
   // outside is already disinterrupted
   tcb_t *start = tcb_sleep_head;
+  TIMER3_CTL_R &= ~(1); // disable timer 3
+  uint32_t cur_timer3 = TIMER3_TAR_R;
   node->next = 0;
   if (tcb_sleep_head == 0)
   {
     TIMER3_TAILR_R = node->wake_time;
-    TIMER3_CTL_R |= 0x1;
+    TIMER3_TAV_R = node->wake_time;
     tcb_sleep_head = node;
   }
-  else if (node->wake_time < TIMER3_TAV_R)
+  else if (node->wake_time < cur_timer3)
   {
-    TIMER3_CTL_R &= ~(1); // disable timer 3A
     node->next = tcb_sleep_head;
     tcb_sleep_head = node;
-    node->next->wake_time = TIMER3_TAV_R;
+    node->next->wake_time = cur_timer3 - node->wake_time;
+    if(node->next->wake_time < 80)
+    {
+      node->next->wake_time = 80;
+    }
+    TIMER3_TAV_R = node->wake_time;
     TIMER3_TAILR_R = node->wake_time;
 
-    NVIC_UNPEND1_R = 1 << (35 - 32); // if before this statement end tick could end, then remove.
-
-    TIMER3_CTL_R |= 0x1; // enable timer 3A
+    // NVIC_UNPEND1_R = 1 << (35 - 32); // if before this statement end tick could end, then remove.
   }
   else
   {
-    while (start->next != 0 && start->next->wake_time < node->wake_time)
+    start->wake_time = cur_timer3; // Make up to date
+    node->wake_time -= start->wake_time;
+    while (start->next != 0 && start->next->wake_time <= node->wake_time)
     {
-      node->wake_time = node->wake_time - start->wake_time;
+      node->wake_time = node->wake_time - start->next->wake_time;
       start = start->next;
+    }
+    if(node->wake_time < 80)
+    {
+      node->wake_time = 80;
     }
     node->next = start->next;
     start->next = node;
+    if(node->next)
+    {
+      node->next->wake_time -= node->wake_time;
+      if(node->next->wake_time < 80)
+      {
+        node->next->wake_time = 80;
+      }
+    }
   }
+  TIMER3_CTL_R |= 0x1; // enable timer 3
 }
 
 void Timer3A_Handler()
@@ -906,19 +923,31 @@ void pop_sema(tcb_t **semahead)
 void push_semaq(tcb_t *node, tcb_t **semahead)
 {
   // outside is already disinterrupted && set node
-  tcb_t *start = *semahead;
+
+	
   node->next = 0;
   if (*semahead == 0)
   {
     *semahead = node;
   }
-  else
+  else if(node->priority < (*semahead)->priority)
+	{
+		tcb_t *tmp = *semahead;
+		*semahead = node;
+		node->next = tmp;
+	}
+	else
   {
-    while (start->next != 0 && start->next->priority <= node->priority)
+		tcb_t *prev = *semahead;
+		tcb_t *start = (*semahead)->next;
+				
+	
+    while (start != 0 && start->priority <= node->priority)
     {
+			prev = prev->next;
       start = start->next;
     }
-    node->next = start->next;
-    start->next = node;
+    prev->next = node;
+    node->next = start;
   }
 }

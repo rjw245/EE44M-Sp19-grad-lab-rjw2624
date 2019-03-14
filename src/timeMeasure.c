@@ -46,13 +46,13 @@ void enableTimeget(void)
 	}
 }
 
-float getDisablePercent(void)
+int getDisablePercent(void)
 {
 	if (start ){
 	unsigned long long cur = OS_Time();
 	unsigned long long diff = OS_TimeDifference(__startTime,cur);
 
-	return (float)__total_interupt_time / diff * 100;
+	return (int)__total_interupt_time * 100 / diff;
 	}
 	else 
 		return 0;
