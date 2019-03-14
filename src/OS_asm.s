@@ -18,9 +18,16 @@
 	EXTERN next_tcb
     EXTERN save_ctx_global
     EXTERN ticks_since_boot
+	EXTERN disableTimeget
+	EXTERN enableTimeget
 
 PendSV_Handler
 	CPSID IF ; Disable interrupts
+
+	PUSH {R14}
+	BL disableTimeget
+	POP {R14}
+
     LDR R0, =cur_tcb ; RO <= &cur_tcb
     LDR R1, [R0]     ; R1 <= cur_tcb
     ; Check if we should save context
@@ -47,6 +54,11 @@ Choose_Next_Task
 Load_Ctx
     LDR SP, [R1]    ; SP <= cur_tcb->sp
     POP {R4-R11}
+	
+	PUSH {R14}
+	BL enableTimeget
+	POP {R14}
+	
 	CPSIE IF ; Enable interrupts
 	BX LR
 

@@ -18,6 +18,8 @@
 #include "priorityqueue.h"
 #include "Switch.h"
 #include "ST7735.h"
+#include "profiler.h"
+#include "timeMeasure.h"
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
@@ -49,10 +51,23 @@ static void remove_tcb(tcb_t *tcb, bool free_mem);
 #if PRIORITY_SCHED
 static void choose_next_with_prio(void)
 {
+  
+  long sr = StartCritical();
   if (cur_tcb->next->priority == tcb_list_head->next->priority)
+  {
     next_tcb = cur_tcb->next;
+  }
   else
+  {
     next_tcb = tcb_list_head->next;
+  }
+
+  if (tcb_list_head == 0 || next_tcb == 0)
+  {
+    // Test point, effectively a conditional breakpoint:
+    volatile uint32_t breakpoint = 0;
+  }
+  EndCritical(sr);
 }
 #endif
 
@@ -60,6 +75,7 @@ static void ContextSwitch(bool save_ctx)
 {
   save_ctx_global = save_ctx;
   NVIC_INT_CTRL_R |= NVIC_INT_CTRL_PEND_SV;
+  Profiler_Event(EVENT_FGTH_START, cur_tcb->task_name);
 }
 
 unsigned int numTasks = 0;
@@ -111,7 +127,7 @@ static void TaskReturn(void)
 
 void OS_Init(void)
 {
-  DisableInterrupts();
+  FIRST_DisableInterrupts();
   // Activate PendSV interrupt with lowest priority
   NVIC_SYS_PRI3_R |= (7 << 21);
   // Activate Systick interrupt with 2nd lowest priority
@@ -143,7 +159,12 @@ void OS_Init(void)
   WTIMER0_TBPR_R = 0;          // prescale value for trigger
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
+
+
+  timeMeasureInit();
+
   OS_AddThread(IdleTask, 128, 255);
+  Profiler_Init();
 }
 
 void OS_InitSemaphore(Sema4Type *semaPt, long value)
@@ -159,7 +180,6 @@ void OS_Wait(Sema4Type *semaPt)
   semaPt->Value--;
   if (semaPt->Value < 0)
   {
-
     remove_tcb(cur_tcb, false);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
@@ -179,7 +199,7 @@ void OS_Wait(Sema4Type *semaPt)
   // or setting it with strex failed
   while (!(oldval > 0) || __strex(oldval - 1, &(semaPt->Value)) != 0)
   {
-   // OS_Suspend();
+    // OS_Suspend();
     oldval = __ldrex(&(semaPt->Value));
   }
 #endif
@@ -196,7 +216,9 @@ void OS_Signal(Sema4Type *semaPt)
     pop_sema(&semaPt->head);
 #if PRIORITY_SCHED
     if (need_ctx_switch)
+    {
       ContextSwitch(true);
+    }
 #endif
   }
   EndCritical(sr);
@@ -249,14 +271,18 @@ void OS_bSignal(Sema4Type *semaPt)
 #if BLOCKING_SEMAS
   long sr = StartCritical();
   if (semaPt->Value < 1)
+  {
     semaPt->Value++;
+  }
   if (semaPt->Value <= 0)
   {
     bool need_ctx_switch = (semaPt->head->priority < cur_tcb->priority);
     pop_sema(&semaPt->head);
 #if PRIORITY_SCHED
     if (need_ctx_switch)
+    {
       ContextSwitch(true);
+    }
 #endif
   }
   EndCritical(sr);
@@ -272,13 +298,22 @@ void OS_bSignal(Sema4Type *semaPt)
 static void remove_tcb(tcb_t *tcb, bool free_mem)
 {
   long sr = StartCritical();
+  if(tcb_list_head == 0)
+  {
+    // Empty list
+    EndCritical(sr);
+    return;
+  }
   if (tcb_list_head->next == tcb_list_head)
   {
     // One task in list
-    //if (free_mem)
-     // tcb_list_head->magic = 0; // Free this TCB, return to pool
-    //tcb_list_head = 0;
-		EndCritical(sr);
+    if (free_mem)
+    {
+      // Free this TCB, return to pool
+      tcb_list_head->magic = 0;
+    }
+    tcb_list_head = 0;
+    EndCritical(sr);
     return;
   }
   tcb_t *iter = tcb_list_head;
@@ -301,6 +336,7 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
 
 static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
+  long sr = StartCritical();
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
@@ -324,6 +360,7 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
     tcb_list_head->next = new_tcb;
 #endif
   }
+  EndCritical(sr);
 }
 
 #define MAX_TASKS (10)
@@ -334,9 +371,10 @@ static tcb_t tcb_pool[MAX_TASKS];
 // Stacks need to be dword aligned
 static long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
 
-int OS_AddThread(void (*task)(void),
-                 unsigned long stackSize,
-                 unsigned long priority)
+int OS_AddThread_priv(void (*task)(void),
+                      unsigned long stackSize,
+                      unsigned long priority,
+                      char *task_name)
 {
   unsigned long stackDWords = (stackSize / 8) + (stackSize % 8 == 0 ? 0 : 1); // Round up integer div
   tcb_t *tcb = 0;
@@ -413,6 +451,7 @@ int OS_AddThread(void (*task)(void),
   tcb->next = 0;
   tcb->magic = TCB_MAGIC; // Write magic to mark valid
   tcb->task = task;
+  tcb->task_name = task_name;
   insert_tcb(tcb);
   numTasks++;
   EndCritical(sr);
@@ -424,73 +463,69 @@ unsigned long OS_Id(void)
   return cur_tcb->id;
 }
 
-int numPeriodicTasks = 0;
-void (*WTimer1ATask)(void) = 0;
-void (*WTimer1BTask)(void) = 0;
-
 unsigned long MaxJitter = 0;
 
 void Jitter(void)
 {
-	ST7735_Message(1, 4, "Max Jitter 0.1us=", MaxJitter);
-	
+
+  ST7735_Message(1, 4, "Max Jitter 0.1us=", MaxJitter);
 }
 
-void JitterGet(unsigned long PERIOD,int timer)
+void JitterGet(unsigned long cur_time, unsigned long PERIOD, int timer)
 {
-  static unsigned long LastTime1=0; // time at previous ADC sample
-  static unsigned long thisTime1=0;        // time at current ADC sample
- static unsigned long LastTime2=0; // time at previous ADC sample
-  static unsigned long thisTime2=0;        // time at current ADC sample
+  static unsigned long LastTime1 = 0; // time at previous ADC sample
+  static unsigned long LastTime2 = 0; // time at previous ADC sample
 
+  long jitter; // time between measured and expected, in us
 
-  long jitter;                   // time between measured and expected, in us
-  
-	thisTime1 = OS_Time(); // current time, 12.5 ns
-  
-	static unsigned long  diff;
-	
-	if(timer ==1){
-		thisTime1 = OS_Time(); // current time, 12.5 ns
-		diff = OS_TimeDifference(LastTime1, thisTime1);
+  unsigned long *last_time;
+  unsigned long *histogram;
 
-	}
-	else{
-		thisTime2 = OS_Time(); // current time, 12.5 ns
-		diff = OS_TimeDifference(LastTime2, thisTime2);
-	}
-	
-  if (diff > PERIOD)
-      {
-        jitter = (diff - PERIOD + 4) / 8; // in 0.1 usec
-      }
-      else
-      {
-        jitter = (PERIOD - diff + 4) / 8; // in 0.1 usec
-      }
-      if (jitter > MaxJitter)
-      {
-        MaxJitter = jitter; // in usec
-      }                     // jitter should be 0
-      if (jitter >= JitterSize)
-      {
-        jitter = JITTERSIZE - 1;
-      }
-			
-		if(timer == 1){
-			JitterHistogram1[jitter]++;
-			    LastTime1 = thisTime1;
-		}
-		else
-		{
-			JitterHistogram2[jitter]++;
-			LastTime2 = thisTime2;
-		}
-    
+  if (timer == 1)
+  {
+    last_time = &LastTime1;
+    histogram = JitterHistogram1;
+  }
+  else
+  {
+    last_time = &LastTime2;
+    histogram = JitterHistogram2;
+  }
 
-	
+  unsigned long diff = OS_TimeDifference(*last_time, cur_time);
+
+  if (*last_time != 0)
+  {
+    if (diff > PERIOD)
+    {
+      jitter = (diff - PERIOD + 4) / 8; // in 0.1 usec
+    }
+    else
+    {
+      jitter = (PERIOD - diff + 4) / 8; // in 0.1 usec
+    }
+
+    if (jitter > MaxJitter)
+    {
+      MaxJitter = jitter; // in usec
+    }                     // jitter should be 0
+
+    if (jitter >= JitterSize)
+    {
+      jitter = JITTERSIZE - 1;
+    }
+
+    histogram[jitter]++;
+  }
+
+  *last_time = cur_time;
 }
 
+static int numPeriodicTasks = 0;
+static void (*WTimer1ATask)(void) = 0;
+static void (*WTimer1BTask)(void) = 0;
+static char *WTimer1ATask_name = 0;
+static char *WTimer1BTask_name = 0;
 
 void WideTimer1A_Handler(void)
 {
@@ -498,8 +533,10 @@ void WideTimer1A_Handler(void)
   NVIC_ST_CTRL_R &= ~1; // Stop systick
   if (WTimer1ATask)
   {
-		JitterGet(WTIMER1_TAILR_R,1);
+    JitterGet(OS_Time(), WTIMER1_TAILR_R, 1);
+    Profiler_Event(EVENT_PTH_START, WTimer1ATask_name);
     WTimer1ATask();
+    Profiler_Event(EVENT_PTH_END, WTimer1ATask_name);
   }
   NVIC_ST_CTRL_R |= 1; // Stop systick
 }
@@ -510,16 +547,19 @@ void WideTimer1B_Handler(void)
   NVIC_ST_CTRL_R &= ~1;   // Stop systick
   if (WTimer1BTask)
   {
-		JitterGet(WTIMER1_TBILR_R,2);
+    JitterGet(OS_Time(), WTIMER1_TBILR_R, 2);
+    Profiler_Event(EVENT_PTH_START, WTimer1BTask_name);
     WTimer1BTask();
+    Profiler_Event(EVENT_PTH_END, WTimer1BTask_name);
   }
   NVIC_ST_CTRL_R |= 1; // Stop systick
 }
 
-int OS_AddPeriodicThread(void (*task)(void),
-                         unsigned long period, unsigned long priority)
+int OS_AddPeriodicThread_priv(void (*task)(void),
+                              unsigned long period,
+                              unsigned long priority,
+                              char *task_name)
 {
- 
   long sr = StartCritical();
   if (numPeriodicTasks == 0)
   {
@@ -535,6 +575,7 @@ int OS_AddPeriodicThread(void (*task)(void),
     WTIMER1_TBILR_R = period - 1; // start value for trigger
     WTIMER1_IMR_R |= 1 << 8;      // enable Wtimer 1B time-out interrupt
     WTimer1BTask = task;
+    WTimer1BTask_name = task_name;
 
     // Set up interrupt controller, interrupt 97
     NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFF1FFF) | (priority << 13);
@@ -553,6 +594,7 @@ int OS_AddPeriodicThread(void (*task)(void),
     WTIMER1_TAILR_R = period - 1; // start value for trigger
     WTIMER1_IMR_R |= 1;           // enable Wtimer 1A time-out interrupt
     WTimer1ATask = task;
+    WTimer1ATask_name = task_name;
 
     // Set up interrupt controller, interrupt 96
     NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFFFF1F) | (priority << 5);
@@ -630,40 +672,39 @@ void OS_Fifo_Init(unsigned long size)
   long sr;
   sr = StartCritical(); // make atomic
   OSPutI = OSGetI = 0;  // Empty
-  //OS_InitSemaphore(&fifo_mutex, 1);
-  //OS_InitSemaphore(&fifo_level, 0);
+  OS_InitSemaphore(&fifo_wr_mutex, 1);
+  OS_InitSemaphore(&fifo_rd_mutex, 1);
+  OS_InitSemaphore(&fifo_level, 0);
   EndCritical(sr);
 }
 
 int OS_Fifo_Put(unsigned long data)
 {
   int ret = 0;
-  //OS_Wait(&fifo_mutex);
-  if ((OSPutI - OSGetI) & ~(OSFIFOSIZE - 1))
+  OS_Wait(&fifo_wr_mutex);
+  if ((OSPutI + 1) % OSFIFOSIZE == OSGetI)
   {
     ret = (0); // Failed, fifo full
   }
   else
   {
-    OSFifo[OSPutI & (OSFIFOSIZE - 1)] = data; // put
-    OSPutI++;                                 // Success, update
+    OSFifo[OSPutI] = data;              // put
+    OSPutI = (OSPutI + 1) % OSFIFOSIZE; // Success, update
     ret = (1);
-    //OS_Signal(&fifo_level); // Signal 1 more queue item
+    OS_Signal(&fifo_level); // Signal 1 more queue item
   }
- // OS_Signal(&fifo_mutex);
+  OS_Signal(&fifo_wr_mutex);
   return ret;
 }
 
 unsigned long OS_Fifo_Get(void)
 {
   unsigned long result = 0;
-  //OS_Wait(&fifo_level); // Wait for something to be in queue
-  //OS_Wait(&fifo_mutex);
-	if(OSGetI<OSPutI){
-  result = OSFifo[OSGetI & (OSFIFOSIZE - 1)];
-  OSGetI++; // Success, update
-	}
-//  OS_Signal(&fifo_mutex);
+  OS_Wait(&fifo_level); // Wait for 1+ items to be in queue
+  OS_Wait(&fifo_rd_mutex);
+  result = OSFifo[OSGetI];
+  OSGetI = (OSGetI + 1) % OSFIFOSIZE; // Success, update
+  OS_Signal(&fifo_rd_mutex);
   return result;
 }
 
@@ -672,28 +713,32 @@ long OS_Fifo_Size(void)
   return ((uint32_t)(OSPutI - OSGetI));
 }
 
-Sema4Type mailKey;
+Sema4Type mailboxFull;
+Sema4Type mailboxMutex;
 unsigned long mailBox;
 
 void OS_MailBox_Init(void)
 {
   mailBox = 0;
-  OS_InitSemaphore(&mailKey, 1);
+  OS_InitSemaphore(&mailboxFull, 0);
+  OS_InitSemaphore(&mailboxMutex, 1);
 }
 
 void OS_MailBox_Send(unsigned long data)
 {
-  OS_Wait(&mailKey);
+  OS_Wait(&mailboxMutex);
   mailBox = data;
-  OS_Signal(&mailKey);
+  OS_Signal(&mailboxFull);
+  OS_Signal(&mailboxMutex);
 }
 
 unsigned long OS_MailBox_Recv(void)
 {
   unsigned long data;
-  OS_Wait(&mailKey);
+  OS_Wait(&mailboxFull);
+  OS_Wait(&mailboxMutex);
   data = mailBox;
-  OS_Signal(&mailKey);
+  OS_Signal(&mailboxMutex);
   return data;
 }
 
@@ -736,6 +781,7 @@ void OS_Launch(unsigned long theTimeSlice)
   NVIC_EN3_R |= 1 << 0;        // Enable wtimer1A interrupt
   NVIC_EN3_R |= 1 << 1;        // Enable wtimerB interrupt
 
+  timeMeasurestart();
   ContextSwitch(false);
   EnableInterrupts();
 }

@@ -133,7 +133,6 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆儆??稚</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -176,9 +175,9 @@
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>87</LineNumber>
+          <LineNumber>453</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>7244</Address>
+          <Address>3550</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -187,14 +186,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\src\OS.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\lab2\src/OS.c\87</Expression>
+          <Expression>\\lab2\src/OS.c\453</Expression>
         </Bp>
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>628</LineNumber>
+          <LineNumber>495</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>9964</Address>
+          <Address>8330</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -203,23 +202,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>.\src\OS.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\lab2\src/OS.c\628</Expression>
-        </Bp>
-        <Bp>
-          <Number>3</Number>
-          <Type>0</Type>
-          <LineNumber>695</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>10044</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\src\OS.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\lab2\src/OS.c\695</Expression>
+          <Expression>\\lab2\src/OS.c\495</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -382,7 +365,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>267</TopLine>
+      <TopLine>272</TopLine>
       <CurrentLine>277</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\startup.s</PathWithFileName>
@@ -414,7 +397,7 @@
       <Focus>0</Focus>
       <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
+      <TopLine>7</TopLine>
       <CurrentLine>1</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\UART.c</PathWithFileName>
@@ -444,10 +427,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>33</ColumnNumber>
+      <ColumnNumber>10</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>19</TopLine>
-      <CurrentLine>27</CurrentLine>
+      <TopLine>457</TopLine>
+      <CurrentLine>465</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\OS.c</PathWithFileName>
       <FilenameWithoutPath>OS.c</FilenameWithoutPath>
@@ -540,10 +523,10 @@
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <Focus>0</Focus>
-      <ColumnNumber>3</ColumnNumber>
+      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>870</TopLine>
-      <CurrentLine>897</CurrentLine>
+      <TopLine>868</TopLine>
+      <CurrentLine>908</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>.\src\Lab3.c</PathWithFileName>
       <FilenameWithoutPath>Lab3.c</FilenameWithoutPath>

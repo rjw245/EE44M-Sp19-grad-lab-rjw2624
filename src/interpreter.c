@@ -9,6 +9,8 @@
 #include "tm4c123gh6pm.h"
 #include "ST7735.h"
 #include "misc_macros.h"
+#include "profiler.h"
+#include "timeMeasure.h"
 
 #define MAX_LINE_LENGTH (128)
 
@@ -60,6 +62,19 @@ void interpreter_task(void)
   }
 }
 
+static void print_event(const event_t* event)
+{
+    char event_str[80];
+    char *event_types[EVENT_NUM_TYPES] = {
+      [EVENT_FGTH_START] = "FG START",
+      [EVENT_PTH_START] = "PT START",
+      [EVENT_PTH_END] = "PT END",
+    };
+    sprintf(event_str, "Name: %s  Time: %llu cycles  Type: %s\r\n",
+            event->name, event->timestamp, event_types[event->type]);
+    UART_OutString(event_str);
+}
+
 void interpreter_cmd(char *cmd_str)
 {
   char *cmd, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
@@ -92,5 +107,24 @@ void interpreter_cmd(char *cmd_str)
     char time[64];
     sprintf(time, "Time: %llu ms\r\n", OS_Time()/TIME_1MS);
     UART_OutString(time);
+  }
+  else if (strcmp(cmd, "log") == 0)
+  {
+    Profiler_Foreach(print_event);
+  }
+	
+	else if (strcmp(cmd, "critical") == 0)
+  {
+		char time[64];
+    int res = getDisablePercent();
+    sprintf(time, "critical time: %d percent\r\n", res);
+		UART_OutString(time);
+  }
+	
+  else if (strcmp(cmd, "clear") == 0)
+  {
+    Profiler_Clear();
+	  timeMeasureInit();
+	  timeMeasurestart();
   }
 }
