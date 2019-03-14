@@ -856,6 +856,8 @@ int Testmain6(void)
   OS_Init(); // initialize, disable interrupts
   delay = add(3, 4);
   PortE_Init();
+  PLL_Init(Bus80MHz);
+	UART_Init();
   SignalCount1 = 0;                                            // number of times s is signaled
   SignalCount2 = 0;                                            // number of times s is signaled
   SignalCount3 = 0;                                            // number of times s is signaled
@@ -906,5 +908,5 @@ int Testmain7(void)
 
 int main(void)
 {
-	return realmain();
+	return Testmain6();
 }

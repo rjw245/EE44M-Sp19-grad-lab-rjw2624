@@ -516,7 +516,7 @@ void WideTimer1B_Handler(void)
 int OS_AddPeriodicThread(void (*task)(void),
                          unsigned long period, unsigned long priority)
 {
-  priority = 0;
+ 
   long sr = StartCritical();
   if (numPeriodicTasks == 0)
   {
@@ -534,7 +534,7 @@ int OS_AddPeriodicThread(void (*task)(void),
     WTimer1BTask = task;
 
     // Set up interrupt controller, interrupt 97
-    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFF1FFF) | (0 << 13);
+    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFF1FFF) | (priority << 13);
 
     // Kick off Wtimer
     WTIMER1_CTL_R |= 1 << 8; // enable Wtimer1B 32-b, periodic, no interrupts
@@ -552,7 +552,7 @@ int OS_AddPeriodicThread(void (*task)(void),
     WTimer1ATask = task;
 
     // Set up interrupt controller, interrupt 96
-    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFFFF1F) | (0 << 5);
+    NVIC_PRI24_R = (NVIC_PRI24_R & 0xFFFFFF1F) | (priority << 5);
 
     // Kick off Wtimer
     WTIMER1_CTL_R |= 1; // enable Wtimer1A 32-b, periodic, no interrupts
