@@ -141,7 +141,8 @@ void OS_Init(void)
   TIMER3_TAPR_R = 0;          // prescale value for trigger
   TIMER3_TAILR_R = -1;        // start value for trigger
   TIMER3_IMR_R = 0x00000001;  // disable timer 3A time-out interrupt
-  TIMER3_CTL_R |= 0x0;        // disable timer 3A
+  TIMER3_CTL_R |= 1<<1;       // Stall timer 3 when CPU halted by debugger
+  TIMER3_CTL_R &= ~(1);       // disable timer 3A
 
   //Enable it when it needs
 
@@ -158,6 +159,7 @@ void OS_Init(void)
   WTIMER0_TAMR_R = 0x00000012; // configure for periodic mode, count up
   WTIMER0_TBPR_R = 0;          // prescale value for trigger
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
+  WTIMER0_CTL_R |= 1 << 1;     // Stall Wtimer0 on CPU debugger halt
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
 
 
@@ -574,6 +576,7 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
     WTIMER1_TBPR_R = 0;           // prescale value for trigger
     WTIMER1_TBILR_R = period - 1; // start value for trigger
     WTIMER1_IMR_R |= 1 << 8;      // enable Wtimer 1B time-out interrupt
+    WTIMER1_CTL_R |= 1 << 9;      // Stall Wtimer 1B on CPU debugger halt
     WTimer1BTask = task;
     WTimer1BTask_name = task_name;
 
@@ -593,6 +596,7 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
     WTIMER1_TAPR_R = 0;           // prescale value for trigger
     WTIMER1_TAILR_R = period - 1; // start value for trigger
     WTIMER1_IMR_R |= 1;           // enable Wtimer 1A time-out interrupt
+    WTIMER1_CTL_R |= 1 << 1;      // Stall Wtimer 1A on CPU debugger halt
     WTimer1ATask = task;
     WTimer1ATask_name = task_name;
 
@@ -817,7 +821,9 @@ void pop()
 
   if (head != 0)
   {
+    TIMER3_CTL_R &= ~(1); // disable timer 3
     TIMER3_TAILR_R = head->wake_time;
+    TIMER3_TAV_R = head->wake_time;
     TIMER3_CTL_R |= 0x1;
   }
 	#if PRIORITY_SCHED
@@ -830,35 +836,54 @@ void pushq(tcb_t *node)
 {
   // outside is already disinterrupted
   tcb_t *start = tcb_sleep_head;
+  TIMER3_CTL_R &= ~(1); // disable timer 3
+  uint32_t cur_timer3 = TIMER3_TAR_R;
   node->next = 0;
   if (tcb_sleep_head == 0)
   {
     TIMER3_TAILR_R = node->wake_time;
-    TIMER3_CTL_R |= 0x1;
+    TIMER3_TAV_R = node->wake_time;
     tcb_sleep_head = node;
   }
-  else if (node->wake_time < TIMER3_TAV_R)
+  else if (node->wake_time < cur_timer3)
   {
-    TIMER3_CTL_R &= ~(1); // disable timer 3A
     node->next = tcb_sleep_head;
     tcb_sleep_head = node;
-    node->next->wake_time = TIMER3_TAV_R;
+    node->next->wake_time = cur_timer3 - node->wake_time;
+    if(node->next->wake_time < 80)
+    {
+      node->next->wake_time = 80;
+    }
+    TIMER3_TAV_R = node->wake_time;
     TIMER3_TAILR_R = node->wake_time;
 
-    NVIC_UNPEND1_R = 1 << (35 - 32); // if before this statement end tick could end, then remove.
-
-    TIMER3_CTL_R |= 0x1; // enable timer 3A
+    // NVIC_UNPEND1_R = 1 << (35 - 32); // if before this statement end tick could end, then remove.
   }
   else
   {
-    while (start->next != 0 && start->next->wake_time < node->wake_time)
+    start->wake_time = cur_timer3; // Make up to date
+    node->wake_time -= start->wake_time;
+    while (start->next != 0 && start->next->wake_time <= node->wake_time)
     {
-      node->wake_time = node->wake_time - start->wake_time;
+      node->wake_time = node->wake_time - start->next->wake_time;
       start = start->next;
+    }
+    if(node->wake_time < 80)
+    {
+      node->wake_time = 80;
     }
     node->next = start->next;
     start->next = node;
+    if(node->next)
+    {
+      node->next->wake_time -= node->wake_time;
+      if(node->next->wake_time < 80)
+      {
+        node->next->wake_time = 80;
+      }
+    }
   }
+  TIMER3_CTL_R |= 0x1; // enable timer 3
 }
 
 void Timer3A_Handler()

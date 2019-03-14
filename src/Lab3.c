@@ -443,6 +443,7 @@ void Thread1b(void)
   {
     PE0 ^= 0x01; // heartbeat
     Count1++;
+    OS_Sleep(10);
   }
 }
 void Thread2b(void)
@@ -452,6 +453,7 @@ void Thread2b(void)
   {
     PE1 ^= 0x02; // heartbeat
     Count2++;
+    OS_Sleep(20);
   }
 }
 void Thread3b(void)
@@ -461,6 +463,7 @@ void Thread3b(void)
   {
     PE2 ^= 0x04; // heartbeat
     Count3++;
+    OS_Sleep(30);
   }
 }
 int Testmain2(void)
@@ -469,8 +472,8 @@ int Testmain2(void)
   PortE_Init(); // profile user threads
   NumCreated = 0;
   NumCreated += OS_AddThread(Thread1b, 128, 1);
-  NumCreated += OS_AddThread(Thread2b, 128, 2);
-  NumCreated += OS_AddThread(Thread3b, 128, 3);
+  NumCreated += OS_AddThread(Thread2b, 128, 1);
+  NumCreated += OS_AddThread(Thread3b, 128, 1);
   // Count1 Count2 Count3 should be equal on average
   // counts are larger than testmain1
 
@@ -910,5 +913,5 @@ int Testmain7(void)
 
 int main(void)
 {
-	return Testmain8();
+	return Testmain2();
 }
