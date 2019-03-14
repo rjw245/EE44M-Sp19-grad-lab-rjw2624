@@ -176,13 +176,35 @@ void OS_InitSemaphore(Sema4Type *semaPt, long value)
 void OS_Wait(Sema4Type *semaPt)
 {
 #if BLOCKING_SEMAS
+
   long sr = StartCritical();
   semaPt->Value--;
   if (semaPt->Value < 0)
   {
+				if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
     remove_tcb(cur_tcb, false);
+			if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
+			if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
 #if PRIORITY_SCHED
     choose_next_with_prio();
@@ -207,13 +229,35 @@ void OS_Wait(Sema4Type *semaPt)
 
 void OS_Signal(Sema4Type *semaPt)
 {
+
 #if BLOCKING_SEMAS
   long sr = StartCritical();
+			if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
   semaPt->Value++;
   if (semaPt->Value <= 0)
   {
     bool need_ctx_switch = (semaPt->head->priority < cur_tcb->priority);
+				if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
     pop_sema(&semaPt->head);
+			if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
 #if PRIORITY_SCHED
     if (need_ctx_switch)
     {
@@ -317,7 +361,18 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
     return;
   }
   tcb_t *iter = tcb_list_head;
-  do
+	
+	
+	if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
+
+
+	do
   {
     // Until we wrap around to head
     if (iter->next == tcb)
@@ -325,7 +380,13 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
       iter->next = tcb->next;
       if (free_mem)
         tcb->magic = 0; // Free this TCB, return to pool
+			
+	if((tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next || tcb_list_head->next->next->next == tcb_list_head->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
 			tcb->next = 0;
+
 			EndCritical(sr);
       return;
     }
@@ -336,7 +397,18 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
 
 static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
+		
+
+
   long sr = StartCritical();
+	new_tcb->next = 0;
+	if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
@@ -344,10 +416,10 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   }
   else
   {
+		tcb_t *tmp = tcb_list_head->next;
+		tcb_t *prev = tcb_list_head;
 #if PRIORITY_SCHED
     // Maintain priority order
-    tcb_t *tmp = tcb_list_head->next;
-		tcb_t *prev = tcb_list_head;
     while (tmp != tcb_list_head && tmp->priority <= new_tcb->priority)
     {
 			prev = prev->next;
@@ -358,8 +430,16 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
 #else
     new_tcb->next = tcb_list_head->next;
     tcb_list_head->next = new_tcb;
+		if((tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
 #endif
   }
+	
   EndCritical(sr);
 }
 
@@ -820,6 +900,15 @@ void pop()
     TIMER3_TAILR_R = head->wake_time;
     TIMER3_CTL_R |= 0x1;
   }
+	
+		if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
+	
 	#if PRIORITY_SCHED
   choose_next_with_prio();
 #endif
@@ -859,6 +948,14 @@ void pushq(tcb_t *node)
     node->next = start->next;
     start->next = node;
   }
+	
+			if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
 }
 
 void Timer3A_Handler()
@@ -878,6 +975,14 @@ void pop_sema(tcb_t **semahead)
     EndCritical(sr);
     return;
   }
+	
+		if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
 
   next_in_wait = head->next;
   insert_tcb(head);
@@ -888,25 +993,55 @@ void pop_sema(tcb_t **semahead)
   choose_next_with_prio();
 #endif
   *semahead = next_in_wait;
+	
+			if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
+	
   EndCritical(sr);
 }
 
 void push_semaq(tcb_t *node, tcb_t **semahead)
 {
   // outside is already disinterrupted && set node
-  tcb_t *start = *semahead;
+
+	
   node->next = 0;
   if (*semahead == 0)
   {
     *semahead = node;
   }
-  else
+  else if(node->priority < (*semahead)->priority)
+	{
+		tcb_t *tmp = *semahead;
+		*semahead = node;
+		node->next = tmp;
+	}
+	else
   {
-    while (start->next != 0 && start->next->priority <= node->priority)
+		tcb_t *prev = *semahead;
+		tcb_t *start = (*semahead)->next;
+				
+	
+    while (start != 0 && start->priority <= node->priority)
     {
+			prev = prev->next;
       start = start->next;
     }
-    node->next = start->next;
-    start->next = node;
+    prev->next = node;
+    node->next = start;
   }
+	
+	
+			if(tcb_list_head!=0 && (tcb_list_head->next == tcb_list_head->next->next || tcb_list_head->next->next == tcb_list_head->next->next->next ||
+		tcb_list_head->next->next->next == tcb_list_head->next->next->next->next
+	|| tcb_list_head->next->next->next->next == tcb_list_head->next->next->next->next->next
+	|| tcb_list_head->next->next->next->next->next == tcb_list_head->next->next->next->next->next->next) && tcb_list_head != tcb_list_head->next)
+	{
+		while(1);
+	} 
 }
