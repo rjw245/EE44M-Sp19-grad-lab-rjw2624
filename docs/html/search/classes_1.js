@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['sema4',['Sema4',['../structSema4.html',1,'']]]
+  ['event_5ft',['event_t',['../structevent__t.html',1,'']]]
 ];

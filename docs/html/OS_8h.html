@@ -140,6 +140,10 @@ Macros</h2></td></tr>
 <tr class="memitem:a0fb8aa2f0ea0a6494f1639dd97087013"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fb8aa2f0ea0a6494f1639dd97087013"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TCB_MAGIC</b>&#160;&#160;&#160;(0x900d900d)</td></tr>
 <tr class="separator:a0fb8aa2f0ea0a6494f1639dd97087013"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accb79b9446dd2b953a1fb8437c5f6e15"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#accb79b9446dd2b953a1fb8437c5f6e15">OS_AddThread</a>(task,  stackSize,  priority)&#160;&#160;&#160;OS_AddThread_priv(task, stackSize, priority, #task)</td></tr>
+<tr class="separator:accb79b9446dd2b953a1fb8437c5f6e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf56561acbee98b34e8c42ff6b147255"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#adf56561acbee98b34e8c42ff6b147255">OS_AddPeriodicThread</a>(task,  period,  priority)&#160;&#160;&#160;OS_AddPeriodicThread_priv(task, period, priority, #task)</td></tr>
+<tr class="separator:adf56561acbee98b34e8c42ff6b147255"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -164,12 +168,14 @@ Functions</h2></td></tr>
 <tr class="separator:a3f127f7a40ffd3e43b7b0f4c8b7f30ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacf0c377b570fc63b103c57e0fbc7acd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#aacf0c377b570fc63b103c57e0fbc7acd">OS_bSignal</a> (<a class="el" href="structSema4.html">Sema4Type</a> *semaPt)</td></tr>
 <tr class="separator:aacf0c377b570fc63b103c57e0fbc7acd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4de0f2404bd5b73fc9cf09c0a0b868ee"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a4de0f2404bd5b73fc9cf09c0a0b868ee">OS_AddThread</a> (void(*task)(void), unsigned long stackSize, unsigned long priority)</td></tr>
-<tr class="separator:a4de0f2404bd5b73fc9cf09c0a0b868ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66e5f5aba3fe61381d37e7ffb32b36e6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66e5f5aba3fe61381d37e7ffb32b36e6"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddThread_priv</b> (void(*task)(void), unsigned long stackSize, unsigned long priority, char *task_name)</td></tr>
+<tr class="separator:a66e5f5aba3fe61381d37e7ffb32b36e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc21b8aab03cbb1611186ca3ac9123d8"><td class="memItemLeft" align="right" valign="top">unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#adc21b8aab03cbb1611186ca3ac9123d8">OS_Id</a> (void)</td></tr>
 <tr class="separator:adc21b8aab03cbb1611186ca3ac9123d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a00d60b873633ca10b91cfa41d44e7d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a3a00d60b873633ca10b91cfa41d44e7d">OS_AddPeriodicThread</a> (void(*task)(void), unsigned long period, unsigned long priority)</td></tr>
-<tr class="separator:a3a00d60b873633ca10b91cfa41d44e7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21ee017683a4a2b593d5497a27addac0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a21ee017683a4a2b593d5497a27addac0"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddPeriodicThread_priv</b> (void(*task)(void), unsigned long period, unsigned long priority, char *task_name)</td></tr>
+<tr class="separator:a21ee017683a4a2b593d5497a27addac0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c387e683842fc4f9f846729a60186da"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a5c387e683842fc4f9f846729a60186da">OS_AddSW1Task</a> (void(*task)(void), unsigned long priority)</td></tr>
 <tr class="separator:a5c387e683842fc4f9f846729a60186da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a508ed7f6202df8a9e500994ad4399784"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a508ed7f6202df8a9e500994ad4399784">OS_AddSW2Task</a> (void(*task)(void), unsigned long priority)</td></tr>
@@ -222,33 +228,33 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>EnableInterrupts</b> 
 <p>RTOS kernel capable of round-robin scheduling, up to 2 low-jitter periodic tasks.</p>
 <p>Reserves WTIMER1A and B for periodic task scheduling. Reserves SysTick timer for round-robin scheduling. Reserves WTIMER0 as a 64-bit time source.</p>
 <p>Interface by Jonathan W. Valvano 2/20/17, <a href="#" onclick="location.href='mai'+'lto:'+'val'+'va'+'no@'+'ma'+'il.'+'ut'+'exa'+'s.'+'edu'; return false;">valva<span style="display: none;">.nosp@m.</span>no@m<span style="display: none;">.nosp@m.</span>ail.u<span style="display: none;">.nosp@m.</span>texa<span style="display: none;">.nosp@m.</span>s.edu</a> Implementation by Riley Wood and Jeageun Jung </p><dl class="section author"><dt>Author</dt><dd>Riley Wood and Jeageun Jung </dd></dl>
-</div><h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a3a00d60b873633ca10b91cfa41d44e7d"></a>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="adf56561acbee98b34e8c42ff6b147255"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int OS_AddPeriodicThread </td>
+          <td class="memname">#define OS_AddPeriodicThread</td>
           <td>(</td>
-          <td class="paramtype">void(*)(void)&#160;</td>
-          <td class="paramname"><em>task</em>, </td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">task, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">unsigned long&#160;</td>
-          <td class="paramname"><em>period</em>, </td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">period, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">unsigned long&#160;</td>
-          <td class="paramname"><em>priority</em>&#160;</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">priority&#160;</td>
         </tr>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td>
+          <td></td><td>&#160;&#160;&#160;OS_AddPeriodicThread_priv(task, period, priority, #task)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -264,6 +270,48 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>EnableInterrupts</b> 
 
 </div>
 </div>
+<a class="anchor" id="accb79b9446dd2b953a1fb8437c5f6e15"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define OS_AddThread</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">task, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">stackSize, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">priority&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;OS_AddThread_priv(task, stackSize, priority, #task)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>add a foregound thread to the scheduler stack size must be divisable by 8 (aligned to double word boundary) In Lab 2, you can ignore both the stackSize and priority fields In Lab 3, you can ignore the stackSize fields </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">task</td><td>Task function </td></tr>
+    <tr><td class="paramname">stackSize</td><td>Size of the stack in bytes. Should be divisible by 8 </td></tr>
+    <tr><td class="paramname">priority</td><td>Priority of the task. 0 is highest, 5 is lowest. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>1 if successful, 0 if this thread can not be added </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="a5c387e683842fc4f9f846729a60186da"></a>
 <div class="memitem">
 <div class="memproto">
@@ -329,47 +377,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>EnableInterrupts</b> 
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 if successful, 0 if this thread can not be added It is assumed user task will run to completion and return This task can not spin block loop sleep or kill This task can call issue OS_Signal, it can call OS_AddThread This task does not have a Thread ID In lab 2, this function can be ignored In lab 3, this command will be called will be called 0 or 1 times In lab 3, there will be up to four background threads, and this priority field determines the relative priority of these four threads </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a4de0f2404bd5b73fc9cf09c0a0b868ee"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int OS_AddThread </td>
-          <td>(</td>
-          <td class="paramtype">void(*)(void)&#160;</td>
-          <td class="paramname"><em>task</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned long&#160;</td>
-          <td class="paramname"><em>stackSize</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">unsigned long&#160;</td>
-          <td class="paramname"><em>priority</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>add a foregound thread to the scheduler stack size must be divisable by 8 (aligned to double word boundary) In Lab 2, you can ignore both the stackSize and priority fields In Lab 3, you can ignore the stackSize fields </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">task</td><td>Task function </td></tr>
-    <tr><td class="paramname">stackSize</td><td>Size of the stack in bytes. Should be divisible by 8 </td></tr>
-    <tr><td class="paramname">priority</td><td>Priority of the task. 0 is highest, 5 is lowest. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>1 if successful, 0 if this thread can not be added </dd></dl>
 
 </div>
 </div>

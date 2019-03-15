@@ -47,6 +47,10 @@ struct \hyperlink{structSema4}{Sema4}
 \item 
 \#define {\bfseries T\+C\+B\+\_\+\+M\+A\+G\+IC}~(0x900d900d)\hypertarget{OS_8h_a0fb8aa2f0ea0a6494f1639dd97087013}{}\label{OS_8h_a0fb8aa2f0ea0a6494f1639dd97087013}
 
+\item 
+\#define \hyperlink{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}{O\+S\+\_\+\+Add\+Thread}(task,  stack\+Size,  priority)~O\+S\+\_\+\+Add\+Thread\+\_\+priv(task, stack\+Size, priority, \#task)
+\item 
+\#define \hyperlink{OS_8h_adf56561acbee98b34e8c42ff6b147255}{O\+S\+\_\+\+Add\+Periodic\+Thread}(task,  period,  priority)~O\+S\+\_\+\+Add\+Periodic\+Thread\+\_\+priv(task, period, priority, \#task)
 \end{DoxyCompactItemize}
 \subsection*{Typedefs}
 \begin{DoxyCompactItemize}
@@ -72,11 +76,13 @@ void \hyperlink{OS_8h_a3f127f7a40ffd3e43b7b0f4c8b7f30ff}{O\+S\+\_\+b\+Wait} (\hy
 \item 
 void \hyperlink{OS_8h_aacf0c377b570fc63b103c57e0fbc7acd}{O\+S\+\_\+b\+Signal} (\hyperlink{structSema4}{Sema4\+Type} $\ast$sema\+Pt)
 \item 
-int \hyperlink{OS_8h_a4de0f2404bd5b73fc9cf09c0a0b868ee}{O\+S\+\_\+\+Add\+Thread} (void($\ast$task)(void), unsigned long stack\+Size, unsigned long priority)
+int {\bfseries O\+S\+\_\+\+Add\+Thread\+\_\+priv} (void($\ast$task)(void), unsigned long stack\+Size, unsigned long priority, char $\ast$task\+\_\+name)\hypertarget{OS_8h_a66e5f5aba3fe61381d37e7ffb32b36e6}{}\label{OS_8h_a66e5f5aba3fe61381d37e7ffb32b36e6}
+
 \item 
 unsigned long \hyperlink{OS_8h_adc21b8aab03cbb1611186ca3ac9123d8}{O\+S\+\_\+\+Id} (void)
 \item 
-int \hyperlink{OS_8h_a3a00d60b873633ca10b91cfa41d44e7d}{O\+S\+\_\+\+Add\+Periodic\+Thread} (void($\ast$task)(void), unsigned long period, unsigned long priority)
+int {\bfseries O\+S\+\_\+\+Add\+Periodic\+Thread\+\_\+priv} (void($\ast$task)(void), unsigned long period, unsigned long priority, char $\ast$task\+\_\+name)\hypertarget{OS_8h_a21ee017683a4a2b593d5497a27addac0}{}\label{OS_8h_a21ee017683a4a2b593d5497a27addac0}
+
 \item 
 int \hyperlink{OS_8h_a5c387e683842fc4f9f846729a60186da}{O\+S\+\_\+\+Add\+S\+W1\+Task} (void($\ast$task)(void), unsigned long priority)
 \item 
@@ -138,16 +144,16 @@ Riley Wood and Jeageun Jung
 \end{DoxyAuthor}
 
 
-\subsection{Function Documentation}
+\subsection{Macro Definition Documentation}
 \index{O\+S.\+h@{O\+S.\+h}!O\+S\+\_\+\+Add\+Periodic\+Thread@{O\+S\+\_\+\+Add\+Periodic\+Thread}}
 \index{O\+S\+\_\+\+Add\+Periodic\+Thread@{O\+S\+\_\+\+Add\+Periodic\+Thread}!O\+S.\+h@{O\+S.\+h}}
-\subsubsection[{\texorpdfstring{O\+S\+\_\+\+Add\+Periodic\+Thread(void($\ast$task)(void), unsigned long period, unsigned long priority)}{OS_AddPeriodicThread(void(*task)(void), unsigned long period, unsigned long priority)}}]{\setlength{\rightskip}{0pt plus 5cm}int O\+S\+\_\+\+Add\+Periodic\+Thread (
+\subsubsection[{\texorpdfstring{O\+S\+\_\+\+Add\+Periodic\+Thread}{OS_AddPeriodicThread}}]{\setlength{\rightskip}{0pt plus 5cm}\#define O\+S\+\_\+\+Add\+Periodic\+Thread(
 \begin{DoxyParamCaption}
-\item[{void($\ast$)(void)}]{task, }
-\item[{unsigned long}]{period, }
-\item[{unsigned long}]{priority}
+\item[{}]{task, }
+\item[{}]{period, }
+\item[{}]{priority}
 \end{DoxyParamCaption}
-)}\hypertarget{OS_8h_a3a00d60b873633ca10b91cfa41d44e7d}{}\label{OS_8h_a3a00d60b873633ca10b91cfa41d44e7d}
+)~O\+S\+\_\+\+Add\+Periodic\+Thread\+\_\+priv(task, period, priority, \#task)}\hypertarget{OS_8h_adf56561acbee98b34e8c42ff6b147255}{}\label{OS_8h_adf56561acbee98b34e8c42ff6b147255}
 Add a background periodic task. Typically this function receives the highest priority You are free to select the time resolution for this function It is assumed that the user task will run to completion and return This task can not spin, block, loop, sleep, or kill This task can call O\+S\+\_\+\+Signal O\+S\+\_\+b\+Signal O\+S\+\_\+\+Add\+Thread This task does not have a Thread ID In lab 2, this command will be called 0 or 1 times In lab 2, the priority field can be ignored In lab 3, this command will be called 0 1 or 2 times In lab 3, there will be up to four background threads, and this priority field determines the relative priority of these four threads 
 \begin{DoxyParams}{Parameters}
 {\em pointer} & to a void/void background function \\
@@ -160,6 +166,30 @@ Add a background periodic task. Typically this function receives the highest pri
 \begin{DoxyReturn}{Returns}
 1 if successful, 0 if this thread can not be added 
 \end{DoxyReturn}
+\index{O\+S.\+h@{O\+S.\+h}!O\+S\+\_\+\+Add\+Thread@{O\+S\+\_\+\+Add\+Thread}}
+\index{O\+S\+\_\+\+Add\+Thread@{O\+S\+\_\+\+Add\+Thread}!O\+S.\+h@{O\+S.\+h}}
+\subsubsection[{\texorpdfstring{O\+S\+\_\+\+Add\+Thread}{OS_AddThread}}]{\setlength{\rightskip}{0pt plus 5cm}\#define O\+S\+\_\+\+Add\+Thread(
+\begin{DoxyParamCaption}
+\item[{}]{task, }
+\item[{}]{stack\+Size, }
+\item[{}]{priority}
+\end{DoxyParamCaption}
+)~O\+S\+\_\+\+Add\+Thread\+\_\+priv(task, stack\+Size, priority, \#task)}\hypertarget{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}{}\label{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}
+add a foregound thread to the scheduler stack size must be divisable by 8 (aligned to double word boundary) In Lab 2, you can ignore both the stack\+Size and priority fields In Lab 3, you can ignore the stack\+Size fields 
+\begin{DoxyParams}{Parameters}
+{\em task} & Task function \\
+\hline
+{\em stack\+Size} & Size of the stack in bytes. Should be divisible by 8 \\
+\hline
+{\em priority} & Priority of the task. 0 is highest, 5 is lowest. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 if successful, 0 if this thread can not be added 
+\end{DoxyReturn}
+
+
+\subsection{Function Documentation}
 \index{O\+S.\+h@{O\+S.\+h}!O\+S\+\_\+\+Add\+S\+W1\+Task@{O\+S\+\_\+\+Add\+S\+W1\+Task}}
 \index{O\+S\+\_\+\+Add\+S\+W1\+Task@{O\+S\+\_\+\+Add\+S\+W1\+Task}!O\+S.\+h@{O\+S.\+h}}
 \subsubsection[{\texorpdfstring{O\+S\+\_\+\+Add\+S\+W1\+Task(void($\ast$task)(void), unsigned long priority)}{OS_AddSW1Task(void(*task)(void), unsigned long priority)}}]{\setlength{\rightskip}{0pt plus 5cm}int O\+S\+\_\+\+Add\+S\+W1\+Task (
@@ -195,27 +225,6 @@ add a background task to run whenever the S\+W2 (P\+F0) button is pushed
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 1 if successful, 0 if this thread can not be added It is assumed user task will run to completion and return This task can not spin block loop sleep or kill This task can call issue O\+S\+\_\+\+Signal, it can call O\+S\+\_\+\+Add\+Thread This task does not have a Thread ID In lab 2, this function can be ignored In lab 3, this command will be called will be called 0 or 1 times In lab 3, there will be up to four background threads, and this priority field determines the relative priority of these four threads 
-\end{DoxyReturn}
-\index{O\+S.\+h@{O\+S.\+h}!O\+S\+\_\+\+Add\+Thread@{O\+S\+\_\+\+Add\+Thread}}
-\index{O\+S\+\_\+\+Add\+Thread@{O\+S\+\_\+\+Add\+Thread}!O\+S.\+h@{O\+S.\+h}}
-\subsubsection[{\texorpdfstring{O\+S\+\_\+\+Add\+Thread(void($\ast$task)(void), unsigned long stack\+Size, unsigned long priority)}{OS_AddThread(void(*task)(void), unsigned long stackSize, unsigned long priority)}}]{\setlength{\rightskip}{0pt plus 5cm}int O\+S\+\_\+\+Add\+Thread (
-\begin{DoxyParamCaption}
-\item[{void($\ast$)(void)}]{task, }
-\item[{unsigned long}]{stack\+Size, }
-\item[{unsigned long}]{priority}
-\end{DoxyParamCaption}
-)}\hypertarget{OS_8h_a4de0f2404bd5b73fc9cf09c0a0b868ee}{}\label{OS_8h_a4de0f2404bd5b73fc9cf09c0a0b868ee}
-add a foregound thread to the scheduler stack size must be divisable by 8 (aligned to double word boundary) In Lab 2, you can ignore both the stack\+Size and priority fields In Lab 3, you can ignore the stack\+Size fields 
-\begin{DoxyParams}{Parameters}
-{\em task} & Task function \\
-\hline
-{\em stack\+Size} & Size of the stack in bytes. Should be divisible by 8 \\
-\hline
-{\em priority} & Priority of the task. 0 is highest, 5 is lowest. \\
-\hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-1 if successful, 0 if this thread can not be added 
 \end{DoxyReturn}
 \index{O\+S.\+h@{O\+S.\+h}!O\+S\+\_\+b\+Signal@{O\+S\+\_\+b\+Signal}}
 \index{O\+S\+\_\+b\+Signal@{O\+S\+\_\+b\+Signal}!O\+S.\+h@{O\+S.\+h}}

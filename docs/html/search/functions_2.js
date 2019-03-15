@@ -1,9 +1,7 @@
 var searchData=
 [
-  ['os_5faddperiodicthread',['OS_AddPeriodicThread',['../OS_8h.html#a3a00d60b873633ca10b91cfa41d44e7d',1,'OS.h']]],
   ['os_5faddsw1task',['OS_AddSW1Task',['../OS_8h.html#a5c387e683842fc4f9f846729a60186da',1,'OS.h']]],
   ['os_5faddsw2task',['OS_AddSW2Task',['../OS_8h.html#a508ed7f6202df8a9e500994ad4399784',1,'OS.h']]],
-  ['os_5faddthread',['OS_AddThread',['../OS_8h.html#a4de0f2404bd5b73fc9cf09c0a0b868ee',1,'OS.h']]],
   ['os_5fbsignal',['OS_bSignal',['../OS_8h.html#aacf0c377b570fc63b103c57e0fbc7acd',1,'OS.h']]],
   ['os_5fbwait',['OS_bWait',['../OS_8h.html#a3f127f7a40ffd3e43b7b0f4c8b7f30ff',1,'OS.h']]],
   ['os_5fclearmstime',['OS_ClearMsTime',['../OS_8h.html#ace6ec4b7947542f7d7ff3104d8c759bd',1,'OS.h']]],
