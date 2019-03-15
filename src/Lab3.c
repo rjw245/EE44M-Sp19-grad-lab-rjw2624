@@ -755,6 +755,10 @@ int Testmain5(void)
 { // Testmain5 Lab 3
   PortE_Init();
   OS_Init(); // initialize, disable interrupts
+  PLL_Init(Bus80MHz);
+  UART_Init();
+  ST7735_InitR(INITR_REDTAB);
+  ST7735_FillScreen(0xFFFF);
   NumCreated = 0;
   NumCreated += OS_AddThread(Thread6, 128, 2);
   NumCreated += OS_AddThread(Thread7, 128, 1);

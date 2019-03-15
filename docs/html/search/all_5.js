@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['magic',['magic',['../struct__tcb__s.html#a1f71cc7a8b23ee420548662caced5301',1,'_tcb_s']]],
-  ['misc_5fmacros_2eh',['misc_macros.h',['../misc__macros_8h.html',1,'']]]
+  ['lengthof',['lengthof',['../misc__macros_8h.html#ad53b2827d15d4f100433764eea395a94',1,'misc_macros.h']]]
 ];

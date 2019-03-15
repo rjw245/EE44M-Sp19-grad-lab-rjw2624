@@ -474,10 +474,10 @@ unsigned long MaxJitter = 0;
 void Jitter(void)
 {
 
-  ST7735_Message(1, 4, "Max Jitter 0.1us=", MaxJitter);
+  ST7735_Message(1, 0, "Max Jitter 0.1us=", MaxJitter);
 }
 
-void JitterGet(unsigned long cur_time, unsigned long PERIOD, int timer)
+static void JitterGet(unsigned long cur_time, unsigned long PERIOD, int timer)
 {
   static unsigned long LastTime1 = 0; // time at previous ADC sample
   static unsigned long LastTime2 = 0; // time at previous ADC sample

@@ -168,6 +168,10 @@ Functions</h2></td></tr>
 <tr class="separator:a3f127f7a40ffd3e43b7b0f4c8b7f30ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacf0c377b570fc63b103c57e0fbc7acd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#aacf0c377b570fc63b103c57e0fbc7acd">OS_bSignal</a> (<a class="el" href="structSema4.html">Sema4Type</a> *semaPt)</td></tr>
 <tr class="separator:aacf0c377b570fc63b103c57e0fbc7acd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a075cf7301361417f66be1d5c22e36b0f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a075cf7301361417f66be1d5c22e36b0f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a075cf7301361417f66be1d5c22e36b0f">Jitter</a> (void)</td></tr>
+<tr class="memdesc:a075cf7301361417f66be1d5c22e36b0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the max periodic task jitter measured thus far to the ST7735 display. <br /></td></tr>
+<tr class="separator:a075cf7301361417f66be1d5c22e36b0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66e5f5aba3fe61381d37e7ffb32b36e6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66e5f5aba3fe61381d37e7ffb32b36e6"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddThread_priv</b> (void(*task)(void), unsigned long stackSize, unsigned long priority, char *task_name)</td></tr>
 <tr class="separator:a66e5f5aba3fe61381d37e7ffb32b36e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -260,7 +264,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>EnableInterrupts</b> 
 </div><div class="memdoc">
 <p>Add a background periodic task. Typically this function receives the highest priority You are free to select the time resolution for this function It is assumed that the user task will run to completion and return This task can not spin, block, loop, sleep, or kill This task can call OS_Signal OS_bSignal OS_AddThread This task does not have a Thread ID In lab 2, this command will be called 0 or 1 times In lab 2, the priority field can be ignored In lab 3, this command will be called 0 1 or 2 times In lab 3, there will be up to four background threads, and this priority field determines the relative priority of these four threads </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pointer</td><td>to a void/void background function </td></tr>
+    <tr><td class="paramname">task</td><td>pointer to a void/void background function </td></tr>
     <tr><td class="paramname">period</td><td>given in system time units (12.5ns) </td></tr>
     <tr><td class="paramname">priority</td><td>0 is the highest, 5 is the lowest </td></tr>
   </table>

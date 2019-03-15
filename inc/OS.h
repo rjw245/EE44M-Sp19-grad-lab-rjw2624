@@ -96,6 +96,12 @@ void OS_bWait(Sema4Type *semaPt);
  */
 void OS_bSignal(Sema4Type *semaPt);
 
+/**
+ * @brief Print the max periodic task jitter
+ *        measured thus far to the ST7735 display.
+ */
+void Jitter(void);
+
 int OS_AddThread_priv(void (*task)(void),
                       unsigned long stackSize,
                       unsigned long priority,
@@ -140,7 +146,7 @@ int OS_AddPeriodicThread_priv(void (*task)(void),
  * In lab 3, this command will be called 0 1 or 2 times
  * In lab 3, there will be up to four background threads, and this priority field 
  *           determines the relative priority of these four threads
- * @param pointer to a void/void background function
+ * @param task pointer to a void/void background function
  * @param period given in system time units (12.5ns)
  * @param priority 0 is the highest, 5 is the lowest
  * @return 1 if successful, 0 if this thread can not be added
