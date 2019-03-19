@@ -475,6 +475,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\eDisk.c</FilePath>
             </File>
+            <File>
+              <FileName>profiler.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\profiler.c</FilePath>
+            </File>
+            <File>
+              <FileName>timeMeasure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\timeMeasure.c</FilePath>
+            </File>
+            <File>
+              <FileName>eFile.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\eFile.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -709,6 +724,16 @@
               <FileName>eFile.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\eFile.h</FilePath>
+            </File>
+            <File>
+              <FileName>profiler.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\profiler.h</FilePath>
+            </File>
+            <File>
+              <FileName>timeMeasure.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\timeMeasure.h</FilePath>
             </File>
           </Files>
         </Group>
