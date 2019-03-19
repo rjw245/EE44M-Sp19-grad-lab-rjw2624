@@ -1,5 +1,5 @@
 /**
- * @file      eDisk.h
+ * @file
  * @brief     low-level SDC driver
  * @details   This version of the driver has been
  * configured to operate on the ST7735R, so that both
@@ -11,8 +11,7 @@
  * @warning   AS-IS
  * @note      For more information see  http://users.ece.utexas.edu/~valvano/
  * @date      March 9, 2017
-
- ******************************************************************************/
+ */
 
 /*-----------------------------------------------------------------------
 /  Low level disk interface modlue include file  R0.04a   (C)ChaN, 2007

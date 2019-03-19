@@ -1,15 +1,18 @@
 /**
- * @file      eFile.h
+ * @file
  * @brief     high-level file system
  * @details   This file system sits on top of eDisk.
  * @version   V1.0
- * @author    Valvano
+ * @author    Interface by JW Valvano, implementation by Riley Wood and Jeageun Jung
  * @copyright Copyright 2017 by Jonathan W. Valvano, valvano@mail.utexas.edu,
  * @warning   AS-IS
  * @note      For more information see  http://users.ece.utexas.edu/~valvano/
  * @date      March 9, 2017
 
  ******************************************************************************/
+
+#ifndef _EFILE_H_
+#define _EFILE_H_
 
 
 /**
@@ -28,6 +31,7 @@ int eFile_Init(void); // initialize file system
  * @brief  Format the disk
  */
 int eFile_Format(void); // erase disk, add format
+
 
 /**
  * @details Create a new, empty file with one allocated block
@@ -55,6 +59,7 @@ int eFile_WOpen(char name[]);      // open a file for writing
  */
 int eFile_Write(char data);  
 
+
 /**
  * @details Deactivate the file system. One can reactive the file system with eFile_Init.
  * @param  none
@@ -73,6 +78,7 @@ int eFile_Close(void);
  */
 int eFile_WClose(void); // close the file for writing
 
+
 /**
  * @details Open the file for reading, read first block into RAM
  * @param  name file name is an ASCII string up to seven characters
@@ -89,7 +95,8 @@ int eFile_ROpen(char name[]);      // open a file for reading
  * @brief  Retreive data from open file
  */
 int eFile_ReadNext(char *pt);       // get next byte 
-                              
+
+
 /**
  * @details Close the file, leave disk in a state power can be removed.
  * @param  none
@@ -107,6 +114,7 @@ int eFile_RClose(void); // close the file for writing
  */
 int eFile_Directory(void(*fp)(char));
 
+
 /**
  * @details Delete the file with this name, recover blocks so they can be used by another file
  * @param  name file name is an ASCII string up to seven characters
@@ -114,6 +122,7 @@ int eFile_Directory(void(*fp)(char));
  * @brief  delete this file
  */
 int eFile_Delete(char name[]);  // remove this file 
+
 
 /**
  * @details open the file for writing, redirect stream I/O (printf) to this file
@@ -133,3 +142,5 @@ int eFile_RedirectToFile(char *name);
  * @brief  Stop streaming printf to file
  */
 int eFile_EndRedirectToFile(void);
+
+#endif // _EFILE_H_
