@@ -470,6 +470,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\Lab3.c</FilePath>
             </File>
+            <File>
+              <FileName>eDisk.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\eDisk.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -694,6 +699,16 @@
               <FileName>Switch.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\Switch.h</FilePath>
+            </File>
+            <File>
+              <FileName>eDisk.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\eDisk.h</FilePath>
+            </File>
+            <File>
+              <FileName>eFile.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\eFile.h</FilePath>
             </File>
           </Files>
         </Group>
