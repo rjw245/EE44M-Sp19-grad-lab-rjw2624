@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['initrflags',['initRFlags',['../ST7735_8h.html#a9568e103412377d5867f1f367ac7f424',1,'ST7735.h']]]
+  ['bool',['BOOL',['../eDisk_8h.html#a3e5b8192e7d9ffaf3542f1210aec18dd',1,'eDisk.h']]]
 ];
