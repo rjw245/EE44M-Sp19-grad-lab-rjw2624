@@ -20,6 +20,8 @@
 #include "ST7735.h"
 #include "profiler.h"
 #include "timeMeasure.h"
+#include "UART.h"
+#include "PLL.h"
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
@@ -128,6 +130,10 @@ static void TaskReturn(void)
 void OS_Init(void)
 {
   FIRST_DisableInterrupts();
+  PLL_Init(Bus80MHz);
+  UART_Init();
+  // ST7735_InitR(INITR_REDTAB);
+  // ST7735_FillScreen(0xFFFF);
   // Activate PendSV interrupt with lowest priority
   NVIC_SYS_PRI3_R |= (7 << 21);
   // Activate Systick interrupt with 2nd lowest priority

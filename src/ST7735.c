@@ -2727,10 +2727,10 @@ void ST7735_SetTextColor(uint16_t color)
   StTextColor = color;
 }
 // Print a character to ST7735 LCD.
-int fputc(int ch, FILE *f)
+int __fputc(int ch, FILE *f)
 {
   ST7735_OutChar(ch);
-  return 1;
+  return ch;
 }
 // No input from Nokia, always return data.
 int fgetc(FILE *f)

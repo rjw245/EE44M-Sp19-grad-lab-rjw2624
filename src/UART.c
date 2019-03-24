@@ -28,6 +28,7 @@
 // U0Rx (VCP receive) connected to PA0
 // U0Tx (VCP transmit) connected to PA1
 #include <stdint.h>
+#include <stdio.h>
 #include "../inc/tm4c123gh6pm.h"
 
 #include "FIFO.h"
@@ -148,6 +149,13 @@ void UART_OutChar(char data)
   UART0_IM_R |= UART_IM_TXIM; // enable TX FIFO interrupt
   OS_Signal(&uartOut_sema);
 }
+
+int fputc(int ch, FILE *f)
+{
+  UART_OutChar(ch);
+  return ch;
+}
+
 // at least one of three things has happened:
 // hardware TX FIFO goes from 3 to 2 or less items
 // hardware RX FIFO goes from 1 to 2 or more items
@@ -339,13 +347,13 @@ void UART_InString(char *bufPt, uint16_t max)
   character = UART_InChar();
   while (character != CR)
   {
-    if (character == BS)
+    if ((character == BS) || (character == DEL))
     {
       if (length)
       {
         bufPt--;
         length--;
-        UART_OutChar(BS);
+        UART_OutChar(character);
       }
     }
     else if (length < max)

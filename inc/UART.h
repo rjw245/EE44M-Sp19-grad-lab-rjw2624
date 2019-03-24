@@ -27,6 +27,8 @@
 #ifndef UART_H
 #define UART_H
 
+#include <stdint.h>
+
 // U0Rx (VCP receive) connected to PA0
 // U0Tx (VCP transmit) connected to PA1
 
