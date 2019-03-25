@@ -27,7 +27,7 @@ typedef struct {
 #define DIR_ENTRIES ((DIR_SECTORS*SECTOR_BYTES)/(sizeof(dir_entry_t)))
 dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS 131072 // Number of sectors directory may span
+#define FAT_SECTORS 131072 // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS*SECTOR_BYTES)/sizeof(sector_addr_t))
 #define FAT_START 34
 
