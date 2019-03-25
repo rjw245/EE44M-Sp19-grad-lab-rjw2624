@@ -36,8 +36,8 @@ sector_addr_t cached_fat_sector = 0;
 
 int eFile_Init(void)
 {
-  memset(dir, 0, sizeof(dir_entry_t)*DIR_ENTRIES);
-  memset(fat_cache, 0, sizeof(sector_addr_t)*(SECTOR_BYTES/sizeof(sector_addr_t)));
+  memset(dir, 0, sizeof(dir));
+  memset(fat_cache, 0, fat_cache);
   eDisk_Init(0);
   for(int i=0; i<DIR_SECTORS; i++)
   {
@@ -51,8 +51,8 @@ int eFile_Init(void)
 
 int eFile_Format(void)
 {
-	memset(dir, 0, sizeof(dir_entry_t)*DIR_ENTRIES);
-  memset(fat_cache, 0, sizeof(sector_addr_t)*(SECTOR_BYTES/sizeof(sector_addr_t)));
+	memset(dir, 0, sizeof(dir));
+  memset(fat_cache, 0, sizeof(fat_cache));
   for(int i=0; i<DIR_SECTORS; i++)
   {
     eDisk_WriteBlock(((uint8_t*)dir)+i*SECTOR_BYTES, DIR_START+i);
