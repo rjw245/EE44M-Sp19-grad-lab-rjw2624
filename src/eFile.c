@@ -1,6 +1,17 @@
+// filename ************** eFile.c *****************************
+// High-level routines to implement a solid-state disk 
+// Jonathan W. Valvano 3/9/17
 
-#include "eFile.h"
+#include <string.h>
 #include "eDisk.h"
+#include "UART.h"
+#include <stdio.h>
+
+#define SUCCESS 0
+#define FAIL 1
+
+typedef uint32_t block_addr_t;
+                       
 
 int eFile_Init(void)
 {

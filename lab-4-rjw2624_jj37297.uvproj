@@ -441,16 +441,6 @@
               <FilePath>.\src\OS.c</FilePath>
             </File>
             <File>
-              <FileName>cr4_fft_64_stm32.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\src\cr4_fft_64_stm32.s</FilePath>
-            </File>
-            <File>
-              <FileName>PID_stm32.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\src\PID_stm32.s</FilePath>
-            </File>
-            <File>
               <FileName>OS_asm.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\src\OS_asm.s</FilePath>
@@ -464,11 +454,6 @@
               <FileName>Switch.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\Switch.c</FilePath>
-            </File>
-            <File>
-              <FileName>Lab3.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\Lab3.c</FilePath>
             </File>
             <File>
               <FileName>eDisk.c</FileName>
@@ -489,6 +474,16 @@
               <FileName>eFile.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\eFile.c</FilePath>
+            </File>
+            <File>
+              <FileName>Lab4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\Lab4.c</FilePath>
+            </File>
+            <File>
+              <FileName>cr4_fft_64_stm32.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\src\cr4_fft_64_stm32.s</FilePath>
             </File>
           </Files>
         </Group>
