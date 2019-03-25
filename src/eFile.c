@@ -19,7 +19,7 @@ typedef uint32_t sector_addr_t;
 typedef struct {
   char file_name[LONGEST_FILENAME + 1]; // space for null terminator
   sector_addr_t start;
-  uint32_t padding;
+  uint32_t used; // let's use padding part to recognize is this entry is used or not.
 } dir_entry_t;
 
 #define DIR_START 32 // Sector number
@@ -36,8 +36,8 @@ sector_addr_t cached_fat_sector = 0;
 
 int eFile_Init(void)
 {
-  memset(dir, 0, sizeof(dir));
-  memset(fat_cache, 0, sizeof(dir));
+  memset(dir, 0, sizeof(dir_entry_t)*DIR_ENTRIES);
+  memset(fat_cache, 0, sizeof(sector_addr_t)*(SECTOR_BYTES/sizeof(sector_addr_t)));
   eDisk_Init(0);
   for(int i=0; i<DIR_SECTORS; i++)
   {
@@ -45,18 +45,39 @@ int eFile_Init(void)
   }
   cached_fat_sector = FAT_START;
   eDisk_ReadBlock(fat_cache, FAT_START);
+	return SUCCESS;
 }
 
 
 int eFile_Format(void)
 {
-
+	memset(dir, 0, sizeof(dir_entry_t)*DIR_ENTRIES);
+  memset(fat_cache, 0, sizeof(sector_addr_t)*(SECTOR_BYTES/sizeof(sector_addr_t)));
+  for(int i=0; i<DIR_SECTORS; i++)
+  {
+    eDisk_WriteBlock(((uint8_t*)dir)+i*SECTOR_BYTES, DIR_START+i);
+  }
+  cached_fat_sector = FAT_START;
+	return SUCCESS;
 }
 
 
 int eFile_Create(char name[])
 {
+	dir_entry_t new_file;
+	int idx;
+	for(idx =0;idx <DIR_ENTRIES;idx++)
+	{
+		if(dir[idx].used == 0)
+			break;
+	}
+	if(idx == DIR_ENTRIES)
+	{
+		return FAIL; // FULL Files
+	}
+	
 
+	
 }
 
 
