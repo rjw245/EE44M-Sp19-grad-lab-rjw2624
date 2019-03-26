@@ -29,7 +29,7 @@ typedef struct
 #define DIR_ENTRIES ((DIR_SECTORS * SECTOR_BYTES) / (sizeof(dir_entry_t)))
 static dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS 130056 // Number of sectors FAT may span
+#define FAT_SECTORS (130056/32) // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS * SECTOR_BYTES) / sizeof(sector_addr_t))
 #define FAT_START 34
 #define CACHED_SECTORS (SECTOR_BYTES / sizeof(sector_addr_t)) //
@@ -92,7 +92,7 @@ int eFile_Format(void)
 {
   memset(dir, 0, sizeof(dir));
   memset(fat_cache, 0, sizeof(fat_cache));
-  writeback_dir();
+
 
   for (int i = 0; i < FAT_SECTORS; i++)
   {
@@ -104,6 +104,7 @@ int eFile_Format(void)
     writeback_fat_cache();
   }
 
+	/*
   cached_fat_sector = 0;
   for (int j = 0; j < 34; j++)
   {
@@ -113,10 +114,13 @@ int eFile_Format(void)
   {
     fat_cache[j] = j + 1;
   }
+	
   writeback_fat_cache();
-
+*/
   dir[0].start = 0; // sector offset from DATA_START
   dir[0].size = 1;
+	
+	writeback_dir();
   return SUCCESS;
 }
 
@@ -131,6 +135,7 @@ int eFile_Create(char name[])
     if (strncmp(dir[idx].file_name, name, LONGEST_FILENAME) == 0)
     {
       return FAIL; // There already is a file with this name
+			//It may not work well... What if same name dir is at the end of dir.
     }
     if (dir[idx].size == 0)
     {
@@ -151,7 +156,7 @@ int eFile_Create(char name[])
   freespace = dir[0].start;                             // get free space that we could use
   dir[0].start = fat_cache[freespace % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
 
-  fat_cache[freespace % CACHED_SECTORS] = 0; // This is creating part, make sure currently allocated space is last one.
+  fat_cache[freespace % CACHED_SECTORS] = -1; // This is creating part, make sure currently allocated space is last one.
   fat_cache_dirty = true;
   //eDisk_WriteBlock((BYTE *)fat_cache, FAT_sec_offset + FAT_START); // write back to the disk.
   return SUCCESS;
@@ -165,27 +170,30 @@ int eFile_WOpen(char name[])
   int prev_iter = 0;
   for (int i = 0; i < DIR_ENTRIES; i++)
   {
-    if (strcnmp(name, dir[i].file_name, LONGEST_FILENAME) == 0)
+    if (strcmp(name, dir[i].file_name) == 0)
     {
       open_idx = i;
       write_mode = true;
       break;
     }
   }
-  if (open_idx == 0)
+  if (open_idx == 0 || open_idx == DIR_ENTRIES)
     return FAIL;
   FAT_sec_offset = dir[open_idx].start / CACHED_SECTORS;
   prev_iter = dir[open_idx].start;
   cache_fat_sector(FAT_sec_offset + FAT_START);
   iter = fat_cache[prev_iter % CACHED_SECTORS];
-  while (iter != 0)
+  while (iter != -1)
   {
     FAT_sec_offset = iter / CACHED_SECTORS;
     cache_fat_sector(FAT_sec_offset + FAT_START);
     prev_iter = iter;
     iter = fat_cache[prev_iter % CACHED_SECTORS];
   }
-  write_point_in_sector = dir[open_idx].size - 1;
+  write_point_in_sector = (dir[open_idx].size - 1)%SECTOR_BYTES;
+	eDisk_ReadBlock(DATAarray,prev_iter+DATA_START);
+	
+	return SUCCESS;
 }
 
 int eFile_Write(char data)
