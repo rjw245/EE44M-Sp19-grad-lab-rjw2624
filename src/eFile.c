@@ -58,7 +58,20 @@ static int get_writepoint_in_sector(int dir_idx)
 
 static void cache_file_sector(sector_addr_t abs_sector_num)
 {
-    eDisk_ReadBlock((BYTE *)DATAarray, abs_sector_num);
+  eDisk_ReadBlock((BYTE *)DATAarray, abs_sector_num);
+}
+
+/**
+ * @brief Get the next sector of a file.
+ * 
+ * @param data_sector_offset Sector offset from DATA_START to lookup in the FAT.
+ * @return sector_addr_t Return value is interpreted as an offset from DATA_START.
+ */
+static sector_addr_t get_next_sectornum(sector_addr_t data_sector_offset)
+{
+  sector_addr_t fat_sector = data_sector_offset / CACHED_SECTORS;
+  cache_fat_sector(fat_sector);
+  return fat_cache[data_sector_offset % CACHED_SECTORS];
 }
 
 static void writeback_file_sector(void)
@@ -250,39 +263,29 @@ int eFile_ROpen(char name[])
   }
   if (open_idx == -1)
     return FAIL;
-  FAT_sec_offset = dir[open_idx].start / CACHED_SECTORS;
-  prev_iter = dir[open_idx].start;
-  cache_fat_sector(FAT_sec_offset + FAT_START);
-  iter = fat_cache[prev_iter % CACHED_SECTORS];
-  while (iter != -1)
-  {
-    FAT_sec_offset = iter / CACHED_SECTORS;
-    cache_fat_sector(FAT_sec_offset + FAT_START);
-    prev_iter = iter;
-    iter = fat_cache[prev_iter % CACHED_SECTORS];
-  }
-  //write_point_in_sector = (dir[open_idx].size - 1)%SECTOR_BYTES;
+  open_file.dir_idx = open_idx;
   open_file.bytenum = 0;
-  open_file.sectornum = prev_iter;
+  open_file.sectornum = dir[open_idx].start;
   cache_file_sector(DATA_START + prev_iter);
 }
 
 int eFile_ReadNext(char *pt)
 {
-  if (open_file.bytenum < dir[open_file.dir_idx].size - 1)
+  if (write_mode == false)
   {
-    // More data left to read
-    *pt = DATAarray[open_file.bytenum++ % SECTOR_BYTES];
-    if((open_file.bytenum % SECTOR_BYTES) == 0)
+    if (open_file.bytenum < dir[open_file.dir_idx].size - 1)
     {
-      // Get next sector
-      cache_file_sector(DATA_START + ++open_file.sectornum);
+      // More data left to read
+      *pt = DATAarray[open_file.bytenum++ % SECTOR_BYTES];
+      if ((open_file.bytenum % SECTOR_BYTES == 0) && (open_file.bytenum < dir[open_file.dir_idx].size - 1))
+      {
+        // Get next sector
+        open_file.sectornum = get_next_sectornum(open_file.sectornum);
+        cache_file_sector(DATA_START + open_file.sectornum);
+      }
     }
   }
-  else
-  {
-    return FAIL;
-  }
+  return FAIL;
 }
 
 int eFile_RClose(void)
