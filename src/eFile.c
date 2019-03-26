@@ -24,6 +24,7 @@ typedef struct
   uint32_t size; // size of zero indicates unused, size increase as write. size-1 is the point to write or read.
 } dir_entry_t;
 
+// Sectors 0 through 31 are reserved
 #define DIR_START 32  // Sector number
 #define DIR_SECTORS 2 // Number of sectors directory may span
 #define DIR_ENTRIES ((DIR_SECTORS * SECTOR_BYTES) / (sizeof(dir_entry_t)))
@@ -153,13 +154,12 @@ int eFile_Create(char name[])
 
   fat_cache[freespace % CACHED_SECTORS] = 0; // This is creating part, make sure currently allocated space is last one.
   fat_cache_dirty = true;
-  //eDisk_WriteBlock((BYTE *)fat_cache, FAT_sec_offset + FAT_START); // write back to the disk.
   return SUCCESS;
 }
 
 int eFile_WOpen(char name[])
 {
-  int open_idx = 0;
+  int open_idx = -1;
   int FAT_sec_offset; // Sector offset from base sector of FAT
   int iter = 0;
   int prev_iter = 0;
@@ -172,7 +172,7 @@ int eFile_WOpen(char name[])
       break;
     }
   }
-  if (open_idx == 0)
+  if (open_idx == -1)
     return FAIL;
   FAT_sec_offset = dir[open_idx].start / CACHED_SECTORS;
   prev_iter = dir[open_idx].start;
