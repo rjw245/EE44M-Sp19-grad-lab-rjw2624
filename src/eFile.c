@@ -27,10 +27,10 @@ typedef struct {
 #define DIR_ENTRIES ((DIR_SECTORS*SECTOR_BYTES)/(sizeof(dir_entry_t)))
 dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS 131072/32 // Number of sectors FAT may span
+#define FAT_SECTORS (131072/32) // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS*SECTOR_BYTES)/sizeof(sector_addr_t))
 #define FAT_START 34
-#define CACHED_SECTORS  (int)(SECTOR_BYTES/sizeof(sector_addr_t)) // need to typecast. otherwise, "freespace % CACHED_SECTORS"  makes wrong result
+#define CACHED_SECTORS  (SECTOR_BYTES/sizeof(sector_addr_t)) // 
 
 sector_addr_t fat_cache[CACHED_SECTORS];
 sector_addr_t cached_fat_sector = 0;
