@@ -21,7 +21,7 @@ typedef struct
 {
   char file_name[LONGEST_FILENAME + 1]; // space for null terminator
   sector_addr_t start;
-  uint32_t size; // size of zero indicates unused
+  uint32_t size; // size of zero indicates unused, size increase as write. size-1 is the point to write or read.
 } dir_entry_t;
 
 #define DIR_START 32  // Sector number
@@ -37,6 +37,9 @@ static dir_entry_t dir[DIR_ENTRIES];
 static sector_addr_t fat_cache[CACHED_SECTORS];
 static sector_addr_t cached_fat_sector = 0;
 static bool fat_cache_dirty = false;
+static bool write_mode = false;
+static int write_point_in_sector = 0;
+static BYTE DATAarray[SECTOR_BYTES];
 
 static void writeback_fat_cache(void)
 {
@@ -50,6 +53,7 @@ static void cache_fat_sector(sector_addr_t abs_sector_num)
     if (fat_cache_dirty)
     {
       writeback_fat_cache();
+			fat_cache_dirty = false;
     }
     cached_fat_sector = abs_sector_num;
     eDisk_ReadBlock((BYTE *)fat_cache, abs_sector_num);
@@ -95,6 +99,7 @@ int eFile_Format(void)
   {
     fat_cache[j] = j + 1;
   }
+	cached_fat_sector = 0;
 
   eDisk_WriteBlock((BYTE *)fat_cache, FAT_START);
   fat_cache_dirty = false;
@@ -123,18 +128,48 @@ int eFile_Create(char name[])
 
   dir[idx].size = 1;                                        // set size.
   FATTABLE = dir[0].start / CACHED_SECTORS;                 // FATTABLE will save which sector to load from the disk
-  eDisk_ReadBlock((BYTE *)fat_cache, FATTABLE + FAT_START); // Read sector from disk
+  cache_fat_sector(FATTABLE + FAT_START); // Read sector from disk
 
   freespace = dir[0].start;                             // get free space that we could use
   dir[0].start = fat_cache[freespace % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
 
   fat_cache[freespace % CACHED_SECTORS] = 0;                 // This is creating part, make sure currently allocated space is last one.
-  eDisk_WriteBlock((BYTE *)fat_cache, FATTABLE + FAT_START); // write back to the disk.
+	fat_cache_dirty = true;
+  //eDisk_WriteBlock((BYTE *)fat_cache, FATTABLE + FAT_START); // write back to the disk.
   return SUCCESS;
 }
 
 int eFile_WOpen(char name[])
 {
+	int open_idx = 0;
+	int FATTABLE;
+	int iter = 0;
+	int prev_iter = 0;
+	for(int i =0;i<DIR_ENTRIES;i++)
+	{
+		if(strcmp(name,dir[i].file_name) == 0)
+		{
+			open_idx = i;
+			write_mode = true;
+			break;
+		}
+	}
+	if(open_idx ==0)
+		return FAIL;
+	FATTABLE = dir[open_idx].start / CACHED_SECTORS;
+	prev_iter = dir[open_idx].start;
+	cache_fat_sector(FATTABLE + FAT_START);
+	iter = fat_cache[prev_iter%CACHED_SECTORS];
+	while(iter!=0)
+	{
+		FATTABLE = iter / CACHED_SECTORS;
+		cache_fat_sector(FATTABLE + FAT_START);
+		prev_iter = iter;
+		iter = fat_cache[prev_iter%CACHED_SECTORS];
+	}
+	write_point_in_sector = dir[open_idx].size-1;
+	
+	
 }
 
 int eFile_Write(char data)
