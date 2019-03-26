@@ -29,10 +29,12 @@ typedef struct
 #define DIR_ENTRIES ((DIR_SECTORS * SECTOR_BYTES) / (sizeof(dir_entry_t)))
 static dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS (131072 / 32) // Number of sectors FAT may span
+#define FAT_SECTORS 130056 // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS * SECTOR_BYTES) / sizeof(sector_addr_t))
 #define FAT_START 34
 #define CACHED_SECTORS (SECTOR_BYTES / sizeof(sector_addr_t)) //
+
+#define DATA_START 130090
 
 static sector_addr_t fat_cache[CACHED_SECTORS];
 static sector_addr_t cached_fat_sector = 0;
