@@ -30,21 +30,22 @@ dir_entry_t dir[DIR_ENTRIES];
 #define FAT_SECTORS 131072 // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS*SECTOR_BYTES)/sizeof(sector_addr_t))
 #define FAT_START 34
+#define NUMOFSECTORS  SECTOR_BYTES/sizeof(sector_addr_t)
 
-sector_addr_t fat_cache[SECTOR_BYTES/sizeof(sector_addr_t)];
+sector_addr_t fat_cache[NUMOFSECTORS];
 sector_addr_t cached_fat_sector = 0;
 
 int eFile_Init(void)
 {
   memset(dir, 0, sizeof(dir));
-  memset(fat_cache, 0, fat_cache);
+  memset(fat_cache, 0, sizeof(fat_cache));
   eDisk_Init(0);
   for(int i=0; i<DIR_SECTORS; i++)
   {
     eDisk_ReadBlock(((uint8_t*)dir)+i*SECTOR_BYTES, DIR_START+i);
   }
   cached_fat_sector = FAT_START;
-  eDisk_ReadBlock(fat_cache, FAT_START);
+  eDisk_ReadBlock((BYTE*)fat_cache, FAT_START);
 	return SUCCESS;
 }
 
@@ -58,6 +59,15 @@ int eFile_Format(void)
     eDisk_WriteBlock(((uint8_t*)dir)+i*SECTOR_BYTES, DIR_START+i);
   }
   cached_fat_sector = FAT_START;
+	for(int i = 0;i<FAT_SECTORS;i++)
+	{
+		for(int j=0;j<NUMOFSECTORS;j++)
+		{
+			fat_cache[j] = (FAT_START + i)*NUMOFSECTORS + j + 1;
+		}
+		eDisk_WriteBlock((BYTE*)fat_cache, FAT_START + i);
+	}
+	
 	return SUCCESS;
 }
 
