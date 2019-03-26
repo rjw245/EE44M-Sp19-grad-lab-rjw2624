@@ -26,10 +26,10 @@ typedef struct
 
 typedef struct
 {
-	int sectornum;
-	int bytenum;
-} position_t;
-
+  int dir_idx;
+  int sectornum;
+  int bytenum;
+} open_file_metadata_t;
 
 // Sectors 0 through 31 are reserved
 #define DIR_START 32  // Sector number
@@ -37,7 +37,7 @@ typedef struct
 #define DIR_ENTRIES ((DIR_SECTORS * SECTOR_BYTES) / (sizeof(dir_entry_t)))
 static dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS (130056/32) // Number of sectors FAT may span
+#define FAT_SECTORS (130056 / 32) // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS * SECTOR_BYTES) / sizeof(sector_addr_t))
 #define FAT_START 34
 #define CACHED_SECTORS (SECTOR_BYTES / sizeof(sector_addr_t)) //
@@ -49,7 +49,7 @@ static sector_addr_t cached_fat_sector = 0;
 static bool fat_cache_dirty = false;
 static bool write_mode = false;
 static BYTE DATAarray[SECTOR_BYTES];
-static position_t position;
+static open_file_metadata_t open_file;
 
 static int get_writepoint_in_sector(int dir_idx)
 {
@@ -106,7 +106,6 @@ int eFile_Format(void)
   memset(dir, 0, sizeof(dir));
   memset(fat_cache, 0, sizeof(fat_cache));
 
-
   for (int i = 0; i < FAT_SECTORS; i++)
   {
     cached_fat_sector = FAT_START + i;
@@ -117,7 +116,7 @@ int eFile_Format(void)
     writeback_fat_cache();
   }
 
-	/*
+  /*
   cached_fat_sector = 0;
   for (int j = 0; j < 34; j++)
   {
@@ -132,8 +131,8 @@ int eFile_Format(void)
 */
   dir[0].start = 0; // sector offset from DATA_START
   dir[0].size = 1;
-	
-	writeback_dir();
+
+  writeback_dir();
   return SUCCESS;
 }
 
@@ -148,7 +147,7 @@ int eFile_Create(char name[])
     if (strncmp(dir[idx].file_name, name, LONGEST_FILENAME) == 0)
     {
       return FAIL; // There already is a file with this name
-			//It may not work well... What if same name dir is at the end of dir.
+                   //It may not work well... What if same name dir is at the end of dir.
     }
     if (dir[idx].size == 0)
     {
@@ -203,18 +202,17 @@ int eFile_WOpen(char name[])
     iter = fat_cache[prev_iter % CACHED_SECTORS];
   }
   //write_point_in_sector = (dir[open_idx].size - 1)%SECTOR_BYTES;
-	eDisk_ReadBlock(DATAarray,prev_iter+DATA_START);
-	
-	return SUCCESS;
+  eDisk_ReadBlock(DATAarray, prev_iter + DATA_START);
+
+  return SUCCESS;
 }
 
 int eFile_Write(char data)
 {
-  if(!write_mode)
-	{
-		return FAIL;
-	}
-	
+  if (!write_mode)
+  {
+    return FAIL;
+  }
 }
 
 int eFile_Close(void)
@@ -231,6 +229,14 @@ int eFile_ROpen(char name[])
 
 int eFile_ReadNext(char *pt)
 {
+  if (open_file.bytenum < dir[open_file.dir_idx].size - 1)
+  {
+    // More data left to read
+  }
+  else
+  {
+    return FAIL;
+  }
 }
 
 int eFile_RClose(void)
