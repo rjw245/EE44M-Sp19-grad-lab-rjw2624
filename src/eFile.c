@@ -215,17 +215,36 @@ int eFile_WOpen(char name[])
   eDisk_ReadBlock(DATAarray, prev_iter + DATA_START);
 	open_file.bytenum = (dir[open_idx].size - 1);
 	open_file.dir_idx = open_idx;
-	open_file.sectornum = FAT_sec_offset;
+	open_file.sectornum = prev_iter;
 
   return SUCCESS;
 }
 
 int eFile_Write(char data)
 {
+	int idx = open_file.bytenum;
   if (!write_mode)
   {
     return FAIL;
   }
+	if(idx !=0 && idx%SECTOR_BYTES ==0)
+	{
+		writeback_file_sector();
+		int freespace = dir[0].start;                             // get free space that we could use
+		fat_cache[open_file.sectornum%CACHED_SECTORS] = freespace;
+
+		//need to change fatcache to freespace fatcache
+		cache_fat_sector((freespace / CACHED_SECTORS)+FAT_START);
+		dir[0].start = fat_cache[freespace % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
+		fat_cache[freespace % CACHED_SECTORS] = -1; // This is creating part, make sure currently allocated space is last one.
+		fat_cache_dirty = true;
+		open_file.sectornum = freespace;
+		cache_file_sector(freespace + DATA_START);
+	}
+	DATAarray[idx%SECTOR_BYTES] = data;
+	open_file.bytenum++;
+	return SUCCESS;
+	
 }
 
 int eFile_Close(void)
@@ -234,6 +253,12 @@ int eFile_Close(void)
 
 int eFile_WClose(void)
 {
+	dir[open_file.dir_idx].size = open_file.bytenum + 1;
+	writeback_dir();
+	writeback_fat_cache();
+	writeback_file_sector();
+	write_mode = false;
+	return SUCCESS;
 }
 
 int eFile_ROpen(char name[])

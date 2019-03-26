@@ -499,7 +499,7 @@ void TestFile(void)
     diskError("eFile_WOpen", 0);
   for (i = 0; i < 1000; i++)
   {
-    if (eFile_Write('a' + i % 26))
+    if (eFile_Write('0' + i % 26))
       diskError("eFile_Write", i);
     if (i % 52 == 51)
     {
