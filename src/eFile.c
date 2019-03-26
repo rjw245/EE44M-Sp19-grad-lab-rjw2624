@@ -41,8 +41,12 @@ static sector_addr_t fat_cache[CACHED_SECTORS];
 static sector_addr_t cached_fat_sector = 0;
 static bool fat_cache_dirty = false;
 static bool write_mode = false;
-static int write_point_in_sector = 0;
 static BYTE DATAarray[SECTOR_BYTES];
+
+static int get_writepoint_in_sector(int dir_idx)
+{
+  return dir[dir_idx].size - 1;
+}
 
 static void writeback_fat_cache(void)
 {
@@ -165,7 +169,7 @@ int eFile_WOpen(char name[])
   int prev_iter = 0;
   for (int i = 0; i < DIR_ENTRIES; i++)
   {
-    if (strcnmp(name, dir[i].file_name, LONGEST_FILENAME) == 0)
+    if (strncmp(name, dir[i].file_name, LONGEST_FILENAME) == 0)
     {
       open_idx = i;
       write_mode = true;
@@ -185,11 +189,11 @@ int eFile_WOpen(char name[])
     prev_iter = iter;
     iter = fat_cache[prev_iter % CACHED_SECTORS];
   }
-  write_point_in_sector = dir[open_idx].size - 1;
 }
 
 int eFile_Write(char data)
 {
+  
 }
 
 int eFile_Close(void)
