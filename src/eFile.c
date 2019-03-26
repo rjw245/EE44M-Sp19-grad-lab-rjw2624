@@ -67,7 +67,7 @@ static void cache_file_sector(sector_addr_t abs_sector_num)
  * @param data_sector_offset Sector offset from DATA_START to lookup in the FAT.
  * @return sector_addr_t Return value is interpreted as an offset from DATA_START.
  */
-static sector_addr_t get_next_sectornum(sector_addr_t data_sector_offset)
+static sector_addr_t get_next_file_sector(sector_addr_t data_sector_offset)
 {
   sector_addr_t fat_sector = data_sector_offset / CACHED_SECTORS;
   cache_fat_sector(fat_sector);
@@ -297,18 +297,23 @@ int eFile_ROpen(char name[])
   cache_file_sector(DATA_START + prev_iter);
 }
 
+static bool read_reached_eof(void)
+{
+  return (open_file.bytenum >= dir[open_file.dir_idx].size - 1);
+}
+
 int eFile_ReadNext(char *pt)
 {
   if (write_mode == false)
   {
-    if (open_file.bytenum < dir[open_file.dir_idx].size - 1)
+    if (!read_reached_eof())
     {
       // More data left to read
       *pt = DATAarray[open_file.bytenum++ % SECTOR_BYTES];
-      if ((open_file.bytenum % SECTOR_BYTES == 0) && (open_file.bytenum < dir[open_file.dir_idx].size - 1))
+      if ((open_file.bytenum % SECTOR_BYTES == 0) && !read_reached_eof())
       {
         // Get next sector
-        open_file.sectornum = get_next_sectornum(open_file.sectornum);
+        open_file.sectornum = get_next_file_sector(open_file.sectornum);
         cache_file_sector(DATA_START + open_file.sectornum);
       }
     }
