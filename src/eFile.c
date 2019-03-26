@@ -27,12 +27,12 @@ typedef struct {
 #define DIR_ENTRIES ((DIR_SECTORS*SECTOR_BYTES)/(sizeof(dir_entry_t)))
 dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS 131072 // Number of sectors FAT may span
+#define FAT_SECTORS 131072/32 // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS*SECTOR_BYTES)/sizeof(sector_addr_t))
 #define FAT_START 34
-#define NUMOFSECTORS  SECTOR_BYTES/sizeof(sector_addr_t)
+#define CACHED_SECTORS  (int)(SECTOR_BYTES/sizeof(sector_addr_t)) // need to typecast. otherwise, "freespace % CACHED_SECTORS"  makes wrong result
 
-sector_addr_t fat_cache[NUMOFSECTORS];
+sector_addr_t fat_cache[CACHED_SECTORS];
 sector_addr_t cached_fat_sector = 0;
 
 int eFile_Init(void)
@@ -61,13 +61,22 @@ int eFile_Format(void)
   cached_fat_sector = FAT_START;
 	for(int i = 0;i<FAT_SECTORS;i++)
 	{
-		for(int j=0;j<NUMOFSECTORS;j++)
+		for(int j=0;j<CACHED_SECTORS;j++)
 		{
-			fat_cache[j] = (FAT_START + i)*NUMOFSECTORS + j + 1;
+			fat_cache[j] = i*CACHED_SECTORS + j + 1;
 		}
 		eDisk_WriteBlock((BYTE*)fat_cache, FAT_START + i);
 	}
 	
+	for(int j=0;j<CACHED_SECTORS;j++)
+	{
+		fat_cache[j] = j + 1;
+	}
+	for(int j=0;j<34;j++)
+		fat_cache[j] = 0;
+	eDisk_WriteBlock((BYTE*)fat_cache, FAT_START);
+	dir[0].start = FAT_START;
+	dir[0].used = 1;
 	return SUCCESS;
 }
 
@@ -76,6 +85,8 @@ int eFile_Create(char name[])
 {
 	dir_entry_t new_file;
 	int idx;
+	int freespace;
+	int FATTABLE;
 	for(idx =0;idx <DIR_ENTRIES;idx++)
 	{
 		if(dir[idx].used == 0)
@@ -85,8 +96,21 @@ int eFile_Create(char name[])
 	{
 		return FAIL; // FULL Files
 	}
+	for(int i=0;i<LONGEST_FILENAME;i++)
+		dir[idx].file_name[i] = name[i];
+	// Create directory with given name.
 	
-
+	dir[idx].used = 1;  // check it is used.
+	FATTABLE = dir[0].start / CACHED_SECTORS; // FATTABLE will save which sector to load from the disk
+	eDisk_ReadBlock((BYTE*)fat_cache, FATTABLE); // Read sector from disk
+	
+	freespace = dir[0].start; // get free space that we could use
+	dir[0].start = fat_cache[freespace % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
+	
+	fat_cache[freespace % CACHED_SECTORS] = 0; // This is creating part, make sure currently allocated space is last one.
+	eDisk_WriteBlock((BYTE*)fat_cache, FATTABLE); // write back to the disk.
+	return SUCCESS;
+  	
 	
 }
 

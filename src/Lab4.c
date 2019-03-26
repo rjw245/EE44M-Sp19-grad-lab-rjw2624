@@ -566,5 +566,5 @@ int testmain2(void)
 // Main stub
 int main(void)
 {
-  testmain1();
+  testmain2();
 }
