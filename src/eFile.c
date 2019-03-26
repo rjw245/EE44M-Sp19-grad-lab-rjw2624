@@ -203,6 +203,9 @@ int eFile_WOpen(char name[])
   }
   //write_point_in_sector = (dir[open_idx].size - 1)%SECTOR_BYTES;
   eDisk_ReadBlock(DATAarray, prev_iter + DATA_START);
+	open_file.bytenum = (dir[open_idx].size - 1);
+	open_file.dir_idx = open_idx;
+	open_file.sectornum = FAT_sec_offset;
 
   return SUCCESS;
 }
