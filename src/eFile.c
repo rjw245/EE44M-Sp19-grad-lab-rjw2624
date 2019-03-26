@@ -24,13 +24,20 @@ typedef struct
   uint32_t size; // size of zero indicates unused, size increase as write. size-1 is the point to write or read.
 } dir_entry_t;
 
+typedef struct
+{
+	int sectornum;
+	int bytenum;
+} position_t;
+
+
 // Sectors 0 through 31 are reserved
 #define DIR_START 32  // Sector number
 #define DIR_SECTORS 2 // Number of sectors directory may span
 #define DIR_ENTRIES ((DIR_SECTORS * SECTOR_BYTES) / (sizeof(dir_entry_t)))
 static dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS 130056 // Number of sectors FAT may span
+#define FAT_SECTORS (130056/32) // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS * SECTOR_BYTES) / sizeof(sector_addr_t))
 #define FAT_START 34
 #define CACHED_SECTORS (SECTOR_BYTES / sizeof(sector_addr_t)) //
@@ -42,6 +49,7 @@ static sector_addr_t cached_fat_sector = 0;
 static bool fat_cache_dirty = false;
 static bool write_mode = false;
 static BYTE DATAarray[SECTOR_BYTES];
+static position_t position;
 
 static int get_writepoint_in_sector(int dir_idx)
 {
@@ -194,7 +202,7 @@ int eFile_WOpen(char name[])
     prev_iter = iter;
     iter = fat_cache[prev_iter % CACHED_SECTORS];
   }
-  write_point_in_sector = (dir[open_idx].size - 1)%SECTOR_BYTES;
+  //write_point_in_sector = (dir[open_idx].size - 1)%SECTOR_BYTES;
 	eDisk_ReadBlock(DATAarray,prev_iter+DATA_START);
 	
 	return SUCCESS;
@@ -202,7 +210,11 @@ int eFile_WOpen(char name[])
 
 int eFile_Write(char data)
 {
-  
+  if(!write_mode)
+	{
+		return FAIL;
+	}
+	
 }
 
 int eFile_Close(void)
