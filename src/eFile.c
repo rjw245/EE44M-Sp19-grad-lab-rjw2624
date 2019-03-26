@@ -27,7 +27,7 @@ typedef struct
 typedef struct
 {
   int dir_idx;
-  int sectornum;
+  int sectornum; // Sector offset from DATA_START
   int bytenum;
 } open_file_metadata_t;
 
@@ -45,7 +45,7 @@ static dir_entry_t dir[DIR_ENTRIES];
 #define DATA_START 130090
 
 static sector_addr_t fat_cache[CACHED_SECTORS];
-static sector_addr_t cached_fat_sector = 0;
+static sector_addr_t cached_fat_sector = 0; // Absolute sector number
 static bool fat_cache_dirty = false;
 static bool write_mode = false;
 static BYTE DATAarray[SECTOR_BYTES];
@@ -54,6 +54,16 @@ static open_file_metadata_t open_file;
 static int get_writepoint_in_sector(int dir_idx)
 {
   return dir[dir_idx].size - 1;
+}
+
+static void cache_file_sector(sector_addr_t abs_sector_num)
+{
+    eDisk_ReadBlock((BYTE *)DATAarray, abs_sector_num);
+}
+
+static void writeback_file_sector(void)
+{
+  eDisk_WriteBlock((BYTE *)DATAarray, DATA_START + open_file.sectornum);
 }
 
 static void writeback_fat_cache(void)
@@ -228,6 +238,36 @@ int eFile_WClose(void)
 
 int eFile_ROpen(char name[])
 {
+  int open_idx = -1;
+  int FAT_sec_offset; // Sector offset from base sector of FAT
+  int iter = 0;
+  int prev_iter = 0;
+  for (int i = 0; i < DIR_ENTRIES; i++)
+  {
+    if (strncmp(name, dir[i].file_name, LONGEST_FILENAME) == 0)
+    {
+      open_idx = i;
+      write_mode = false;
+      break;
+    }
+  }
+  if (open_idx == -1)
+    return FAIL;
+  FAT_sec_offset = dir[open_idx].start / CACHED_SECTORS;
+  prev_iter = dir[open_idx].start;
+  cache_fat_sector(FAT_sec_offset + FAT_START);
+  iter = fat_cache[prev_iter % CACHED_SECTORS];
+  while (iter != -1)
+  {
+    FAT_sec_offset = iter / CACHED_SECTORS;
+    cache_fat_sector(FAT_sec_offset + FAT_START);
+    prev_iter = iter;
+    iter = fat_cache[prev_iter % CACHED_SECTORS];
+  }
+  //write_point_in_sector = (dir[open_idx].size - 1)%SECTOR_BYTES;
+  open_file.bytenum = 0;
+  open_file.sectornum = prev_iter;
+  cache_file_sector(DATA_START + prev_iter);
 }
 
 int eFile_ReadNext(char *pt)
@@ -235,6 +275,12 @@ int eFile_ReadNext(char *pt)
   if (open_file.bytenum < dir[open_file.dir_idx].size - 1)
   {
     // More data left to read
+    *pt = DATAarray[open_file.bytenum++ % SECTOR_BYTES];
+    if((open_file.bytenum % SECTOR_BYTES) == 0)
+    {
+      // Get next sector
+      cache_file_sector(DATA_START + ++open_file.sectornum);
+    }
   }
   else
   {
