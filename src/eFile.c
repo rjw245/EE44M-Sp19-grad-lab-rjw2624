@@ -24,12 +24,13 @@ typedef struct
   uint32_t size; // size of zero indicates unused, size increase as write. size-1 is the point to write or read.
 } dir_entry_t;
 
+// Sectors 0 through 31 are reserved
 #define DIR_START 32  // Sector number
 #define DIR_SECTORS 2 // Number of sectors directory may span
 #define DIR_ENTRIES ((DIR_SECTORS * SECTOR_BYTES) / (sizeof(dir_entry_t)))
 static dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS (130056/32) // Number of sectors FAT may span
+#define FAT_SECTORS 130056 // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS * SECTOR_BYTES) / sizeof(sector_addr_t))
 #define FAT_START 34
 #define CACHED_SECTORS (SECTOR_BYTES / sizeof(sector_addr_t)) //
@@ -40,8 +41,12 @@ static sector_addr_t fat_cache[CACHED_SECTORS];
 static sector_addr_t cached_fat_sector = 0;
 static bool fat_cache_dirty = false;
 static bool write_mode = false;
-static int write_point_in_sector = 0;
 static BYTE DATAarray[SECTOR_BYTES];
+
+static int get_writepoint_in_sector(int dir_idx)
+{
+  return dir[dir_idx].size - 1;
+}
 
 static void writeback_fat_cache(void)
 {
@@ -158,26 +163,25 @@ int eFile_Create(char name[])
 
   fat_cache[freespace % CACHED_SECTORS] = -1; // This is creating part, make sure currently allocated space is last one.
   fat_cache_dirty = true;
-  //eDisk_WriteBlock((BYTE *)fat_cache, FAT_sec_offset + FAT_START); // write back to the disk.
   return SUCCESS;
 }
 
 int eFile_WOpen(char name[])
 {
-  int open_idx = 0;
+  int open_idx = -1;
   int FAT_sec_offset; // Sector offset from base sector of FAT
   int iter = 0;
   int prev_iter = 0;
   for (int i = 0; i < DIR_ENTRIES; i++)
   {
-    if (strcmp(name, dir[i].file_name) == 0)
+    if (strncmp(name, dir[i].file_name, LONGEST_FILENAME) == 0)
     {
       open_idx = i;
       write_mode = true;
       break;
     }
   }
-  if (open_idx == 0 || open_idx == DIR_ENTRIES)
+  if (open_idx == -1)
     return FAIL;
   FAT_sec_offset = dir[open_idx].start / CACHED_SECTORS;
   prev_iter = dir[open_idx].start;
@@ -198,6 +202,7 @@ int eFile_WOpen(char name[])
 
 int eFile_Write(char data)
 {
+  
 }
 
 int eFile_Close(void)
