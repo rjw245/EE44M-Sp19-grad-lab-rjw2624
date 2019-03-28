@@ -56,9 +56,9 @@ static int get_writepoint_in_sector(int dir_idx)
   return dir[dir_idx].size - 1;
 }
 
-static void cache_file_sector(sector_addr_t abs_sector_num)
+static void cache_file_sector(sector_addr_t data_sector_offset)
 {
-  eDisk_ReadBlock((BYTE *)DATAarray, abs_sector_num);
+  eDisk_ReadBlock((BYTE *)DATAarray, DATA_START + data_sector_offset);
 }
 
 /**
@@ -237,7 +237,7 @@ int eFile_Write(char data)
 		fat_cache[freespace % CACHED_SECTORS] = -1; // This is creating part, make sure currently allocated space is last one.
 		fat_cache_dirty = true;
 		open_file.sectornum = freespace;
-		cache_file_sector(freespace + DATA_START);
+		cache_file_sector(freespace);
 	}
 	DATAarray[idx%SECTOR_BYTES] = data;
 	open_file.bytenum++;
@@ -271,7 +271,7 @@ int eFile_ROpen(char name[])
   open_file.dir_idx = open_idx;
   open_file.bytenum = 0;
   open_file.sectornum = dir[open_idx].start;
-  cache_file_sector(DATA_START + prev_iter);
+  cache_file_sector(prev_iter);
   return SUCCESS;
 }
 
@@ -292,7 +292,7 @@ int eFile_ReadNext(char *pt)
       {
         // Get next sector
         open_file.sectornum = get_next_file_sector(open_file.sectornum);
-        cache_file_sector(DATA_START + open_file.sectornum);
+        cache_file_sector(open_file.sectornum);
       }
       return SUCCESS;
     }
@@ -302,6 +302,8 @@ int eFile_ReadNext(char *pt)
 
 int eFile_RClose(void)
 {
+    // No fsync necessary, file should be unchanged in RAM
+	return SUCCESS;
 }
 
 int eFile_Directory(void (*fp)(char))
