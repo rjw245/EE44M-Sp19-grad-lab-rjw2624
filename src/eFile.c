@@ -139,19 +139,6 @@ int eFile_Format(void)
     writeback_fat_cache();
   }
 
-  /*
-  cached_fat_sector = 0;
-  for (int j = 0; j < 34; j++)
-  {
-    fat_cache[j] = 0;
-  }
-  for (int j = 34; j < CACHED_SECTORS; j++)
-  {
-    fat_cache[j] = j + 1;
-  }
-	
-  writeback_fat_cache();
-*/
   dir[0].start = 0; // sector offset from DATA_START
   dir[0].size = 1;
 
@@ -295,11 +282,12 @@ int eFile_ROpen(char name[])
   open_file.bytenum = 0;
   open_file.sectornum = dir[open_idx].start;
   cache_file_sector(DATA_START + prev_iter);
+  return SUCCESS;
 }
 
 static bool read_reached_eof(void)
 {
-  return (open_file.bytenum >= dir[open_file.dir_idx].size - 1);
+  return (open_file.bytenum >= (dir[open_file.dir_idx].size - 1));
 }
 
 int eFile_ReadNext(char *pt)
@@ -316,6 +304,7 @@ int eFile_ReadNext(char *pt)
         open_file.sectornum = get_next_file_sector(open_file.sectornum);
         cache_file_sector(DATA_START + open_file.sectornum);
       }
+      return SUCCESS;
     }
   }
   return FAIL;
@@ -331,6 +320,7 @@ int eFile_Directory(void (*fp)(char))
 
 int eFile_Delete(char name[])
 {
+  // Attach head of file's sector list to the tail of the free space linked list
 }
 
 int eFile_RedirectToFile(char *name)
