@@ -79,7 +79,6 @@ static sector_addr_t get_next_file_sector(sector_addr_t data_sector_offset)
   return fat_cache[data_sector_offset % CACHED_SECTORS];
 }
 
-
 static void writeback_fat_cache(void)
 {
   eDisk_WriteBlock((BYTE *)fat_cache, FAT_START + cached_fat_sector);
@@ -164,7 +163,7 @@ int eFile_Create(char name[])
 {
   dir_entry_t new_file;
   int already_exists_at_idx = lookup_file_dir_idx(name);
-  if(already_exists_at_idx != -1)
+  if (already_exists_at_idx != -1)
     return FAIL; // File already exists with this name
 
   // Find empty dir entry to use
@@ -178,8 +177,8 @@ int eFile_Create(char name[])
   if (free_idx == DIR_ENTRIES)
     return FAIL; // Directory is full, cannot create new file
 
-  int freespace_head = dir[0].start;  // get free space that we could use
-  cache_fat_sector(freespace_head / CACHED_SECTORS);  // Read sector of FAT from disk
+  int freespace_head = dir[0].start;                         // get free space that we could use
+  cache_fat_sector(freespace_head / CACHED_SECTORS);         // Read sector of FAT from disk
   dir[0].start = fat_cache[freespace_head % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
 
   // Create directory entry with given name.
@@ -214,38 +213,37 @@ int eFile_WOpen(char name[])
   }
   //write_point_in_sector = (dir[open_idx].size - 1)%SECTOR_BYTES;
   eDisk_ReadBlock(DATAarray, prev_iter + DATA_START);
-	open_file.bytenum = (dir[open_idx].size - 1);
-	open_file.dir_idx = open_idx;
-	open_file.sectornum = prev_iter;
+  open_file.bytenum = (dir[open_idx].size - 1);
+  open_file.dir_idx = open_idx;
+  open_file.sectornum = prev_iter;
 
   return SUCCESS;
 }
 
 int eFile_Write(char data)
 {
-	int idx = open_file.bytenum;
+  int idx = open_file.bytenum;
   if (!write_mode)
   {
     return FAIL;
   }
-	if(idx !=0 && idx%SECTOR_BYTES ==0)
-	{
-		writeback_file_sector();
-		int freespace = dir[0].start;                             // get free space that we could use
-		fat_cache[open_file.sectornum%CACHED_SECTORS] = freespace;
+  if (idx != 0 && idx % SECTOR_BYTES == 0)
+  {
+    writeback_file_sector();
+    int freespace = dir[0].start; // get free space that we could use
+    fat_cache[open_file.sectornum % CACHED_SECTORS] = freespace;
 
-		//need to change fatcache to freespace fatcache
-		cache_fat_sector(freespace / CACHED_SECTORS);
-		dir[0].start = fat_cache[freespace % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
-		fat_cache[freespace % CACHED_SECTORS] = -1; // This is creating part, make sure currently allocated space is last one.
-		fat_cache_dirty = true;
-		open_file.sectornum = freespace;
-		cache_file_sector(freespace);
-	}
-	DATAarray[idx%SECTOR_BYTES] = data;
-	open_file.bytenum++;
-	return SUCCESS;
-	
+    //need to change fatcache to freespace fatcache
+    cache_fat_sector(freespace / CACHED_SECTORS);
+    dir[0].start = fat_cache[freespace % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
+    fat_cache[freespace % CACHED_SECTORS] = -1;           // This is creating part, make sure currently allocated space is last one.
+    fat_cache_dirty = true;
+    open_file.sectornum = freespace;
+    cache_file_sector(freespace);
+  }
+  DATAarray[idx % SECTOR_BYTES] = data;
+  open_file.bytenum++;
+  return SUCCESS;
 }
 
 int eFile_Close(void)
@@ -254,12 +252,12 @@ int eFile_Close(void)
 
 int eFile_WClose(void)
 {
-	dir[open_file.dir_idx].size = open_file.bytenum + 1;
-	writeback_dir();
-	writeback_fat_cache();
-	writeback_file_sector();
-	write_mode = false;
-	return SUCCESS;
+  dir[open_file.dir_idx].size = open_file.bytenum + 1;
+  writeback_dir();
+  writeback_fat_cache();
+  writeback_file_sector();
+  write_mode = false;
+  return SUCCESS;
 }
 
 int eFile_ROpen(char name[])
@@ -305,23 +303,23 @@ int eFile_ReadNext(char *pt)
 
 int eFile_RClose(void)
 {
-    // No fsync necessary, file should be unchanged in RAM
-	return SUCCESS;
+  // No fsync necessary, file should be unchanged in RAM
+  return SUCCESS;
 }
 
 int eFile_Directory(void (*fp)(char))
 {
   for (int i = 0; i < DIR_ENTRIES; i++)
   {
-    if(dir[i].size > 0)
+    if (dir[i].size > 0)
     {
       char file_desc[32];
       memset(file_desc, 0, sizeof(file_desc));
       snprintf(file_desc, sizeof(file_desc), "%s: %dB\r\n", dir[i].file_name, dir[i].size);
       char *c = file_desc;
-      while(*c != 0)
+      while (*c != 0)
       {
-          fp(*c);
+        fp(*c);
       }
     }
   }
@@ -336,11 +334,12 @@ int eFile_Delete(char name[])
   // Attach head of file's sector list to the tail of the free space linked list
   sector_addr_t sect_iter = dir[0].start; // Free space head
   sector_addr_t next_sect = get_next_file_sector(sect_iter);
-  while(next_sect != 0) {
-      sect_iter = next_sect;
-      next_sect = get_next_file_sector(sect_iter);
+  while (next_sect != 0)
+  {
+    sect_iter = next_sect;
+    next_sect = get_next_file_sector(sect_iter);
   }
-  cache_fat_sector(sect_iter /  CACHED_SECTORS);
+  cache_fat_sector(sect_iter / CACHED_SECTORS);
   fat_cache[sect_iter % CACHED_SECTORS] = dir[del_idx].start; // freespace tail --> deleted file head
 
   // Erase directory entry
