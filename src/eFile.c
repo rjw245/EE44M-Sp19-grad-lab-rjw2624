@@ -61,6 +61,11 @@ static void cache_file_sector(sector_addr_t data_sector_offset)
   eDisk_ReadBlock((BYTE *)DATAarray, DATA_START + data_sector_offset);
 }
 
+static void writeback_file_sector(void)
+{
+  eDisk_WriteBlock((BYTE *)DATAarray, DATA_START + open_file.sectornum);
+}
+
 /**
  * @brief Get the next sector of a file.
  * 
@@ -74,10 +79,6 @@ static sector_addr_t get_next_file_sector(sector_addr_t data_sector_offset)
   return fat_cache[data_sector_offset % CACHED_SECTORS];
 }
 
-static void writeback_file_sector(void)
-{
-  eDisk_WriteBlock((BYTE *)DATAarray, DATA_START + open_file.sectornum);
-}
 
 static void writeback_fat_cache(void)
 {
