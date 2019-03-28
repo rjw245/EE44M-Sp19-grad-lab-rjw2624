@@ -85,6 +85,18 @@ static void writeback_fat_cache(void)
   fat_cache_dirty = false;
 }
 
+static int lookup_file_dir_idx(char name[])
+{
+  for (int i = 0; i < DIR_ENTRIES; i++)
+  {
+    if ((dir[i].size > 0) && (strncmp(name, dir[i].file_name, LONGEST_FILENAME) == 0))
+    {
+      return i;
+    }
+  }
+  return -1;
+}
+
 static void cache_fat_sector(sector_addr_t fat_sector_offset)
 {
   if (cached_fat_sector != fat_sector_offset)
@@ -152,22 +164,18 @@ int eFile_Create(char name[])
   int idx;
   int freespace;
   int FAT_sec_offset; // Sector offset from base sector of FAT
+  int already_exists_at_idx = lookup_file_dir_idx(name);
+  if(already_exists_at_idx != -1)
+    return FAIL; // File already exists with this name
+
+  // Find empty dir entry to use
   for (idx = 0; idx < DIR_ENTRIES; idx++)
   {
-    if ((dir[idx].size > 0) && (strncmp(name, dir[idx].file_name, LONGEST_FILENAME) == 0))
-    {
-      return FAIL; // There already is a file with this name
-                   //It may not work well... What if same name dir is at the end of dir.
-    }
     if (dir[idx].size == 0)
-    {
       break; // Free dir entry at idx, we will allocate it to this file
-    }
   }
   if (idx == DIR_ENTRIES)
-  {
     return FAIL; // Directory is full, cannot create new file
-  }
   strncpy(dir[idx].file_name, name, LONGEST_FILENAME);
 
   // Create directory entry with given name.
@@ -185,21 +193,13 @@ int eFile_Create(char name[])
 
 int eFile_WOpen(char name[])
 {
-  int open_idx = -1;
   int FAT_sec_offset; // Sector offset from base sector of FAT
   int iter = 0;
   int prev_iter = 0;
-  for (int i = 0; i < DIR_ENTRIES; i++)
-  {
-    if ((dir[i].size > 0) && (strncmp(name, dir[i].file_name, LONGEST_FILENAME) == 0))
-    {
-      open_idx = i;
-      write_mode = true;
-      break;
-    }
-  }
+  int open_idx = lookup_file_dir_idx(name);
   if (open_idx == -1)
     return FAIL;
+  write_mode = true;
   FAT_sec_offset = dir[open_idx].start / CACHED_SECTORS;
   prev_iter = dir[open_idx].start;
   cache_fat_sector(FAT_sec_offset);
@@ -263,21 +263,13 @@ int eFile_WClose(void)
 
 int eFile_ROpen(char name[])
 {
-  int open_idx = -1;
   int FAT_sec_offset; // Sector offset from base sector of FAT
   int iter = 0;
   int prev_iter = 0;
-  for (int i = 0; i < DIR_ENTRIES; i++)
-  {
-    if ((dir[i].size > 0) && (strncmp(name, dir[i].file_name, LONGEST_FILENAME) == 0))
-    {
-      open_idx = i;
-      write_mode = false;
-      break;
-    }
-  }
+  int open_idx = lookup_file_dir_idx(name);
   if (open_idx == -1)
     return FAIL;
+  write_mode = false;
   open_file.dir_idx = open_idx;
   open_file.bytenum = 0;
   open_file.sectornum = dir[open_idx].start;
@@ -335,15 +327,6 @@ int eFile_Directory(void (*fp)(char))
 int eFile_Delete(char name[])
 {
   int del_idx = -1;
-  for (int i = 0; i < DIR_ENTRIES; i++)
-  {
-    if ((dir[i].size > 0) && (strncmp(name, dir[i].file_name, LONGEST_FILENAME) == 0))
-    {
-      del_idx = i;
-      write_mode = false;
-      break;
-    }
-  }
   if (del_idx == -1)
     return FAIL;
 
