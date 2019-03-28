@@ -222,12 +222,11 @@ int eFile_WOpen(char name[])
 
 int eFile_Write(char data)
 {
-  int idx = open_file.bytenum;
   if (!write_mode)
-  {
     return FAIL;
-  }
-  if (idx != 0 && idx % SECTOR_BYTES == 0)
+
+  int w_idx = open_file.bytenum;
+  if (w_idx != 0 && w_idx % SECTOR_BYTES == 0)
   {
     writeback_file_sector();
     int freespace = dir[0].start; // get free space that we could use
@@ -241,7 +240,7 @@ int eFile_Write(char data)
     open_file.sectornum = freespace;
     cache_file_sector(freespace);
   }
-  DATAarray[idx % SECTOR_BYTES] = data;
+  DATAarray[w_idx % SECTOR_BYTES] = data;
   open_file.bytenum++;
   return SUCCESS;
 }
