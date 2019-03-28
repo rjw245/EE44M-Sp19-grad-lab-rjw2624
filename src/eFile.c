@@ -87,7 +87,8 @@ static void writeback_fat_cache(void)
 
 static int lookup_file_dir_idx(char name[])
 {
-  for (int i = 0; i < DIR_ENTRIES; i++)
+  // Skip idx 0 where free space is tracked
+  for (int i = 1; i < DIR_ENTRIES; i++)
   {
     if ((dir[i].size > 0) && (strncmp(name, dir[i].file_name, LONGEST_FILENAME) == 0))
     {
@@ -167,7 +168,8 @@ int eFile_Create(char name[])
 
   // Find empty dir entry to use
   int free_idx;
-  for (free_idx = 0; free_idx < DIR_ENTRIES; free_idx++)
+  // Skip idx 0 where free space is tracked
+  for (free_idx = 1; free_idx < DIR_ENTRIES; free_idx++)
   {
     if (dir[free_idx].size == 0)
       break; // Free dir entry at idx, we will allocate it to this file
