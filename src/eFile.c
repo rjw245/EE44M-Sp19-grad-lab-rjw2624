@@ -161,32 +161,30 @@ int eFile_Format(void)
 int eFile_Create(char name[])
 {
   dir_entry_t new_file;
-  int idx;
-  int freespace;
-  int FAT_sec_offset; // Sector offset from base sector of FAT
   int already_exists_at_idx = lookup_file_dir_idx(name);
   if(already_exists_at_idx != -1)
     return FAIL; // File already exists with this name
 
   // Find empty dir entry to use
-  for (idx = 0; idx < DIR_ENTRIES; idx++)
+  int free_idx;
+  for (free_idx = 0; free_idx < DIR_ENTRIES; free_idx++)
   {
-    if (dir[idx].size == 0)
+    if (dir[free_idx].size == 0)
       break; // Free dir entry at idx, we will allocate it to this file
   }
-  if (idx == DIR_ENTRIES)
+  if (free_idx == DIR_ENTRIES)
     return FAIL; // Directory is full, cannot create new file
-  strncpy(dir[idx].file_name, name, LONGEST_FILENAME);
+
+  int freespace_head = dir[0].start;  // get free space that we could use
+  cache_fat_sector(freespace_head / CACHED_SECTORS);  // Read sector of FAT from disk
+  dir[0].start = fat_cache[freespace_head % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
 
   // Create directory entry with given name.
-  dir[idx].size = 1; // set size to indicate entry occupied. True size of file is dir[].size - 1
-  FAT_sec_offset = dir[0].start / CACHED_SECTORS;
-  cache_fat_sector(FAT_sec_offset); // Read sector of FAT from disk
+  strncpy(dir[free_idx].file_name, name, LONGEST_FILENAME);
+  dir[free_idx].size = 1; // set size to indicate entry occupied. True size of file is dir[].size - 1
+  dir[free_idx].start = freespace_head;
 
-  freespace = dir[0].start;                             // get free space that we could use
-  dir[0].start = fat_cache[freespace % CACHED_SECTORS]; // set head of free space to nextone. (Next freespace using linked list kind of work)
-
-  fat_cache[freespace % CACHED_SECTORS] = -1; // This is creating part, make sure currently allocated space is last one.
+  fat_cache[freespace_head % CACHED_SECTORS] = -1; // Set this sector as end of new file in FAT
   fat_cache_dirty = true;
   return SUCCESS;
 }
