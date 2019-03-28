@@ -51,6 +51,8 @@ static bool write_mode = false;
 static BYTE DATAarray[SECTOR_BYTES];
 static open_file_metadata_t open_file;
 
+void cache_fat_sector(sector_addr_t fat_sector_offset);
+
 static int get_writepoint_in_sector(int dir_idx)
 {
   return dir[dir_idx].size - 1;
@@ -98,7 +100,7 @@ static int lookup_file_dir_idx(char name[])
   return -1;
 }
 
-static void cache_fat_sector(sector_addr_t fat_sector_offset)
+ void cache_fat_sector(sector_addr_t fat_sector_offset)
 {
   if (cached_fat_sector != fat_sector_offset)
   {
@@ -244,9 +246,14 @@ int eFile_Write(char data)
   open_file.bytenum++;
   return SUCCESS;
 }
+int eFile_WClose(void);
 
 int eFile_Close(void)
 {
+	if(write_mode)
+		eFile_WClose();
+	
+	return SUCCESS;
 }
 
 int eFile_WClose(void)
@@ -319,14 +326,17 @@ int eFile_Directory(void (*fp)(char))
       while (*c != 0)
       {
         fp(*c);
+				c++;
       }
     }
   }
+	return SUCCESS;
 }
 
 int eFile_Delete(char name[])
 {
-  int del_idx = -1;
+  int del_idx  = lookup_file_dir_idx(name);
+	
   if (del_idx == -1)
     return FAIL;
 
@@ -348,12 +358,17 @@ int eFile_Delete(char name[])
 
   writeback_fat_cache();
   writeback_dir();
+	return SUCCESS;
 }
 
 int eFile_RedirectToFile(char *name)
 {
+	UART_setRedirect(name);
+	return SUCCESS;
 }
 
 int eFile_EndRedirectToFile(void)
 {
+	UART_endRedirect();
+	return SUCCESS;
 }

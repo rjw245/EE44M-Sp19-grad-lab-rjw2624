@@ -132,4 +132,19 @@ void UART_OutUHex(uint32_t number);
  */
 void UART_InString(char *bufPt, uint16_t max);
 
+//------------UART_setRedirect------------
+/**
+ * @brief  Accept Filename and make it as redirect file
+ * 
+ * @param string of filename
+ */
+void UART_setRedirect(char *F);
+
+//------------UART_endRedirect------------
+/**
+ * @brief  End redirection
+ * 
+ */
+void UART_endRedirect();
+
 #endif

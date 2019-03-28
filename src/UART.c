@@ -34,6 +34,7 @@
 #include "FIFO.h"
 #include "UART.h"
 #include "OS.h"
+#include "eFile.h"
 
 #define NVIC_EN0_INT5 0x00000020 // Interrupt 5 enable
 
@@ -150,10 +151,33 @@ void UART_OutChar(char data)
   OS_Signal(&uartOut_sema);
 }
 
+char *direct = 0;
+int redirect = 0;
+
 int fputc(int ch, FILE *f)
 {
-  UART_OutChar(ch);
+	if(redirect ==1)
+	{
+		eFile_Write(ch);
+	}
+	else
+		UART_OutChar(ch);
   return ch;
+}
+
+void UART_setRedirect(char *F)
+{
+	redirect = 1;
+	direct = F;
+	eFile_Create(direct);
+	eFile_WOpen(direct);
+}
+
+void UART_endRedirect()
+{
+	redirect = 0;
+	direct = 0;
+	eFile_WClose();
 }
 
 // at least one of three things has happened:
