@@ -81,6 +81,19 @@ static sector_addr_t get_next_file_sector(sector_addr_t data_sector_offset)
   return fat_cache[data_sector_offset % CACHED_SECTORS];
 }
 
+static sector_addr_t get_last_file_sector(sector_addr_t start_data_sector_offset)
+{
+  sector_addr_t start = start_data_sector_offset;
+  sector_addr_t end = start;
+  sector_addr_t next = start;
+  do 
+  {
+    end = next;
+    next = get_next_file_sector(end);
+  } while(next != -1);
+  return end;
+}
+
 static void writeback_fat_cache(void)
 {
   eDisk_WriteBlock((BYTE *)fat_cache, FAT_START + cached_fat_sector);
@@ -320,7 +333,9 @@ int eFile_Directory(void (*fp)(char))
     {
       char file_desc[32];
       memset(file_desc, 0, sizeof(file_desc));
-      snprintf(file_desc, sizeof(file_desc), "%s: %dB\r\n", dir[i].file_name, dir[i].size - 1);
+      sector_addr_t start = dir[i].start;
+      sector_addr_t end = get_last_file_sector(start);
+      snprintf(file_desc, sizeof(file_desc), "%s: %dB sectors %d-%d\r\n", dir[i].file_name, dir[i].size - 1, start, end);
       char *c = file_desc;
       while (*c != 0)
       {
@@ -340,15 +355,9 @@ int eFile_Delete(char name[])
     return FAIL;
 
   // Attach head of file's sector list to the tail of the free space linked list
-  sector_addr_t sect_iter = dir[0].start; // Free space head
-  sector_addr_t next_sect = get_next_file_sector(sect_iter);
-  while (next_sect != -1)
-  {
-    sect_iter = next_sect;
-    next_sect = get_next_file_sector(sect_iter);
-  }
-  cache_fat_sector(sect_iter / CACHED_SECTORS);
-  fat_cache[sect_iter % CACHED_SECTORS] = dir[del_idx].start; // freespace tail --> deleted file head
+  sector_addr_t last_free = get_last_file_sector(dir[0].start); // Free space head
+  cache_fat_sector(last_free / CACHED_SECTORS);
+  fat_cache[last_free % CACHED_SECTORS] = dir[del_idx].start; // freespace tail --> deleted file head
 
   // Erase directory entry
   memset(dir[del_idx].file_name, 0, sizeof(dir[0].file_name));
