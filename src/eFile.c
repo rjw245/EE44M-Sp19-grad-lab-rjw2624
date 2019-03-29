@@ -321,7 +321,7 @@ int eFile_Directory(void (*fp)(char))
     {
       char file_desc[32];
       memset(file_desc, 0, sizeof(file_desc));
-      snprintf(file_desc, sizeof(file_desc), "%s: %dB\r\n", dir[i].file_name, dir[i].size);
+      snprintf(file_desc, sizeof(file_desc), "%s: %dB\r\n", dir[i].file_name, dir[i].size - 1);
       char *c = file_desc;
       while (*c != 0)
       {
