@@ -315,7 +315,7 @@ int eFile_RClose(void)
 
 int eFile_Directory(void (*fp)(char))
 {
-  for (int i = 0; i < DIR_ENTRIES; i++)
+  for (int i = 1; i < DIR_ENTRIES; i++)
   {
     if (dir[i].size > 0)
     {
