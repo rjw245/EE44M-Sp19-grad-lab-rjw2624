@@ -43,7 +43,7 @@ static void readAndParse(char *cmd_str, char **cmd, char **arg1, char **arg2, ch
 
 void interpreter_task(void)
 {
-  static char uart_in_buf[256];
+  static char uart_in_buf[1024];
   while (1)
   {
     UART_OutString("> ");

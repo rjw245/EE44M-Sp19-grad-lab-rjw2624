@@ -203,6 +203,9 @@ int eFile_Create(char name[])
 
   fat_cache[freespace_head % CACHED_SECTORS] = -1; // Set this sector as end of new file in FAT
   fat_cache_dirty = true;
+
+  writeback_fat_cache();
+  writeback_dir();
   return SUCCESS;
 }
 
@@ -331,11 +334,20 @@ int eFile_Directory(void (*fp)(char))
   {
     if (dir[i].size > 0)
     {
-      char file_desc[32];
+      char file_desc[64];
+      char sectors_str[32];
       memset(file_desc, 0, sizeof(file_desc));
-      sector_addr_t start = dir[i].start;
-      sector_addr_t end = get_last_file_sector(start);
-      snprintf(file_desc, sizeof(file_desc), "%s: %dB sectors %d-%d\r\n", dir[i].file_name, dir[i].size - 1, start, end);
+      memset(sectors_str, 0, sizeof(sectors_str));
+      sector_addr_t next = dir[i].start;
+      unsigned int str_idx = 0;
+      str_idx += snprintf(sectors_str+str_idx, sizeof(sectors_str)-str_idx, "%lu", next);
+      next = get_next_file_sector(next);
+      while((next != -1) && (str_idx < sizeof(sectors_str)))
+      {
+        str_idx += snprintf(sectors_str+str_idx, sizeof(sectors_str)-str_idx, ", %lu", next);
+        next = get_next_file_sector(next);
+      }
+      snprintf(file_desc, sizeof(file_desc), "%s: %dB sectors %s\r\n", dir[i].file_name, dir[i].size - 1, sectors_str);
       char *c = file_desc;
       while (*c != 0)
       {
