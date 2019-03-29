@@ -134,6 +134,7 @@ void OS_Init(void)
   UART_Init();
   ST7735_InitR(INITR_REDTAB);
   ST7735_FillScreen(0xFFFF);
+
   // Activate PendSV interrupt with lowest priority
   NVIC_SYS_PRI3_R |= (7 << 21);
   // Activate Systick interrupt with 2nd lowest priority

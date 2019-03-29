@@ -246,7 +246,6 @@ int eFile_Write(char data)
   open_file.bytenum++;
   return SUCCESS;
 }
-int eFile_WClose(void);
 
 int eFile_Close(void)
 {

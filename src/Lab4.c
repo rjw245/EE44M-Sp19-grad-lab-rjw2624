@@ -298,6 +298,11 @@ void Interpreter(void)
 // 4) delete file
 // execute   eFile_Init();  after periodic interrupts have started
 
+void init_fs_task(void)
+{
+    eFile_Init();
+}
+
 //*******************lab 4 main **********
 int realmain(void)
 {               // lab 4 real main
@@ -322,6 +327,7 @@ int realmain(void)
   // create initial foreground threads
   NumCreated += OS_AddThread(&Interpreter, 128, 2);
   NumCreated += OS_AddThread(&DSP, 128, 1);
+  NumCreated += OS_AddThread(&init_fs_task, 128, 0);
   NumCreated += OS_AddThread(&IdleTask, 128, 7); // runs when nothing useful to do
 
   OS_Launch(TIMESLICE); // doesn't return, interrupts enabled in here

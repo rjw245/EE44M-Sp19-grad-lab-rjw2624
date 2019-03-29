@@ -5,6 +5,7 @@
 #include "interpreter.h"
 #include "ADC.h"
 #include "UART.h"
+#include "eFile.h"
 #include "OS.h"
 #include "tm4c123gh6pm.h"
 #include "ST7735.h"
@@ -49,7 +50,7 @@ void interpreter_task(void)
     UART_InString(uart_in_buf, lengthof(uart_in_buf) - 1);
     UART_OutString("\r\n");
     interpreter_cmd(uart_in_buf);
-		OS_Sleep(100);
+    OS_Sleep(100);
     // UART_OutString("\r\n");
     // UART_OutString(uart_in_buf);
     // UART_OutString("\r\n");
@@ -62,17 +63,17 @@ void interpreter_task(void)
   }
 }
 
-static void print_event(const event_t* event)
+static void print_event(const event_t *event)
 {
-    char event_str[80];
-    char *event_types[EVENT_NUM_TYPES] = {
+  char event_str[80];
+  char *event_types[EVENT_NUM_TYPES] = {
       [EVENT_FGTH_START] = "FG START",
       [EVENT_PTH_START] = "PT START",
       [EVENT_PTH_END] = "PT END",
-    };
-    sprintf(event_str, "Name: %s  Time: %llu cycles  Type: %s\r\n",
-            event->name, event->timestamp, event_types[event->type]);
-    UART_OutString(event_str);
+  };
+  sprintf(event_str, "Name: %s  Time: %llu cycles  Type: %s\r\n",
+          event->name, event->timestamp, event_types[event->type]);
+  UART_OutString(event_str);
 }
 
 void interpreter_cmd(char *cmd_str)
@@ -105,26 +106,113 @@ void interpreter_cmd(char *cmd_str)
   else if (strcmp(cmd, "time") == 0)
   {
     char time[64];
-    sprintf(time, "Time: %llu ms\r\n", OS_Time()/TIME_1MS);
+    sprintf(time, "Time: %llu ms\r\n", OS_Time() / TIME_1MS);
     UART_OutString(time);
   }
   else if (strcmp(cmd, "log") == 0)
   {
     Profiler_Foreach(print_event);
   }
-	
-	else if (strcmp(cmd, "critical") == 0)
+  else if (strcmp(cmd, "critical") == 0)
   {
-		char time[64];
+    char time[64];
     int res = getDisablePercent();
     sprintf(time, "critical time: %d percent\r\n", res);
-		UART_OutString(time);
+    UART_OutString(time);
   }
-	
   else if (strcmp(cmd, "clear") == 0)
   {
     Profiler_Clear();
-	  timeMeasureInit();
-	  timeMeasurestart();
+    timeMeasureInit();
+    timeMeasurestart();
+  }
+  else if(strcmp(cmd, "format") == 0)
+  {
+    int format_failed = eFile_Format();
+    if(format_failed)
+    {
+      UART_OutString("Format failed!\r\n");
+    }
+    else
+    {
+      UART_OutString("Format succeeded.\r\n");
+    } 
+  }
+  else if(strcmp(cmd, "ls") == 0)
+  {
+    eFile_Directory(UART_OutChar);
+  }
+  else if(strcmp(cmd, "cat") == 0)
+  {
+    int open_failed = eFile_ROpen(arg1);
+    if(open_failed)
+    {
+      UART_OutString("Failed to open file.\r\n");
+    }
+    else
+    {
+      int read_failed = 0;
+      do {
+        char c = 0;
+        read_failed = eFile_ReadNext(&c);
+        UART_OutChar(c);
+      } while(!read_failed);
+      UART_OutString("\r\n");
+    }
+    int close_failed = eFile_RClose();
+    if(close_failed)
+    {
+      UART_OutString("Failed to close file.\r\n");
+    }
+  }
+  else if(strcmp(cmd, "rm") == 0)
+  {
+    int del_failed = eFile_Delete(arg1);
+    if(del_failed)
+    {
+      UART_OutString("Failed to remove file.\r\n");
+    }
+    else
+    {
+      UART_OutString("Removed.\r\n");
+    }
+  }
+  else if(strcmp(cmd, "touch") == 0)
+  {
+    int create_failed = eFile_Create(arg1);
+    if(create_failed)
+    {
+      UART_OutString("Failed to create file.\r\n");
+    }
+    else
+    {
+      UART_OutString("Created file.\r\n");
+    }
+  }
+  else if(strcmp(cmd, "echo") == 0)
+  {
+    int open_failed = eFile_WOpen(arg1);
+    if(open_failed)
+    {
+      UART_OutString("Failed to open file.\r\n");
+    }
+    else
+    {
+      char *c = arg2;
+      while(*c)
+      {
+        int write_failed = eFile_Write(*c++);
+        if(write_failed)
+        {
+          UART_OutString("Failed to write to file.\r\n");
+          break;
+        }
+      }
+    }
+    int close_failed = eFile_WClose();
+    if(close_failed)
+    {
+      UART_OutString("Failed to close file.\r\n");
+    }
   }
 }
