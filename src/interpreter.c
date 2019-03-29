@@ -17,29 +17,7 @@
 
 static uint16_t sample_buffer[10];
 
-static void readAndParse(char *cmd_str, char **cmd, char **arg1, char **arg2, char **arg3, char **arg4, char **arg5, char **arg6)
-{
-  if (!(*cmd = strtok(cmd_str, "\t\n ,")))
-    return;
-
-  if (!(*arg1 = strtok(NULL, "\t\n ,")))
-    return;
-
-  if (!(*arg2 = strtok(NULL, "\t\n ,")))
-    return;
-
-  if (!(*arg3 = strtok(NULL, "\t\n ,")))
-    return;
-
-  if (!(*arg4 = strtok(NULL, "\t\n ,")))
-    return;
-
-  if (!(*arg5 = strtok(NULL, "\t\n ,")))
-    return;
-
-  if (!(*arg6 = strtok(NULL, "\t\n ,")))
-    return;
-}
+static const char strtok_delim[] = "\t ";
 
 void interpreter_task(void)
 {
@@ -50,16 +28,8 @@ void interpreter_task(void)
     UART_InString(uart_in_buf, lengthof(uart_in_buf) - 1);
     UART_OutString("\r\n");
     interpreter_cmd(uart_in_buf);
+    memset(uart_in_buf, 0, sizeof(uart_in_buf));
     OS_Sleep(100);
-    // UART_OutString("\r\n");
-    // UART_OutString(uart_in_buf);
-    // UART_OutString("\r\n");
-    // ADC_Collect(0, 100, sample_buffer, lengthof(sample_buffer));
-    // while(ADC_Status());
-    // char adc_string[64];
-    // sprintf(adc_string, "ADC: %d, %d  ", sample_buffer[0], sample_buffer[1]);
-    // ST7735_DrawString(0, 0, adc_string, ST7735_BLACK, ST7735_WHITE);
-    // UART_OutString(adc_string);
   }
 }
 
@@ -79,7 +49,7 @@ static void print_event(const event_t *event)
 void interpreter_cmd(char *cmd_str)
 {
   char *cmd, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
-  readAndParse(cmd_str, &cmd, &arg1, &arg2, &arg3, &arg4, &arg5, &arg6);
+  cmd = strtok(cmd_str, strtok_delim);
   if (strcmp(cmd, "adc") == 0)
   {
     zeroes(sample_buffer);
@@ -144,6 +114,7 @@ void interpreter_cmd(char *cmd_str)
   }
   else if(strcmp(cmd, "cat") == 0)
   {
+    arg1 = strtok(NULL, strtok_delim);
     int open_failed = eFile_ROpen(arg1);
     if(open_failed)
     {
@@ -167,6 +138,7 @@ void interpreter_cmd(char *cmd_str)
   }
   else if(strcmp(cmd, "rm") == 0)
   {
+    arg1 = strtok(NULL, strtok_delim);
     int del_failed = eFile_Delete(arg1);
     if(del_failed)
     {
@@ -179,6 +151,7 @@ void interpreter_cmd(char *cmd_str)
   }
   else if(strcmp(cmd, "touch") == 0)
   {
+    arg1 = strtok(NULL, strtok_delim);
     int create_failed = eFile_Create(arg1);
     if(create_failed)
     {
@@ -188,9 +161,11 @@ void interpreter_cmd(char *cmd_str)
     {
       UART_OutString("Created file.\r\n");
     }
+
   }
   else if(strcmp(cmd, "echo") == 0)
   {
+    arg1 = strtok(NULL, strtok_delim);
     int open_failed = eFile_WOpen(arg1);
     if(open_failed)
     {
@@ -198,6 +173,7 @@ void interpreter_cmd(char *cmd_str)
     }
     else
     {
+      arg2 = arg1 + strlen(arg1) + 1; // Don't tokenize to allow spaces
       char *c = arg2;
       while(*c)
       {
