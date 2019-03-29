@@ -262,14 +262,13 @@ int eFile_WClose(void)
   writeback_fat_cache();
   writeback_file_sector();
   write_mode = false;
+  memset(&open_file, 0, sizeof(open_file));
   return SUCCESS;
 }
 
 int eFile_ROpen(char name[])
 {
   int FAT_sec_offset; // Sector offset from base sector of FAT
-  int iter = 0;
-  int prev_iter = 0;
   int open_idx = lookup_file_dir_idx(name);
   if (open_idx == -1)
     return FAIL;
@@ -277,7 +276,7 @@ int eFile_ROpen(char name[])
   open_file.dir_idx = open_idx;
   open_file.bytenum = 0;
   open_file.sectornum = dir[open_idx].start;
-  cache_file_sector(prev_iter);
+  cache_file_sector(open_file.sectornum);
   return SUCCESS;
 }
 
@@ -309,6 +308,7 @@ int eFile_ReadNext(char *pt)
 int eFile_RClose(void)
 {
   // No fsync necessary, file should be unchanged in RAM
+  memset(&open_file, 0, sizeof(open_file));
   return SUCCESS;
 }
 
@@ -342,7 +342,7 @@ int eFile_Delete(char name[])
   // Attach head of file's sector list to the tail of the free space linked list
   sector_addr_t sect_iter = dir[0].start; // Free space head
   sector_addr_t next_sect = get_next_file_sector(sect_iter);
-  while (next_sect != 0)
+  while (next_sect != -1)
   {
     sect_iter = next_sect;
     next_sect = get_next_file_sector(sect_iter);
