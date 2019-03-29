@@ -228,7 +228,7 @@ int eFile_Write(char data)
     return FAIL;
 
   int w_idx = open_file.bytenum;
-  if (w_idx != 0 && w_idx % SECTOR_BYTES == 0)
+  if ((w_idx != 0) && (w_idx % SECTOR_BYTES == 0))
   {
     writeback_file_sector();
     int freespace = dir[0].start; // get free space that we could use
