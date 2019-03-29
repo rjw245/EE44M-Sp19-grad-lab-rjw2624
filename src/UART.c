@@ -60,19 +60,19 @@
 #define UART_ICR_TXIC 0x00000020    // Transmit Interrupt Clear
 #define UART_ICR_RXIC 0x00000010    // Receive Interrupt Clear
 
-#define FIFOSIZE 16           // size of the FIFOs (must be power of 2)
-#define FIFOSUCCESS 1         // return value on success
-#define FIFOFAIL 0            // return value on failure \
+#define FIFOSIZE 16   // size of the FIFOs (must be power of 2)
+#define FIFOSUCCESS 1 // return value on success
+#define FIFOFAIL 0    // return value on failure \
                               // create index implementation FIFO (see FIFO.h)
 AddIndexFifo(Rx, FIFOSIZE, char, FIFOSUCCESS, FIFOFAIL)
     AddIndexFifo(Tx, FIFOSIZE, char, FIFOSUCCESS, FIFOFAIL)
 
-Sema4Type uartIn_sema;
+        Sema4Type uartIn_sema;
 Sema4Type uartOut_sema;
 
-    // Initialize UART0
-    // Baud rate is 115200 bits/sec
-    void UART_Init(void)
+// Initialize UART0
+// Baud rate is 115200 bits/sec
+void UART_Init(void)
 {
   OS_InitSemaphore(&uartIn_sema, 1);
   OS_InitSemaphore(&uartOut_sema, 1);
@@ -156,28 +156,28 @@ int redirect = 0;
 
 int fputc(int ch, FILE *f)
 {
-	if(redirect ==1)
-	{
-		eFile_Write(ch);
-	}
-	else
-		UART_OutChar(ch);
+  if (redirect == 1)
+  {
+    eFile_Write(ch);
+  }
+  else
+    UART_OutChar(ch);
   return ch;
 }
 
 void UART_setRedirect(char *F)
 {
-	redirect = 1;
-	direct = F;
-	eFile_Create(direct);
-	eFile_WOpen(direct);
+  redirect = 1;
+  direct = F;
+  eFile_Create(direct);
+  eFile_WOpen(direct);
 }
 
 void UART_endRedirect()
 {
-	redirect = 0;
-	direct = 0;
-	eFile_WClose();
+  redirect = 0;
+  direct = 0;
+  eFile_WClose();
 }
 
 // at least one of three things has happened:
