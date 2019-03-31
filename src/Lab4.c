@@ -569,8 +569,35 @@ int testmain2(void)
   return 0;                 // this never executes
 }
 
+static void redirect_task(void)
+{
+    eFile_Create("redirect");
+    eFile_RedirectToFile("redirect");
+    printf("Successfully redirected!");
+    eFile_EndRedirectToFile();
+
+}
+
+int redirect_test(void)
+{               // lab 4 real main
+  OS_Init();    // initialize, disable interrupts
+  PortD_Init(); // user debugging profile
+
+  //*******attach background tasks***********
+  OS_AddPeriodicThread(disk_timerproc, 10 * TIME_1MS, 5);
+
+  NumCreated = 0;
+  // create initial foreground threads
+  NumCreated += OS_AddThread(&Interpreter, 128, 2);
+  NumCreated += OS_AddThread(&init_fs_task, 128, 0);
+  NumCreated += OS_AddThread(&redirect_task, 128, 3);
+
+  OS_Launch(TIMESLICE); // doesn't return, interrupts enabled in here
+  return 0;             // this never executes
+}
+
 // Main stub
 int main(void)
 {
-  realmain();
+  redirect_test();
 }
