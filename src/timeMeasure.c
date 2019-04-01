@@ -9,40 +9,45 @@
 static unsigned long long __startTime;
 static unsigned long long __total_interupt_time;
 static unsigned long long __disable_interupt_T;
-static int enabled;
-static int start ;
-
+static bool enabled;
+static bool start ;
+static bool intr_stack[64];
+static int stackidx = 0;
 
 void timeMeasureInit(void)
 {
-	enabled = 0;
-	start = 0;
+	enabled = false;
+	start = false;
 	__startTime = OS_Time();
 	__total_interupt_time = 0;
 } // initialize time measurement. At main, it should be exist
 	
 void timeMeasurestart(void)
 {
-	start = 1;
-	enabled =1;
+	start = true;
+	enabled =true;
 }
 
 
 void disableTimeget(void)
 {
-	if(start == 1&& enabled == 1){
-		enabled = 0;
+	if(start == true){
+		intr_stack[stackidx++] = enabled;
+		enabled = false;
 		__disable_interupt_T = OS_Time();
 	}
 }
 
 void enableTimeget(void)
 {
-	if (start == 1){
-	unsigned long long cur = OS_Time();
-	unsigned long long diff = OS_TimeDifference(__disable_interupt_T,cur);
-	__total_interupt_time += diff;
-		enabled = 1;
+	
+	if (start == true && stackidx>0){
+		enabled = intr_stack[--stackidx];
+	}
+	if(start == true && enabled== true){
+		unsigned long long cur = OS_Time();
+		unsigned long long diff = OS_TimeDifference(__disable_interupt_T,cur);
+		__total_interupt_time += diff;
 	}
 }
 
