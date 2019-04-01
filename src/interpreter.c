@@ -192,5 +192,12 @@ void interpreter_cmd(char *cmd_str)
       UART_OutString("Failed to close file.\r\n");
     }
   }
-
+	else if(strcmp(cmd, "increase") == 0)
+	{
+		long sr = StartCritical();
+		for(int i = 0;i<10000000;i++)
+			OS_Time();
+		EndCritical(sr);
+		UART_OutString("Increase critical.\r\n");
+	}
 }

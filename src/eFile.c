@@ -157,7 +157,7 @@ int eFile_Init(void)
 int eFile_Format(void)
 {
 	if(open_file.dir_idx !=-1) // if some file was opened, we can't do format.
-		return FALSE;
+		return FAIL;
 
   memset(dir, 0, sizeof(dir));
   memset(fat_cache, 0, sizeof(fat_cache));
@@ -217,7 +217,7 @@ int eFile_Create(char name[])
 int eFile_WOpen(char name[])
 {
 	if(open_file.dir_idx != 0) // if some file is already opened
-		return FALSE;
+		return FAIL;
 	
   int FAT_sec_offset; // Sector offset from base sector of FAT
   int iter = 0;
@@ -273,7 +273,7 @@ int eFile_Write(char data)
 int eFile_Close(void)
 {
 	if(open_file.dir_idx == 0)
-		return FALSE;
+		return FAIL;
 	//Nothing was opened
 	
 	if(write_mode)
@@ -286,7 +286,7 @@ int eFile_Close(void)
 int eFile_WClose(void)
 {
 		if(open_file.dir_idx == 0)
-			return FALSE;
+			return FAIL;
 	//Nothing was opened
 		
   dir[open_file.dir_idx].size = open_file.bytenum + 1;
@@ -340,7 +340,7 @@ int eFile_ReadNext(char *pt)
 int eFile_RClose(void)
 {
 		if(open_file.dir_idx == 0)
-			return FALSE;
+			return FAIL;
 	//Nothing was opened
 		
   // No fsync necessary, file should be unchanged in RAM
