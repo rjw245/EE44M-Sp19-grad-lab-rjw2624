@@ -52,6 +52,8 @@ static BYTE DATAarray[SECTOR_BYTES];
 static open_file_metadata_t open_file;
 
 void cache_fat_sector(sector_addr_t fat_sector_offset);
+int eFile_WClose(void);
+int eFile_RClose(void);
 
 static int get_writepoint_in_sector(int dir_idx)
 {
@@ -154,9 +156,12 @@ int eFile_Init(void)
 
 int eFile_Format(void)
 {
+	if(open_file.dir_idx !=-1) // if some file was opened, we can't do format.
+		return FALSE;
+
   memset(dir, 0, sizeof(dir));
   memset(fat_cache, 0, sizeof(fat_cache));
-
+	
   for (int i = 0; i < FAT_SECTORS; i++)
   {
     cached_fat_sector = i; // Offset from start of FAT in sectors
@@ -211,12 +216,15 @@ int eFile_Create(char name[])
 
 int eFile_WOpen(char name[])
 {
+	if(open_file.dir_idx != 0) // if some file is already opened
+		return FALSE;
+	
   int FAT_sec_offset; // Sector offset from base sector of FAT
   int iter = 0;
   int prev_iter = 0;
   int open_idx = lookup_file_dir_idx(name);
   if (open_idx == -1)
-    return FAIL;
+    return FAIL; // There is no file to open
   write_mode = true;
   FAT_sec_offset = dir[open_idx].start / CACHED_SECTORS;
   prev_iter = dir[open_idx].start;
@@ -240,7 +248,7 @@ int eFile_WOpen(char name[])
 
 int eFile_Write(char data)
 {
-  if (!write_mode)
+  if (!write_mode || open_file.dir_idx == 0)
     return FAIL;
 
   int w_idx = open_file.bytenum;
@@ -262,17 +270,25 @@ int eFile_Write(char data)
   open_file.bytenum++;
   return SUCCESS;
 }
-
 int eFile_Close(void)
 {
+	if(open_file.dir_idx == 0)
+		return FALSE;
+	//Nothing was opened
+	
 	if(write_mode)
 		eFile_WClose();
-	
+	else
+		eFile_RClose();
 	return SUCCESS;
 }
 
 int eFile_WClose(void)
 {
+		if(open_file.dir_idx == 0)
+			return FALSE;
+	//Nothing was opened
+		
   dir[open_file.dir_idx].size = open_file.bytenum + 1;
   writeback_dir();
   writeback_fat_cache();
@@ -323,6 +339,10 @@ int eFile_ReadNext(char *pt)
 
 int eFile_RClose(void)
 {
+		if(open_file.dir_idx == 0)
+			return FALSE;
+	//Nothing was opened
+		
   // No fsync necessary, file should be unchanged in RAM
   memset(&open_file, 0, sizeof(open_file));
   return SUCCESS;

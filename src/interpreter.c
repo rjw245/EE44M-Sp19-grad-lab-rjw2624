@@ -18,6 +18,7 @@
 static uint16_t sample_buffer[10];
 
 static const char strtok_delim[] = "\t ";
+long sr = 0;
 
 void interpreter_task(void)
 {
@@ -191,4 +192,5 @@ void interpreter_cmd(char *cmd_str)
       UART_OutString("Failed to close file.\r\n");
     }
   }
+
 }

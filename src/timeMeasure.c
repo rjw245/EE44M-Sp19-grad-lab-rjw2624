@@ -52,7 +52,7 @@ int getDisablePercent(void)
 	unsigned long long cur = OS_Time();
 	unsigned long long diff = OS_TimeDifference(__startTime,cur);
 
-	return (int)__total_interupt_time * 100 / diff;
+	return (int)(__total_interupt_time / (diff/100));
 	}
 	else 
 		return 0;
