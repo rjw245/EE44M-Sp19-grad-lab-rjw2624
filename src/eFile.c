@@ -37,7 +37,7 @@ typedef struct
 #define DIR_ENTRIES ((DIR_SECTORS * SECTOR_BYTES) / (sizeof(dir_entry_t)))
 static dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS (130056 / 32) // Number of sectors FAT may span
+#define FAT_SECTORS (130056 / 16) // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS * SECTOR_BYTES) / sizeof(sector_addr_t))
 #define FAT_START 34
 #define CACHED_SECTORS (SECTOR_BYTES / sizeof(sector_addr_t)) //
@@ -46,6 +46,8 @@ static dir_entry_t dir[DIR_ENTRIES];
 
 static sector_addr_t fat_cache[CACHED_SECTORS];
 static sector_addr_t cached_fat_sector = -1; // Sector offset from start of FAT
+static sector_addr_t last_free_sector = 0; // last freesector 
+
 static bool fat_cache_dirty = false;
 static bool write_mode = false;
 static BYTE DATAarray[SECTOR_BYTES];
@@ -92,6 +94,8 @@ static sector_addr_t get_last_file_sector(sector_addr_t start_data_sector_offset
   {
     end = next;
     next = get_next_file_sector(end);
+		if(end==next)
+			break;
   } while(next != -1);
   return end;
 }
@@ -151,12 +155,13 @@ int eFile_Init(void)
   eDisk_Init(0);
   cache_dir();
   cache_fat_sector(0);
+	last_free_sector = get_last_file_sector(dir[0].start);
   return SUCCESS;
 }
 
 int eFile_Format(void)
 {
-	if(open_file.dir_idx !=-1) // if some file was opened, we can't do format.
+	if(open_file.dir_idx != 0) // if some file was opened, we can't do format.
 		return FAIL;
 
   memset(dir, 0, sizeof(dir));
@@ -171,7 +176,9 @@ int eFile_Format(void)
     }
     writeback_fat_cache();
   }
-
+	fat_cache[CACHED_SECTORS-1] = -1;
+	last_free_sector = FAT_SECTORS*CACHED_SECTORS-1;
+	writeback_fat_cache();
   dir[0].start = 0; // sector offset from DATA_START
   dir[0].size = 1;
 
@@ -300,6 +307,8 @@ int eFile_WClose(void)
 
 int eFile_ROpen(char name[])
 {
+	if(open_file.dir_idx != 0)
+		return FAIL;
   int FAT_sec_offset; // Sector offset from base sector of FAT
   int open_idx = lookup_file_dir_idx(name);
   if (open_idx == -1)
@@ -350,6 +359,8 @@ int eFile_RClose(void)
 
 int eFile_Directory(void (*fp)(char))
 {
+	if(open_file.dir_idx != 0)
+		return FAIL;
   for (int i = 1; i < DIR_ENTRIES; i++)
   {
     if (dir[i].size > 0)
@@ -381,16 +392,19 @@ int eFile_Directory(void (*fp)(char))
 
 int eFile_Delete(char name[])
 {
+	if(open_file.dir_idx != 0)
+		return FAIL;
   int del_idx  = lookup_file_dir_idx(name);
 	
   if (del_idx == -1)
     return FAIL;
 
   // Attach head of file's sector list to the tail of the free space linked list
-  sector_addr_t last_free = get_last_file_sector(dir[0].start); // Free space head
+  sector_addr_t last_free = last_free_sector; // Free space head
   cache_fat_sector(last_free / CACHED_SECTORS);
   fat_cache[last_free % CACHED_SECTORS] = dir[del_idx].start; // freespace tail --> deleted file head
-
+  last_free_sector = get_last_file_sector(dir[del_idx].start);
+	
   // Erase directory entry
   memset(dir[del_idx].file_name, 0, sizeof(dir[0].file_name));
   dir[del_idx].size = 0;

@@ -189,6 +189,7 @@ void DSP(void)
     PD2 = 0x00;
     Index3 = 0;                  // take another buffer
     DCcomponent = y[0] & 0xFFFF; // Real part at frequency 0, imaginary part should be zero
+	  
     ST7735_Message(1, 0, "IR3 (mm) =", DCcomponent);
   }
 }
@@ -327,7 +328,7 @@ int realmain(void)
   // create initial foreground threads
   NumCreated += OS_AddThread(&Interpreter, 128, 2);
   NumCreated += OS_AddThread(&DSP, 128, 1);
-  NumCreated += OS_AddThread(&init_fs_task, 128, 0);
+  NumCreated += OS_AddThread(&init_fs_task, 128, 1); 
   NumCreated += OS_AddThread(&IdleTask, 128, 7); // runs when nothing useful to do
 
   OS_Launch(TIMESLICE); // doesn't return, interrupts enabled in here
@@ -614,5 +615,5 @@ int redirect_test(void)
 // Main stub
 int main(void)
 {
-  redirect_test();
+  realmain();
 }
