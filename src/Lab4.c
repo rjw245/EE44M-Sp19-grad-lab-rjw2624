@@ -572,9 +572,12 @@ int testmain2(void)
   return 0;                 // this never executes
 }
 
+#define PROG_STEPS (20)
+
 Sema4Type redirect_sema;
 static void redirect_task(void)
 {
+    printf("Writing 2MB file...\r\n");
     OS_bWait(&redirect_sema);
     eFile_Delete("redirect");
     eFile_Create("redirect");
@@ -582,10 +585,22 @@ static void redirect_task(void)
     // Write 2MB to file
     for(int i=0; i<262144; i++)
     {
+        if(i % (262143/PROG_STEPS) == 0)
+        {
+            UART_OutChar('[');
+            for(int complete=0; complete< i/(262143/PROG_STEPS); complete++){
+                UART_OutChar('=');
+            }
+            for(int incomplete=0; incomplete < PROG_STEPS - (i/(262143/PROG_STEPS)); incomplete++)
+            {
+                UART_OutChar(' ');
+            }
+            UART_OutString("]\r");
+        }
         printf("ABCDEFGH");
     }
     eFile_EndRedirectToFile();
-    printf("Done writing file.\r\n");
+    printf("\nDone writing file.\r\n");
     OS_bSignal(&redirect_sema);
 }
 
