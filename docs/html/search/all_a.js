@@ -27,9 +27,9 @@ var searchData=
   ['os_5ftime',['OS_Time',['../OS_8h.html#a5798d7fa05a4c3a523efe1b5651c5318',1,'OS.h']]],
   ['os_5ftimedifference',['OS_TimeDifference',['../OS_8h.html#af4b27f93116607bd3986125cb1c9edcf',1,'OS.h']]],
   ['os_5fwait',['OS_Wait',['../OS_8h.html#aad29612829941c857ed685f40e193cd0',1,'OS.h']]],
-  ['output_5fclear',['Output_Clear',['../ST7735_8h.html#a991e9f71a35a1f6ec9d857ca0e01868a',1,'ST7735.h']]],
-  ['output_5fcolor',['Output_Color',['../ST7735_8h.html#a1719f525285902712d14efeab76cedcd',1,'ST7735.h']]],
-  ['output_5finit',['Output_Init',['../ST7735_8h.html#a8c197f8fb3fd2b2da459e71b44978d53',1,'ST7735.h']]],
-  ['output_5foff',['Output_Off',['../ST7735_8h.html#a4ff293d693c5298110cf8a170e9b9165',1,'ST7735.h']]],
-  ['output_5fon',['Output_On',['../ST7735_8h.html#a7e57930cfb2d70ead5a1686d9f36a734',1,'ST7735.h']]]
+  ['output_5fclear',['Output_Clear',['../ST7735__lab3_8h.html#a991e9f71a35a1f6ec9d857ca0e01868a',1,'ST7735_lab3.h']]],
+  ['output_5fcolor',['Output_Color',['../ST7735__lab3_8h.html#a1719f525285902712d14efeab76cedcd',1,'ST7735_lab3.h']]],
+  ['output_5finit',['Output_Init',['../ST7735__lab3_8h.html#a8c197f8fb3fd2b2da459e71b44978d53',1,'ST7735_lab3.h']]],
+  ['output_5foff',['Output_Off',['../ST7735__lab3_8h.html#a4ff293d693c5298110cf8a170e9b9165',1,'ST7735_lab3.h']]],
+  ['output_5fon',['Output_On',['../ST7735__lab3_8h.html#a7e57930cfb2d70ead5a1686d9f36a734',1,'ST7735_lab3.h']]]
 ];
