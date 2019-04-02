@@ -53,12 +53,15 @@
 #include <stdint.h>
 #include "../inc/tm4c123gh6pm.h"
 #include "edisk.h"
+#include "OS.h"
 
 #define SDC_CS_PB0 1
 #define SDC_CS_PD7 0
 #define TFT_CS (*((volatile unsigned long *)0x40004020))
 #define TFT_CS_LOW 0 // CS normally controlled by hardware
 #define TFT_CS_HIGH 0x08
+extern Sema4Type LCDFree;
+
 
 #if SDC_CS_PD7
 // CS is PD7
@@ -351,6 +354,7 @@ static void deselect(void)
 {
   CS_HIGH();      /* CS = H */
   xchg_spi(0xFF); /* Dummy clock (force DO hi-z for multiple slave SPI) */
+	OS_bSignal(&LCDFree);
 }
 
 /*-----------------------------------------------------------------------*/
@@ -360,6 +364,7 @@ static void deselect(void)
 // Output: 1:OK, 0:Timeout in 500ms
 static int select(void)
 {
+	OS_bWait(&LCDFree);
   TFT_CS = TFT_CS_HIGH; // make sure TFT is off
   CS_LOW();
   xchg_spi(0xFF); /* Dummy clock (force DO enabled) */
@@ -484,6 +489,7 @@ static BYTE send_cmd(BYTE cmd, DWORD arg)
 // Outputs: status (see DSTATUS)
 DSTATUS eDisk_Init(BYTE drv)
 {
+	OS_InitSemaphore(&LCDFree,1);
   BYTE n, cmd, ty, ocr[4];
 
   if (drv)
