@@ -37,7 +37,7 @@ typedef struct
 #define DIR_ENTRIES ((DIR_SECTORS * SECTOR_BYTES) / (sizeof(dir_entry_t)))
 static dir_entry_t dir[DIR_ENTRIES];
 
-#define FAT_SECTORS (130056 / 16) // Number of sectors FAT may span
+#define FAT_SECTORS (130056 / 32) // Number of sectors FAT may span
 #define FAT_ENTRIES ((FAT_SECTORS * SECTOR_BYTES) / sizeof(sector_addr_t))
 #define FAT_START 34
 #define CACHED_SECTORS (SECTOR_BYTES / sizeof(sector_addr_t)) //
@@ -121,6 +121,7 @@ static int lookup_file_dir_idx(char name[])
 
  void cache_fat_sector(sector_addr_t fat_sector_offset)
 {
+	int tmp =0;
   if (cached_fat_sector != fat_sector_offset)
   {
     if (fat_cache_dirty)
@@ -129,6 +130,7 @@ static int lookup_file_dir_idx(char name[])
     }
     cached_fat_sector = fat_sector_offset;
     eDisk_ReadBlock((BYTE *)fat_cache, FAT_START + fat_sector_offset);
+		
   }
 }
 

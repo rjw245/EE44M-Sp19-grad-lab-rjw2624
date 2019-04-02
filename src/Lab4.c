@@ -180,7 +180,7 @@ void DAS(void)
 void DSP(void)
 {
   unsigned long DCcomponent; // 12-bit raw ADC sample, 0 to 4095
-  OS_InitSemaphore(&doFFT, 0);
+  //OS_InitSemaphore(&doFFT, 0);
   while (1)
   {
     OS_Wait(&doFFT); // wait for 64 samples
@@ -323,11 +323,12 @@ int realmain(void)
   OS_AddSW1Task(&SW1Push, 2); // PF4, SW1
   OS_AddSW2Task(&SW2Push, 3); // PF0
   OS_AddPeriodicThread(disk_timerproc, 10 * TIME_1MS, 5);
+	OS_InitSemaphore(&doFFT, 0);
 
   NumCreated = 0;
   // create initial foreground threads
   NumCreated += OS_AddThread(&Interpreter, 128, 2);
-  NumCreated += OS_AddThread(&DSP, 128, 1);
+  NumCreated += OS_AddThread(&DSP, 128, 3);
   NumCreated += OS_AddThread(&init_fs_task, 128, 1); 
   NumCreated += OS_AddThread(&IdleTask, 128, 7); // runs when nothing useful to do
 
@@ -527,11 +528,12 @@ void TestFile(void)
       diskError("eFile_ReadNext", i);
     UART_OutChar(data);
   }
+	if (eFile_Close())
+    diskError("eFile_Close", 0);
   if (eFile_Delete("file1"))
     diskError("eFile_Delete", 0);
   eFile_Directory(&UART_OutChar);
-  if (eFile_Close())
-    diskError("eFile_Close", 0);
+
   printf("Successful test of creating a file\n\r");
   ST7735_Message(0, 1, "eFile successful", ST7735_YELLOW);
   Running = 0; // launch again
@@ -600,7 +602,7 @@ int redirect_test(void)
   OS_InitSemaphore(&redirect_sema, 1);
 
   //*******attach background tasks***********
-  OS_AddPeriodicThread(disk_timerproc, 10 * TIME_1MS, 5);
+  OS_AddPeriodicThread(disk_timerproc, TIME_1MS, 5);
 
   NumCreated = 0;
   // create initial foreground threads
