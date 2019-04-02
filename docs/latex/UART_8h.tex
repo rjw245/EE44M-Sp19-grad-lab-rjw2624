@@ -5,6 +5,15 @@
 Runs on L\+M4\+F120/\+T\+M4\+C123 Use U\+A\+R\+T0 to implement bidirectional data transfer to and from a computer running Hyper\+Terminal. This time, interrupts and F\+I\+F\+Os are used.  
 
 
+{\ttfamily \#include $<$stdint.\+h$>$}\\*
+Include dependency graph for U\+A\+R\+T.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=148pt]{UART_8h__incl}
+\end{center}
+\end{figure}
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
@@ -47,7 +56,12 @@ uint32\+\_\+t \hyperlink{UART_8h_a5a7efc717f2c844f08689418dd50ee43}{U\+A\+R\+T\+
 void \hyperlink{UART_8h_a21661aabfda94ec88e9514856f062a41}{U\+A\+R\+T\+\_\+\+Out\+U\+Hex} (uint32\+\_\+t number)
 \begin{DoxyCompactList}\small\item\em Output a 32-\/bit number in unsigned hexadecimal format Variable format 1 to 8 digits with no space before or after. \end{DoxyCompactList}\item 
 void \hyperlink{UART_8h_a4278ab3463fadff60a5a84792707c3a3}{U\+A\+R\+T\+\_\+\+In\+String} (char $\ast$buf\+Pt, uint16\+\_\+t max)
-\begin{DoxyCompactList}\small\item\em Accepts A\+S\+C\+II characters from the serial port and adds them to a string until $<$enter$>$ is typed or until max length of the string is reached. It echoes each character as it is inputted. If a backspace is inputted, the string is modified and the backspace is echoed terminates the string with a null character uses busy-\/waiting synchronization on R\+D\+RF Modified by Agustinus Darmawan + Mingjie Qiu. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Accepts A\+S\+C\+II characters from the serial port and adds them to a string until $<$enter$>$ is typed or until max length of the string is reached. It echoes each character as it is inputted. If a backspace is inputted, the string is modified and the backspace is echoed terminates the string with a null character uses busy-\/waiting synchronization on R\+D\+RF Modified by Agustinus Darmawan + Mingjie Qiu. \end{DoxyCompactList}\item 
+void \hyperlink{UART_8h_a7951d2bd4596b8398c204cc7292cf668}{U\+A\+R\+T\+\_\+set\+Redirect} (char $\ast$F)
+\begin{DoxyCompactList}\small\item\em Accept Filename and make it as redirect file. \end{DoxyCompactList}\item 
+void \hyperlink{UART_8h_ae3522f1847db40b20a24172b5c6f224b}{U\+A\+R\+T\+\_\+end\+Redirect} ()\hypertarget{UART_8h_ae3522f1847db40b20a24172b5c6f224b}{}\label{UART_8h_ae3522f1847db40b20a24172b5c6f224b}
+
+\begin{DoxyCompactList}\small\item\em End redirection. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Detailed Description}
@@ -182,5 +196,21 @@ Output a 32-\/bit number in unsigned hexadecimal format Variable format 1 to 8 d
 
 \begin{DoxyParams}{Parameters}
 {\em number} & 32-\/bit number to be transferred \\
+\hline
+\end{DoxyParams}
+\index{U\+A\+R\+T.\+h@{U\+A\+R\+T.\+h}!U\+A\+R\+T\+\_\+set\+Redirect@{U\+A\+R\+T\+\_\+set\+Redirect}}
+\index{U\+A\+R\+T\+\_\+set\+Redirect@{U\+A\+R\+T\+\_\+set\+Redirect}!U\+A\+R\+T.\+h@{U\+A\+R\+T.\+h}}
+\subsubsection[{\texorpdfstring{U\+A\+R\+T\+\_\+set\+Redirect(char $\ast$\+F)}{UART_setRedirect(char *F)}}]{\setlength{\rightskip}{0pt plus 5cm}void U\+A\+R\+T\+\_\+set\+Redirect (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{F}
+\end{DoxyParamCaption}
+)}\hypertarget{UART_8h_a7951d2bd4596b8398c204cc7292cf668}{}\label{UART_8h_a7951d2bd4596b8398c204cc7292cf668}
+
+
+Accept Filename and make it as redirect file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em string} & of filename \\
 \hline
 \end{DoxyParams}

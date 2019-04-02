@@ -94,7 +94,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Runs on LM4F120/TM4C123 Use UART0 to implement bidirectional data transfer to and from a computer running HyperTerminal. This time, interrupts and FIFOs are used.  
 <a href="#details">More...</a></p>
-
+<div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
+</div><div class="textblock"><div class="dynheader">
+Include dependency graph for UART.h:</div>
+<div class="dyncontent">
+<div class="center"><img src="UART_8h__incl.png" border="0" usemap="#inc_2UART_8h" alt=""/></div>
+<map name="inc_2UART_8h" id="inc_2UART_8h">
+</map>
+</div>
+</div>
 <p><a href="UART_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -148,6 +156,13 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="UART
 <tr class="memitem:a4278ab3463fadff60a5a84792707c3a3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="UART_8h.html#a4278ab3463fadff60a5a84792707c3a3">UART_InString</a> (char *bufPt, uint16_t max)</td></tr>
 <tr class="memdesc:a4278ab3463fadff60a5a84792707c3a3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accepts ASCII characters from the serial port and adds them to a string until &lt;enter&gt; is typed or until max length of the string is reached. It echoes each character as it is inputted. If a backspace is inputted, the string is modified and the backspace is echoed terminates the string with a null character uses busy-waiting synchronization on RDRF Modified by Agustinus Darmawan + Mingjie Qiu.  <a href="#a4278ab3463fadff60a5a84792707c3a3">More...</a><br /></td></tr>
 <tr class="separator:a4278ab3463fadff60a5a84792707c3a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7951d2bd4596b8398c204cc7292cf668"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="UART_8h.html#a7951d2bd4596b8398c204cc7292cf668">UART_setRedirect</a> (char *F)</td></tr>
+<tr class="memdesc:a7951d2bd4596b8398c204cc7292cf668"><td class="mdescLeft">&#160;</td><td class="mdescRight">Accept Filename and make it as redirect file.  <a href="#a7951d2bd4596b8398c204cc7292cf668">More...</a><br /></td></tr>
+<tr class="separator:a7951d2bd4596b8398c204cc7292cf668"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3522f1847db40b20a24172b5c6f224b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3522f1847db40b20a24172b5c6f224b"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="UART_8h.html#ae3522f1847db40b20a24172b5c6f224b">UART_endRedirect</a> ()</td></tr>
+<tr class="memdesc:ae3522f1847db40b20a24172b5c6f224b"><td class="mdescLeft">&#160;</td><td class="mdescRight">End redirection. <br /></td></tr>
+<tr class="separator:ae3522f1847db40b20a24172b5c6f224b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Runs on LM4F120/TM4C123 Use UART0 to implement bidirectional data transfer to and from a computer running HyperTerminal. This time, interrupts and FIFOs are used. </p>
@@ -335,6 +350,30 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="UART
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">number</td><td>32-bit number to be transferred </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a7951d2bd4596b8398c204cc7292cf668"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void UART_setRedirect </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>F</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Accept Filename and make it as redirect file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">string</td><td>of filename </td></tr>
   </table>
   </dd>
 </dl>
