@@ -354,7 +354,7 @@ static void deselect(void)
 {
   CS_HIGH();      /* CS = H */
   xchg_spi(0xFF); /* Dummy clock (force DO hi-z for multiple slave SPI) */
-	OS_bSignal(&LCDFree);
+
 }
 
 /*-----------------------------------------------------------------------*/
@@ -364,7 +364,7 @@ static void deselect(void)
 // Output: 1:OK, 0:Timeout in 500ms
 static int select(void)
 {
-	OS_bWait(&LCDFree);
+
   TFT_CS = TFT_CS_HIGH; // make sure TFT is off
   CS_LOW();
   xchg_spi(0xFF); /* Dummy clock (force DO enabled) */
@@ -584,6 +584,7 @@ DRESULT eDisk_Read(BYTE drv, BYTE *buff, DWORD sector, UINT count)
   if (Stat & STA_NOINIT)
     return RES_NOTRDY; /* Check if drive is ready */
 
+	OS_bWait(&LCDFree);
   if (!(CardType & CT_BLOCK))
     sector *= 512; /* LBA ot BA conversion (byte addressing cards) */
 
@@ -607,7 +608,7 @@ DRESULT eDisk_Read(BYTE drv, BYTE *buff, DWORD sector, UINT count)
     }
   }
   deselect();
-
+  OS_bSignal(&LCDFree);
   return count ? RES_ERROR : RES_OK; /* Return result */
 }
 
@@ -646,7 +647,7 @@ DRESULT eDisk_Write(BYTE drv, const BYTE *buff, DWORD sector, UINT count)
     return RES_NOTRDY; /* Check drive status */
   if (Stat & STA_PROTECT)
     return RES_WRPRT; /* Check write protect */
-
+  OS_bWait(&LCDFree);
   if (!(CardType & CT_BLOCK))
     sector *= 512; /* LBA ==> BA conversion (byte addressing cards) */
 
@@ -673,7 +674,7 @@ DRESULT eDisk_Write(BYTE drv, const BYTE *buff, DWORD sector, UINT count)
     }
   }
   deselect();
-
+  OS_bSignal(&LCDFree);
   return count ? RES_ERROR : RES_OK; /* Return result */
 }
 //*************** eDisk_WriteBlock ***********
@@ -713,7 +714,7 @@ DRESULT disk_ioctl(BYTE drv, BYTE cmd, void *buff)
     return RES_PARERR; /* Check parameter */
   if (Stat & STA_NOINIT)
     return RES_NOTRDY; /* Check if drive is ready */
-
+  OS_bWait(&LCDFree);
   res = RES_ERROR;
 
   switch (cmd)
@@ -797,7 +798,7 @@ DRESULT disk_ioctl(BYTE drv, BYTE cmd, void *buff)
   }
 
   deselect();
-
+  OS_bSignal(&LCDFree);
   return res;
 }
 #endif
