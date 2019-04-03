@@ -31,6 +31,5 @@ var searchData=
   ['st7735_5fsetcursor',['ST7735_SetCursor',['../ST7735__lab3_8h.html#a6edc4479f68eb34624157cc1dda2cbb3',1,'ST7735_lab3.h']]],
   ['st7735_5fsetrotation',['ST7735_SetRotation',['../ST7735__lab3_8h.html#ac07019a4990ece959dd04dd58339f839',1,'ST7735_lab3.h']]],
   ['st7735_5fsettextcolor',['ST7735_SetTextColor',['../ST7735__lab3_8h.html#a749b305138c366373f55e39a2ae15f17',1,'ST7735_lab3.h']]],
-  ['st7735_5fswapcolor',['ST7735_SwapColor',['../ST7735__lab3_8h.html#acd13666f7002b9b8cb7a11164b2203ca',1,'ST7735_lab3.h']]],
-  ['sta_5fnoinit',['STA_NOINIT',['../eDisk_8h.html#abd6503c70d862b979a3f7080a59e9acd',1,'eDisk.h']]]
+  ['st7735_5fswapcolor',['ST7735_SwapColor',['../ST7735__lab3_8h.html#acd13666f7002b9b8cb7a11164b2203ca',1,'ST7735_lab3.h']]]
 ];

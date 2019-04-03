@@ -21,7 +21,8 @@
           "interpreter.h": "c",
           "uart.h": "c",
           "pll.h": "c",
-          "string.h": "c"
+          "string.h": "c",
+          "heap.h": "c"
         },
         "editor.tabSize": 2,
         "editor.insertSpaces": true,

@@ -1,8 +1,11 @@
-/*-----------------------------------------------------------------------
-/  Low level disk interface modlue include file   (C)ChaN, 2014
-/-----------------------------------------------------------------------*/
-// converted to TM4C123
-// Jonathan Valvano, January 13, 2015
+/**
+ * @file
+ * 
+ * @brief Low level disk interface modlue include file   (C)ChaN, 2014
+ * converted to TM4C123
+ * Jonathan Valvano, January 13, 2015
+ */
+
 #ifndef _DISKIO_DEFINED
 #define _DISKIO_DEFINED
 
@@ -16,10 +19,14 @@ extern "C" {
 #include "integer.h"
 
 
-/* Status of Disk Functions */
+/**
+ * @brief Status of Disk Functions
+ */
 typedef BYTE  DSTATUS;
 
-/* Results of Disk Functions */
+/**
+ * @brief Results of Disk Functions
+ */
 typedef enum {
   RES_OK = 0,    /* 0: Successful */
   RES_ERROR,    /* 1: R/W Error */
@@ -34,50 +41,52 @@ typedef enum {
 /*---------------------------------------*/
 
 
-/*-----------------------------------------------------------------------*/
-/* Initialize disk drive                                                 */
-/*-----------------------------------------------------------------------*/
-// Inputs:  Physical drive number, which must be 0
-// Outputs: status (see DSTATUS)
+/**
+ * @brief Initialize disk drive
+ * @param drv Physical drive number, which must be 0
+ * @return status (see DSTATUS)
+ */
 DSTATUS disk_initialize(BYTE drv);
 
-/*-----------------------------------------------------------------------*/
-/* Get disk status                                                       */
-/*-----------------------------------------------------------------------*/
-// Inputs:  Physical drive number, which must be 0
-// Outputs: status (see DSTATUS)
+/**
+ * @brief Get disk status
+ * @param drv Physical drive number, which must be 0
+ * @return status (see DSTATUS)
+ */
 DSTATUS disk_status(BYTE drv);
 
-/*-----------------------------------------------------------------------*/
-/* Read sector(s)                                                        */
-/*-----------------------------------------------------------------------*/
-//Inputs:  drv    Physical drive number (0)
-//         buff   Pointer to the data buffer to store read data
-//         sector Start sector number (LBA)
-//         count  Number of sectors to read (1..128)
-// Outputs: status (see DRESULT)
+/**
+ * @brief Read sector(s)
+ * @param drv    Physical drive number (0)
+ * @param buff   Pointer to the data buffer to store read data
+ * @param sector Start sector number (LBA)
+ * @param count  Number of sectors to read (1..128)
+ * @return status (see DRESULT)
+ */
 DRESULT disk_read(BYTE drv, BYTE *buff, DWORD sector, UINT count);
 
-/*-----------------------------------------------------------------------*/
-/* Write sector(s)                                                       */
-/*-----------------------------------------------------------------------*/
-
 #if _USE_WRITE
-//Inputs:  drv    Physical drive number (0)
-//         buff   Pointer to the data buffer to write to disk
-//         sector Start sector number (LBA)
-//         count  Number of sectors to write (1..128)
-// Outputs: status (see DRESULT)
+/**
+ * @brief Write sector(s)
+ * 
+ * @param drv    Physical drive number (0)
+ * @param buff   Pointer to the data buffer to write to disk
+ * @param sector Start sector number (LBA)
+ * @param count  Number of sectors to write (1..128)
+ * @return status (see DRESULT)
+ */
 DRESULT disk_write(BYTE drv, const BYTE *buff, DWORD sector, UINT count);
 #endif
-/*-----------------------------------------------------------------------*/
-/* Miscellaneous drive controls other than data read/write               */
-/*-----------------------------------------------------------------------*/
-// Inputs:  drv,   Physical drive number (0)
-//          cmd,   Control command code
-//          buff   Pointer to the control data
-// Outputs: status (see DRESULT)
+
 #if _USE_IOCTL
+/**
+ * @brief Miscellaneous drive controls
+ * 
+ * @param drv    Physical drive number (0)
+ * @param cmd    Control command code
+ * @param buff   Pointer to the control data
+ * @return status (see DRESULT)
+ */
 DRESULT disk_ioctl(BYTE drv, BYTE cmd, void *buff);
 #endif
 

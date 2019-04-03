@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bool',['BOOL',['../eDisk_8h.html#a3e5b8192e7d9ffaf3542f1210aec18dd',1,'eDisk.h']]]
+  ['dresult',['DRESULT',['../diskio_8h.html#aacdfef1dad6565f65c26d12fe0ea4b2b',1,'diskio.h']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['_5fuse_5fwrite',['_USE_WRITE',['../eDisk_8h.html#a1dd0d2b46dce637878416d489d2ddde2',1,'eDisk.h']]]
+  ['lengthof',['lengthof',['../misc__macros_8h.html#ad53b2827d15d4f100433764eea395a94',1,'misc_macros.h']]]
 ];
