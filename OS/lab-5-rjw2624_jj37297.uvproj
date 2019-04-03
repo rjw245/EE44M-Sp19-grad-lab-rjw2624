@@ -740,6 +740,16 @@
               <FileType>5</FileType>
               <FilePath>.\inc\heap.h</FilePath>
             </File>
+            <File>
+              <FileName>ffconf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\ffconf.h</FilePath>
+            </File>
+            <File>
+              <FileName>integer.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\integer.h</FilePath>
+            </File>
           </Files>
         </Group>
       </Groups>
