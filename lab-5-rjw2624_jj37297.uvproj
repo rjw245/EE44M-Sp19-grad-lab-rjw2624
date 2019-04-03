@@ -456,11 +456,6 @@
               <FilePath>.\src\Switch.c</FilePath>
             </File>
             <File>
-              <FileName>eDisk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\eDisk.c</FilePath>
-            </File>
-            <File>
               <FileName>profiler.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\profiler.c</FilePath>
@@ -471,11 +466,6 @@
               <FilePath>.\src\timeMeasure.c</FilePath>
             </File>
             <File>
-              <FileName>eFile.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\eFile.c</FilePath>
-            </File>
-            <File>
               <FileName>Lab4.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\Lab4.c</FilePath>
@@ -484,6 +474,21 @@
               <FileName>cr4_fft_64_stm32.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\src\cr4_fft_64_stm32.s</FilePath>
+            </File>
+            <File>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>ff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\ff.c</FilePath>
+            </File>
+            <File>
+              <FileName>heap.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\heap.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -711,16 +716,6 @@
               <FilePath>.\inc\Switch.h</FilePath>
             </File>
             <File>
-              <FileName>eDisk.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\eDisk.h</FilePath>
-            </File>
-            <File>
-              <FileName>eFile.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\eFile.h</FilePath>
-            </File>
-            <File>
               <FileName>profiler.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\profiler.h</FilePath>
@@ -729,6 +724,21 @@
               <FileName>timeMeasure.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\timeMeasure.h</FilePath>
+            </File>
+            <File>
+              <FileName>diskio.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\diskio.h</FilePath>
+            </File>
+            <File>
+              <FileName>ff.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\ff.h</FilePath>
+            </File>
+            <File>
+              <FileName>heap.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\heap.h</FilePath>
             </File>
           </Files>
         </Group>
