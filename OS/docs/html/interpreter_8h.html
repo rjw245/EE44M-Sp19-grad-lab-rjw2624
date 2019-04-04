@@ -38,6 +38,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
+      <li><a href="modules.html"><span>Modules</span></a></li>
       <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -110,7 +112,55 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="inte
 </ul>
 </li>
 <li>lcd<ul>
-<li>Prints strings on each line of each logical display on the LCD. </li>
+<li>Prints strings on each line of each logical display on the LCD.</li>
+</ul>
+</li>
+<li>critical<ul>
+<li>Prints the percentage of CPU time spent with interrupts disabled.</li>
+</ul>
+</li>
+<li>log<ul>
+<li>Prints profiler events logged</li>
+</ul>
+</li>
+<li>clear<ul>
+<li>Clears the profiler event log and restarts the profiler</li>
+</ul>
+</li>
+<li>format<ul>
+<li>Formats the filesystem on the SD card</li>
+</ul>
+</li>
+<li>ls<ul>
+<li>List all files in the filesystem</li>
+</ul>
+</li>
+<li>cat<ul>
+<li>Print out file in the filesystem.</li>
+<li>Takes one argument: the name of the file to print</li>
+</ul>
+</li>
+<li>rm<ul>
+<li>Remove file in the filesystem.</li>
+<li>Takes one argument: the name of the file to remove</li>
+</ul>
+</li>
+<li>touch<ul>
+<li>Create a file in the filesystem.</li>
+<li>Takes one argument: the name of the file to create</li>
+</ul>
+</li>
+<li>echo<ul>
+<li>Append characters to a file</li>
+<li>Takes two arguments in this order:<ul>
+<li>The name of the file to append to</li>
+<li>Remaining characters are written to the file</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>increase<ul>
+<li>Artificially increase the time spent in critical sections to test the "critical" command. </li>
 </ul>
 </li>
 </ul>

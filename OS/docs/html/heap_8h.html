@@ -38,6 +38,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Main&#160;Page</span></a></li>
+      <li><a href="pages.html"><span>Related&#160;Pages</span></a></li>
+      <li><a href="modules.html"><span>Modules</span></a></li>
       <li><a href="annotated.html"><span>Data&#160;Structures</span></a></li>
       <li class="current"><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -96,7 +98,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>Implements memory heap for dynamic memory allocation. Follows standard malloc/calloc/realloc/free interface for allocating/unallocating memory. modified 8/31/08 Jonathan Valvano for style modified 12/16/11 Jonathan Valvano for 32-bit machine modified August 10, 2014 for C99 syntax This example accompanies the book "Embedded Systems: Real Time Operating Systems for ARM Cortex M Microcontrollers", ISBN: 978-1466468863, Jonathan Valvano, copyright (c) 2014 Implementation Notes: This is a Knuth Heap. Each block has a header and a trailer, which I shall call the meta-sections. The meta-sections are each a single int32_t that tells how many int32_ts/words can be stored between the header and trailer. If the block is used, the meta-sections record the room as a positive number. If the block is unused, the meta-sections record the room as a negative number. Copyright 2014 by Jonathan W. Valvano, <a href="#" onclick="location.href='mai'+'lto:'+'val'+'va'+'no@'+'ma'+'il.'+'ut'+'exa'+'s.'+'edu'; return false;">valva<span style="display: none;">.nosp@m.</span>no@m<span style="display: none;">.nosp@m.</span>ail.u<span style="display: none;">.nosp@m.</span>texa<span style="display: none;">.nosp@m.</span>s.edu</a> You may use, edit, run or distribute this file as long as the above copyright notice remains THIS SOFTWARE IS PROVIDED "AS IS". NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. VALVANO SHALL NOT, IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER. For more information about my classes, my research, and my books, see <a href="http://users.ece.utexas.edu/~valvano/">http://users.ece.utexas.edu/~valvano/</a>.  
 <a href="#details">More...</a></p>
-
+<div class="textblock"><div class="dynheader">
+This graph shows which files directly or indirectly include this file:</div>
+<div class="dyncontent">
+<div class="center"><img src="heap_8h__dep__incl.png" border="0" usemap="#inc_2heap_8hdep" alt=""/></div>
+<map name="inc_2heap_8hdep" id="inc_2heap_8hdep">
+<area shape="rect" id="node2" href="loader__config_8h_source.html" title="inc/loader_config.h" alt="" coords="5,80,136,107"/>
+</map>
+</div>
+</div>
 <p><a href="heap_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
