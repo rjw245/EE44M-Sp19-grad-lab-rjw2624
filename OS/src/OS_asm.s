@@ -13,6 +13,9 @@
         AREA    RESET, CODE, READONLY
         THUMB
 
+
+  
+  EXPORT  SVC_Handler
 	EXPORT PendSV_Handler
 	EXTERN cur_tcb
 	EXTERN next_tcb
@@ -20,6 +23,38 @@
     EXTERN ticks_since_boot
 	EXTERN disableTimeget
 	EXTERN enableTimeget
+  EXTERN C_SVC_handler
+
+   
+  EXPORT	TEST_OS_Id
+  EXPORT TEST_OS_Sleep
+  EXPORT	TEST_OS_Kill
+  EXPORT	TEST_OS_Time
+  EXPORT	TEST_OS_AddThread
+    
+TEST_OS_Id
+	SVC		#0
+	BX		LR
+
+TEST_OS_Kill
+	SVC		#1
+	BX		LR
+
+TEST_OS_Sleep
+	SVC		#2
+	BX		LR
+
+TEST_OS_Time
+	SVC		#3
+	BX		LR
+
+TEST_OS_AddThread
+	SVC		#4
+	BX		LR
+
+
+
+
 
 PendSV_Handler
 	CPSID IF ; Disable interrupts
@@ -65,7 +100,7 @@ Load_Ctx
 SVC_Handler
     LDR R0,[SP,#24] ; Return address
     LDRH R0,[R0,#-2] ; SVC instruction is 2 bytes
-    BIC R0,#0xFF000000 ; Extract ID in R0
+    BIC R0,#0xFF00 ; Extract ID in R0
     MOV R1, SP
     PUSH {LR}
     BL C_SVC_handler

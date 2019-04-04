@@ -12,8 +12,4 @@ void disableTimeget(void);
 void enableTimeget(void);
 
 int getDisablePercent(void);
-
-
-
-
 #endif

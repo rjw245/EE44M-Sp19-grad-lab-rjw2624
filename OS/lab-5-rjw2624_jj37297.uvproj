@@ -490,6 +490,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\heap.c</FilePath>
             </File>
+            <File>
+              <FileName>loader.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\loader.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -749,6 +754,21 @@
               <FileName>integer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\integer.h</FilePath>
+            </File>
+            <File>
+              <FileName>loader_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\loader_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>loader.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\loader.h</FilePath>
+            </File>
+            <File>
+              <FileName>elf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\elf.h</FilePath>
             </File>
           </Files>
         </Group>

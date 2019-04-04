@@ -12,6 +12,7 @@
 #include "misc_macros.h"
 #include "profiler.h"
 #include "timeMeasure.h"
+#include "loader.h"
 
 #define MAX_LINE_LENGTH (128)
 
@@ -19,6 +20,30 @@ static uint16_t sample_buffer[10];
 
 static const char strtok_delim[] = "\t ";
 long sr = 0;
+
+
+
+
+static const ELFSymbol_t exports[] = { { "ST7735_Message", (void*) &ST7735_Message } };
+static const ELFEnv_t env = { exports, 1 };
+
+void TEST_OS(void)
+{
+  
+  int k = TEST_OS_Id();
+  char adc_string[64];
+    sprintf(adc_string,"%d\n",k);
+  
+  for(int i =0;i<10;i++)
+  {
+    UART_OutString(". ");
+    TEST_OS_Sleep(1000);
+  }
+  UART_OutString(adc_string);
+  sprintf(adc_string,"%ld\n",TEST_OS_Time());
+  TEST_OS_Kill();
+  
+}
 
 void interpreter_task(void)
 {
@@ -188,4 +213,16 @@ void interpreter_cmd(char *cmd_str)
 		EndCritical(sr);
 		UART_OutString("Increase critical.\r\n");
 	}
+  else if(strcmp(cmd, "load") == 0)
+  {
+    arg1 = strtok(NULL, strtok_delim);
+    if (!exec_elf(arg1, &env)) { 
+      UART_OutString("Failed to launch File.\r\n");
+    }
+  }
+  else if(strcmp(cmd, "test") == 0)
+  {
+    arg1 = strtok(NULL, strtok_delim);
+    TEST_OS_AddThread(&TEST_OS, 128, 1);
+  }
 }

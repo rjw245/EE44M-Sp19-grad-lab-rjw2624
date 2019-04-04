@@ -22,6 +22,7 @@
 #include "timeMeasure.h"
 #include "UART.h"
 #include "PLL.h"
+#include "heap.h"
 
 #define PE3 (*((volatile unsigned long *)0x40024020))
 
@@ -174,6 +175,7 @@ void OS_Init(void)
 
   OS_AddThread(IdleTask, 128, 255);
   Profiler_Init();
+  Heap_Init();
 }
 
 void OS_InitSemaphore(Sema4Type *semaPt, long value)
@@ -962,6 +964,7 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
 
 int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackSize, unsigned long priority)
 {
+  
 	return 0;
 }
 
