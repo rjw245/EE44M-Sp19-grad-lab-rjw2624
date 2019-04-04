@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['fresult',['FRESULT',['../ff_8h.html#a49d0171ecbd362cda5680a0d360db44c',1,'ff.h']]]
+  ['elfsecperm_5ft',['ELFSecPerm_t',['../group__elf__loader.html#ga9bec475ce684483bfe2b60164d65841b',1,'loader.h']]]
 ];
