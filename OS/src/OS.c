@@ -973,7 +973,7 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
 
 int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackSize, unsigned long priority)
 {
-  pcb_t *new_process = Heap_Malloc(sizeof(pcb_t));
+  pcb_t *new_process = (pcb_t *)Heap_Malloc(sizeof(pcb_t));
   memset(new_process, 0, sizeof(new_process));
   if(__OS_AddThread(entry, stackSize, priority, "Process main", new_process) == 1)
   {
