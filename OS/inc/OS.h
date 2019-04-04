@@ -31,6 +31,12 @@
 
 #define TCB_MAGIC (0x900d900d)
 
+typedef struct _pcb_s
+{
+  unsigned long num_threads;
+  struct _pcb_s *next;
+} pcb_t;
+
 typedef struct _tcb_s
 {
   long *sp;
@@ -43,7 +49,9 @@ typedef struct _tcb_s
   unsigned long magic;
   void (*task)(void);
   char * task_name;
+  pcb_t *parent_process;
 } tcb_t;
+
 
 // feel free to change the type of semaphore, there are lots of good solutions
 struct Sema4
