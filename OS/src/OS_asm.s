@@ -61,6 +61,17 @@ Load_Ctx
 	
 	CPSIE IF ; Enable interrupts
 	BX LR
+	
+SVC_Handler
+	LDR R0,[SP,#24] ; Return address
+	LDRH R0,[R0,#-2] ; SVC instruction is 2 bytes
+	BIC R0,#0xFF00 ; Extract ID in R0
+	MOV R1, SP
+	PUSH {LR}
+	BL C_SVC_handler
+	POP {LR}
+	STR R0,[SP] ; Store return value
+	BX LR ; Return from exception
 
 
 ; OS_Signal

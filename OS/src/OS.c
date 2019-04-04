@@ -965,3 +965,23 @@ int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stack
 	return 0;
 }
 
+int C_SVC_handler(unsigned int number, unsigned int *reg)
+{
+	switch(number)
+	{
+		case 0:
+			return OS_Id();
+		case 1:
+		  OS_Kill();
+			return reg[0];
+		case 2:
+			OS_Sleep(reg[0]);
+			return reg[0];
+		case 3:
+			return OS_Time();
+		case 4:
+			return OS_AddThread((void *)reg[0],reg[1],reg[2]);
+		
+	}
+	return 0;
+}
