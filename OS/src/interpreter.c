@@ -111,9 +111,9 @@ void interpreter_cmd(char *cmd_str)
       char* read_failed = 0;
       do {
         char c = 0;
-        read_failed = f_gets(&c,1,&FP);
+        read_failed = f_gets(&c,2,&FP);
         UART_OutChar(c);
-      } while(!read_failed);
+      } while(read_failed);
       UART_OutString("\r\n");
     }
     int close_failed = f_close(&FP);
@@ -155,7 +155,7 @@ void interpreter_cmd(char *cmd_str)
 		FIL FP;
     arg1 = strtok(NULL, strtok_delim);
     int open_failed = f_open(&FP,arg1,FA_WRITE);
-    if(!open_failed)
+    if(open_failed)
     {
       UART_OutString("Failed to open file.\r\n");
     }
@@ -163,6 +163,7 @@ void interpreter_cmd(char *cmd_str)
     {
       arg2 = arg1 + strlen(arg1) + 1; // Don't tokenize to allow spaces
       char *c = arg2;
+			f_lseek(&FP,FP.fsize);
       while(*c)
       {
         int write_failed = f_putc(*c++,&FP);
