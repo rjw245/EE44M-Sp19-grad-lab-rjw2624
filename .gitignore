@@ -1,3 +1,4 @@
+*.crf
 .vscode
 *.lnp
 *.htm
