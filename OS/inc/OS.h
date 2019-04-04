@@ -324,6 +324,16 @@ unsigned long OS_MsTime(void);
  */
 void OS_Launch(unsigned long theTimeSlice);
 
+/**
+ * @brief Launch a process in the OS
+ * 
+ * @param entry Entry point, usually main() of the process
+ * @param text Text (code) section start address
+ * @param data Data section start address
+ * @param stackSize Size of the stack for the first thread
+ * @param priority Priority for the first thread
+ * @return int 0 on success, -1 on failure.
+ */
 int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackSize, unsigned long priority);
 											
 extern long StartCritical(void);
