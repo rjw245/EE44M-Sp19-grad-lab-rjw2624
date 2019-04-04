@@ -22,7 +22,9 @@
           "uart.h": "c",
           "pll.h": "c",
           "string.h": "c",
-          "heap.h": "c"
+          "heap.h": "c",
+          "os.h": "c",
+          "loader_config.h": "c"
         },
         "editor.tabSize": 2,
         "editor.insertSpaces": true,

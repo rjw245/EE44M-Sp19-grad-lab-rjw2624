@@ -386,10 +386,11 @@ static tcb_t tcb_pool[MAX_TASKS];
 // Stacks need to be dword aligned
 static long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
 
-int OS_AddThread_priv(void (*task)(void),
-                      unsigned long stackSize,
-                      unsigned long priority,
-                      char *task_name)
+int __OS_AddThread(void (*task)(void),
+                   unsigned long stackSize,
+                   unsigned long priority,
+                   char *task_name,
+                   pcb_t *parent_process)
 {
   unsigned long stackDWords = (stackSize / 8) + (stackSize % 8 == 0 ? 0 : 1); // Round up integer div
   tcb_t *tcb = 0;
@@ -467,6 +468,8 @@ int OS_AddThread_priv(void (*task)(void),
   tcb->magic = TCB_MAGIC; // Write magic to mark valid
   tcb->task = task;
   tcb->task_name = task_name;
+  tcb->parent_process = parent_process;
+  
   insert_tcb(tcb);
   numTasks++;
   EndCritical(sr);
@@ -661,6 +664,13 @@ void OS_Kill(void)
   long sr = StartCritical();
   //  tcb_t *next_tcb = cur_tcb->next;
   remove_tcb(cur_tcb, true);
+  if(cur_tcb->parent_process && (--(cur_tcb->parent_process->num_threads) <= 0))
+  {
+    // Last thread, free process memory
+    Heap_Free(cur_tcb->parent_process->text);
+    Heap_Free(cur_tcb->parent_process->data);
+    Heap_Free(cur_tcb->parent_process);
+  }
   cur_tcb = next_tcb;
   next_tcb = cur_tcb->next;
   numTasks--;
@@ -949,7 +959,6 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
   {
 		tcb_t *prev = *semahead;
 		tcb_t *start = (*semahead)->next;
-				
 	
     while (start != 0 && start->priority <= node->priority)
     {
@@ -964,7 +973,13 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
 
 int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackSize, unsigned long priority)
 {
-  
+  pcb_t *new_process = Heap_Malloc(sizeof(pcb_t));
+  memset(new_process, 0, sizeof(new_process));
+  if(__OS_AddThread(entry, stackSize, priority, "Process main", new_process) == 1)
+  {
+    // Process thread added successfully
+    new_process->num_threads = 1;
+  }
 	return 0;
 }
 

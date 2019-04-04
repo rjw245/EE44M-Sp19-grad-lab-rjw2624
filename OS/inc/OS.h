@@ -34,6 +34,8 @@
 typedef struct _pcb_s
 {
   unsigned long num_threads;
+  void *text;
+  void *data;
   struct _pcb_s *next;
 } pcb_t;
 
@@ -110,7 +112,7 @@ void OS_bSignal(Sema4Type *semaPt);
  */
 void Jitter(void);
 
-int OS_AddThread_priv(void (*task)(void),
+int __OS_AddThread(void (*task)(void),
                       unsigned long stackSize,
                       unsigned long priority,
                       char *task_name);
@@ -125,7 +127,11 @@ int OS_AddThread_priv(void (*task)(void),
  * @param priority Priority of the task. 0 is highest, 5 is lowest.
  * @return 1 if successful, 0 if this thread can not be added
  */
-#define OS_AddThread(task, stackSize, priority) OS_AddThread_priv(task, stackSize, priority, #task)
+#define OS_AddThread(task, stackSize, priority) __OS_AddThread(task,\
+                                                               stackSize,\
+                                                               priority,\
+                                                               #task,\
+                                                               cur_tcb ? cur_tcb->parent_process : 0)
 
 
 
