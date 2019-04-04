@@ -41,11 +41,11 @@ Save_Ctx
 Choose_Next_Task
 ;    LDR R3, =ticks_since_boot
 ;    LDR R3, [R3]
-	LDR R6, =next_tcb ; R6 <= &next_tcb
-	
+    LDR R6, =next_tcb ; R6 <= &next_tcb
+
     LDR R1, [R6]     ; R1 <= next_tcb
-	STR R1, [R0]    ; cur_tcb <= next_tcb	
-	LDR R5, [R1,#4] ; R5 <= cur_tcb->next
+    STR R1, [R0]    ; cur_tcb <= next_tcb	
+    LDR R5, [R1,#4] ; R5 <= cur_tcb->next
     STR R5, [R6]    ; next_tcb = cur_tcb->next
  
 ;    LDR R2, [R0,#8] ; R2 <= cur_tcb->wake_time
@@ -54,25 +54,26 @@ Choose_Next_Task
 Load_Ctx
     LDR SP, [R1]    ; SP <= cur_tcb->sp
     POP {R4-R11}
-	
-	PUSH {R0-R3,R14}
-	BL enableTimeget
-	POP {R0-R3,R14}
-	
-	CPSIE IF ; Enable interrupts
-	BX LR
-	
-SVC_Handler
-	LDR R0,[SP,#24] ; Return address
-	LDRH R0,[R0,#-2] ; SVC instruction is 2 bytes
-	BIC R0,#0xFF00 ; Extract ID in R0
-	MOV R1, SP
-	PUSH {LR}
-	BL C_SVC_handler
-	POP {LR}
-	STR R0,[SP] ; Store return value
-	BX LR ; Return from exception
 
+    PUSH {R0-R3,R14}
+    BL enableTimeget
+    POP {R0-R3,R14}
+
+    CPSIE IF ; Enable interrupts
+    BX LR
+    
+SVC_Handler
+    LDR R0,[SP,#24] ; Return address
+    LDRH R0,[R0,#-2] ; SVC instruction is 2 bytes
+    BIC R0,#0xFF000000 ; Extract ID in R0
+    MOV R1, SP
+    PUSH {LR}
+    BL C_SVC_handler
+    POP {LR}
+    STR R0,[SP] ; Store return value
+    BX LR ; Return from exception
+      
+	
 
 ; OS_Signal
 ;     ; Implementation from class lecture
