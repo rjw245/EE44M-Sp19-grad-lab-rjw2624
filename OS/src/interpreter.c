@@ -5,7 +5,7 @@
 #include "interpreter.h"
 #include "ADC.h"
 #include "UART.h"
-#include "eFile.h"
+#include "ff.h"
 #include "OS.h"
 #include "tm4c123gh6pm.h"
 #include "ST7735.h"
@@ -97,41 +97,26 @@ void interpreter_cmd(char *cmd_str)
     timeMeasureInit();
     timeMeasurestart();
   }
-  else if(strcmp(cmd, "format") == 0)
-  {
-    int format_failed = eFile_Format();
-    if(format_failed)
-    {
-      UART_OutString("Format failed!\r\n");
-    }
-    else
-    {
-      UART_OutString("Format succeeded.\r\n");
-    } 
-  }
-  else if(strcmp(cmd, "ls") == 0)
-  {
-    eFile_Directory(UART_OutChar);
-  }
   else if(strcmp(cmd, "cat") == 0)
   {
+		FIL FP;
     arg1 = strtok(NULL, strtok_delim);
-    int open_failed = eFile_ROpen(arg1);
+    int open_failed = f_open(&FP,arg1,FA_READ);
     if(open_failed)
     {
       UART_OutString("Failed to open file.\r\n");
     }
     else
     {
-      int read_failed = 0;
+      char* read_failed = 0;
       do {
         char c = 0;
-        read_failed = eFile_ReadNext(&c);
+        read_failed = f_gets(&c,1,&FP);
         UART_OutChar(c);
       } while(!read_failed);
       UART_OutString("\r\n");
     }
-    int close_failed = eFile_RClose();
+    int close_failed = f_close(&FP);
     if(close_failed)
     {
       UART_OutString("Failed to close file.\r\n");
@@ -140,8 +125,8 @@ void interpreter_cmd(char *cmd_str)
   else if(strcmp(cmd, "rm") == 0)
   {
     arg1 = strtok(NULL, strtok_delim);
-    int del_failed = eFile_Delete(arg1);
-    if(del_failed)
+    int del_failed = f_unlink(arg1);
+    if(!del_failed)
     {
       UART_OutString("Failed to remove file.\r\n");
     }
@@ -152,8 +137,9 @@ void interpreter_cmd(char *cmd_str)
   }
   else if(strcmp(cmd, "touch") == 0)
   {
+		FIL FP;
     arg1 = strtok(NULL, strtok_delim);
-    int create_failed = eFile_Create(arg1);
+    int create_failed = f_open(&FP,arg1,FA_CREATE_NEW);
     if(create_failed)
     {
       UART_OutString("Failed to create file.\r\n");
@@ -166,9 +152,10 @@ void interpreter_cmd(char *cmd_str)
   }
   else if(strcmp(cmd, "echo") == 0)
   {
+		FIL FP;
     arg1 = strtok(NULL, strtok_delim);
-    int open_failed = eFile_WOpen(arg1);
-    if(open_failed)
+    int open_failed = f_open(&FP,arg1,FA_WRITE);
+    if(!open_failed)
     {
       UART_OutString("Failed to open file.\r\n");
     }
@@ -178,15 +165,15 @@ void interpreter_cmd(char *cmd_str)
       char *c = arg2;
       while(*c)
       {
-        int write_failed = eFile_Write(*c++);
-        if(write_failed)
+        int write_failed = f_putc(*c++,&FP);
+        if(!write_failed)
         {
           UART_OutString("Failed to write to file.\r\n");
           break;
         }
       }
     }
-    int close_failed = eFile_WClose();
+    int close_failed = f_close(&FP);
     if(close_failed)
     {
       UART_OutString("Failed to close file.\r\n");

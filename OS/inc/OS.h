@@ -310,6 +310,8 @@ unsigned long OS_MsTime(void);
  */
 void OS_Launch(unsigned long theTimeSlice);
 
+int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackSize, unsigned long priority);
+											
 extern long StartCritical(void);
 extern void EndCritical(long sr);
 extern void DisableInterrupts(void);

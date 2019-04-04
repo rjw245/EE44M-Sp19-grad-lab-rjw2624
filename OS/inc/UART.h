@@ -138,13 +138,13 @@ void UART_InString(char *bufPt, uint16_t max);
  * 
  * @param string of filename
  */
-void UART_setRedirect(char *F);
+//void UART_setRedirect(char *F);
 
 //------------UART_endRedirect------------
 /**
  * @brief  End redirection
  * 
  */
-void UART_endRedirect();
+//void UART_endRedirect();
 
 #endif

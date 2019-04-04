@@ -958,3 +958,10 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
     node->next = start;
   }
 }
+
+
+int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackSize, unsigned long priority)
+{
+	return 0;
+}
+

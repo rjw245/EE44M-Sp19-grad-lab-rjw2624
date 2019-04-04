@@ -17,8 +17,11 @@
 #include "../inc/tm4c123gh6pm.h"
 #include "integer.h"
 #include "diskio.h"
-#define SDC_CS_PB0 0
-#define SDC_CS_PD7 1
+#include "OS.h"
+
+#define SDC_CS_PB0 1
+#define SDC_CS_PD7 0
+extern Sema4Type LCDFree;
 
 // SDC CS is PD7 or PB0 , TFT CS is PA3
 // to change CS to another GPIO, change SDC_CS and CS_Init
@@ -419,6 +422,7 @@ static BYTE send_cmd(BYTE cmd, DWORD arg){
 // Inputs:  Physical drive number, which must be 0
 // Outputs: status (see DSTATUS)
 DSTATUS disk_initialize(BYTE drv){
+
   BYTE n, cmd, ty, ocr[4];
 
   if (drv) return STA_NOINIT;      /* Supports only drive 0 */
@@ -490,7 +494,7 @@ DSTATUS disk_status(BYTE drv){
 DRESULT disk_read(BYTE drv, BYTE *buff, DWORD sector, UINT count){
   if (drv || !count) return RES_PARERR;    /* Check parameter */
   if (Stat & STA_NOINIT) return RES_NOTRDY;  /* Check if drive is ready */
-
+	OS_bWait(&LCDFree);
   if (!(CardType & CT_BLOCK)) sector *= 512;  /* LBA ot BA conversion (byte addressing cards) */
 
   if (count == 1) {  /* Single sector read */
@@ -508,7 +512,7 @@ DRESULT disk_read(BYTE drv, BYTE *buff, DWORD sector, UINT count){
     }
   }
   deselect();
-
+  OS_bSignal(&LCDFree);
   return count ? RES_ERROR : RES_OK;  /* Return result */
 }
 
@@ -528,6 +532,7 @@ DRESULT disk_write(BYTE drv, const BYTE *buff, DWORD sector, UINT count){
   if (drv || !count) return RES_PARERR;    /* Check parameter */
   if (Stat & STA_NOINIT) return RES_NOTRDY;  /* Check drive status */
   if (Stat & STA_PROTECT) return RES_WRPRT;  /* Check write protect */
+  OS_bWait(&LCDFree);
 
   if (!(CardType & CT_BLOCK)) sector *= 512;  /* LBA ==> BA conversion (byte addressing cards) */
 
@@ -548,6 +553,7 @@ DRESULT disk_write(BYTE drv, const BYTE *buff, DWORD sector, UINT count){
     }
   }
   deselect();
+  OS_bSignal(&LCDFree);
 
   return count ? RES_ERROR : RES_OK;  /* Return result */
 }
@@ -570,6 +576,7 @@ DRESULT disk_ioctl(BYTE drv, BYTE cmd, void *buff){
 
   if (drv) return RES_PARERR;          /* Check parameter */
   if (Stat & STA_NOINIT) return RES_NOTRDY;  /* Check if drive is ready */
+  OS_bWait(&LCDFree);
 
   res = RES_ERROR;
 
@@ -631,6 +638,7 @@ DRESULT disk_ioctl(BYTE drv, BYTE cmd, void *buff){
   }
 
   deselect();
+  OS_bSignal(&LCDFree);
 
   return res;
 }

@@ -2454,7 +2454,7 @@ FRESULT f_open (
 
   /* Get logical drive number */
 #if !_FS_READONLY
-  mode &= FA_READ | FA_WRITE | FA_CREATE_ALWAYS | FA_OPEN_ALWAYS | FA_CREATE_NEW;
+  mode &= (FA_READ | FA_WRITE | FA_CREATE_ALWAYS | FA_OPEN_ALWAYS | FA_CREATE_NEW);
   res = find_volume(&dj.fs, &path, (BYTE)(mode & ~FA_READ));
 #else
   mode &= FA_READ;
