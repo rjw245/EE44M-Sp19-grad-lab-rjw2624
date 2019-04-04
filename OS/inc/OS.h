@@ -113,9 +113,10 @@ void OS_bSignal(Sema4Type *semaPt);
 void Jitter(void);
 
 int __OS_AddThread(void (*task)(void),
-                      unsigned long stackSize,
-                      unsigned long priority,
-                      char *task_name);
+                   unsigned long stackSize,
+                   unsigned long priority,
+                   char *task_name,
+                   pcb_t *parent_process);
 
 /**
  * add a foregound thread to the scheduler
