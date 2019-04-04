@@ -118,6 +118,8 @@ int __OS_AddThread(void (*task)(void),
                    char *task_name,
                    pcb_t *parent_process);
 
+extern tcb_t *cur_tcb;
+
 /**
  * add a foregound thread to the scheduler
  * stack size must be divisable by 8 (aligned to double word boundary)
