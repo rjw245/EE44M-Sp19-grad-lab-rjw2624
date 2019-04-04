@@ -469,6 +469,10 @@ int __OS_AddThread(void (*task)(void),
   tcb->task = task;
   tcb->task_name = task_name;
   tcb->parent_process = parent_process;
+  if(tcb->parent_process)
+  {
+    tcb->parent_process->num_threads++;
+  }
   
   insert_tcb(tcb);
   numTasks++;
@@ -975,12 +979,7 @@ int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stack
 {
   pcb_t *new_process = (pcb_t *)Heap_Malloc(sizeof(pcb_t));
   memset(new_process, 0, sizeof(new_process));
-  if(__OS_AddThread(entry, stackSize, priority, "Process main", new_process) == 1)
-  {
-    // Process thread added successfully
-    new_process->num_threads = 1;
-  }
-  else
+  if(__OS_AddThread(entry, stackSize, priority, "Process main", new_process) == 0)
   {
     return -1;
   }
