@@ -98,58 +98,14 @@ Load_Ctx
     BX LR
     
 SVC_Handler
-    LDR R0,[SP,#24] ; Return address
-    LDRH R0,[R0,#-2] ; SVC instruction is 2 bytes
-    BIC R0,#0xFF00 ; Extract ID in R0
-    MOV R1, SP
-    PUSH {LR}
-    BL C_SVC_handler
-    POP {LR}
-    STR R0,[SP] ; Store return value
-    BX LR ; Return from exception
-      
-	
+  LDR R0,[SP,#24] ; Return address
+  LDRH R0,[R0,#-2] ; SVC instruction is 2 bytes
+  BIC R0,#0xFF00 ; Extract ID in R0
+  MOV R1, SP
+  PUSH {LR}
+  BL C_SVC_handler
+  POP {LR}
+  STR R0,[SP] ; Store return value
+  BX LR ; Return from exception
 
-; OS_Signal
-;     ; Implementation from class lecture
-;     LDREX R1, [R0]
-;     ADD R1, #1
-;     STREX R2, R1, [R0]
-;     CMP R2, #0
-;     BNE OS_Signal
-;     BX LR
-
-
-; OS_Wait
-;     ; Implementation from class lecture
-;     LDREX R1, [R0]
-;     SUBS R1, #1
-;     ITT PL
-;     STREXPL R2, R1, [R0]
-;     CMPPL R2, #0
-;     BNE OS_Wait
-;     BX LR
-
-
-; OS_bSignal
-;     ; Implementation from class lecture
-;     LDREX R1, [R0]
-;     ORR R1, #1
-;     STREX R2, R1, [R0]
-;     CMP R2, #0
-;     BNE OS_Signal
-;     BX LR
-
-
-; OS_bWait
-;     ; Implementation from class lecture
-;     LDREX R1, [R0]
-;     AND R1, #0
-;     ITT PL
-;     STREXPL R2, R1, [R0]
-;     CMPPL R2, #0
-;     BNE OS_Wait
-;     BX LR
-
-
-		END
+  END
