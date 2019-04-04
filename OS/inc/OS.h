@@ -36,7 +36,6 @@ typedef struct _pcb_s
   unsigned long num_threads;
   void *text;
   void *data;
-  struct _pcb_s *next;
 } pcb_t;
 
 typedef struct _tcb_s

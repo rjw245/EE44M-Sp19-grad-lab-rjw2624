@@ -216,7 +216,7 @@ void interpreter_cmd(char *cmd_str)
   else if(strcmp(cmd, "load") == 0)
   {
     arg1 = strtok(NULL, strtok_delim);
-    if (!exec_elf(arg1, &env)) { 
+    if (exec_elf(arg1, &env) != 0) { 
       UART_OutString("Failed to launch File.\r\n");
     }
   }
