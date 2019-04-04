@@ -980,6 +980,10 @@ int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stack
     // Process thread added successfully
     new_process->num_threads = 1;
   }
+  else
+  {
+    return -1;
+  }
 	return 0;
 }
 
