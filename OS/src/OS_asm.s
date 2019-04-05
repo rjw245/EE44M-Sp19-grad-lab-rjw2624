@@ -31,6 +31,7 @@
   EXPORT	TEST_OS_Kill
   EXPORT	TEST_OS_Time
   EXPORT	TEST_OS_AddThread
+  EXPORT setR9
     
 TEST_OS_Id
 	SVC		#0
@@ -98,6 +99,7 @@ Load_Ctx
     BX LR
     
 SVC_Handler
+	CPSID IF ; Disable interrupts
   LDR R0,[SP,#24] ; Return address
   LDRH R0,[R0,#-2] ; SVC instruction is 2 bytes
   BIC R0,#0xFF00 ; Extract ID in R0
@@ -106,6 +108,11 @@ SVC_Handler
   BL C_SVC_handler
   POP {LR}
   STR R0,[SP] ; Store return value
+  CPSIE IF ; Enable interrupts
   BX LR ; Return from exception
+  
+setR9
+  MOV R9, R0
+  BX LR
 
   END
