@@ -32,7 +32,6 @@ int main(void)
 {
 	unsigned int id;
 	unsigned long time;
-	
 	id = OS_Id();
 	PF2 ^= 0x04;
 	Display_Message(0,line++, "Hello world: ", id);

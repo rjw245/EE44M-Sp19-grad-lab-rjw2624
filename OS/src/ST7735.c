@@ -1450,6 +1450,7 @@ static enum initRFlags TabColor;
 static short _width = ST7735_TFTWIDTH; // this could probably be a constant, except it is used in Adafruit_GFX and depends on image rotation
 static short _height = ST7735_TFTHEIGHT;
 Sema4Type LCDFree; // used for mutual exclusion
+Sema4Type pixel_semaphore;
 
 // The Data/Command pin must be valid when the eighth bit is
 // sent.  The SSI module has hardware input and output FIFOs
@@ -1694,6 +1695,7 @@ void static commonInit(const unsigned char *cmdList)
 {
   ColStart = RowStart = 0; // May be overridden in init func
   CS_Init();
+  OS_InitSemaphore(&pixel_semaphore, 1);
   SYSCTL_RCGCSSI_R |= 0x01;  // activate SSI0
   SYSCTL_RCGCGPIO_R |= 0x01; // activate port A
   while ((SYSCTL_PRGPIO_R & 0x01) == 0)
@@ -1827,10 +1829,11 @@ void ST7735_DrawPixel(short x, short y, unsigned short color)
 
   if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
     return;
-
+  OS_Wait(&pixel_semaphore);
   setAddrWindow(x, y, x + 1, y + 1);
 
   pushColor(color);
+  OS_Signal(&pixel_semaphore);
 }
 
 //------------ST7735_DrawFastVLine------------

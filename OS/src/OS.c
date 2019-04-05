@@ -453,7 +453,7 @@ int __OS_AddThread(void (*task)(void),
   *(--tcb->sp) = 0x00000000;       // R0
   *(--tcb->sp) = 0x11111111;       // R11
   *(--tcb->sp) = 0x10101010;       // R10
-  *(--tcb->sp) = (long)(tcb->sp - 6);       // R9
+  *(--tcb->sp) = (parent_process) ? (long)parent_process->data:(long)(tcb->sp - 6);       // R9
   *(--tcb->sp) = 0x08080808;       // R8
   *(--tcb->sp) = 0x07070707;       // R7
   *(--tcb->sp) = 0x06060606;       // R6
