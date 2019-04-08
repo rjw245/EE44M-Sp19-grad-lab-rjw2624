@@ -54,7 +54,7 @@ static void remove_tcb(tcb_t *tcb, bool free_mem);
 #if PRIORITY_SCHED
 static void choose_next_with_prio(void)
 {
-  
+
   long sr = StartCritical();
   if (cur_tcb->next->priority == tcb_list_head->next->priority)
   {
@@ -149,7 +149,7 @@ void OS_Init(void)
   TIMER3_TAPR_R = 0;          // prescale value for trigger
   TIMER3_TAILR_R = -1;        // start value for trigger
   TIMER3_IMR_R = 0x00000001;  // disable timer 3A time-out interrupt
-  TIMER3_CTL_R |= 1<<1;       // Stall timer 3 when CPU halted by debugger
+  TIMER3_CTL_R |= 1 << 1;     // Stall timer 3 when CPU halted by debugger
   TIMER3_CTL_R &= ~(1);       // disable timer 3A
 
   //Enable it when it needs
@@ -169,7 +169,6 @@ void OS_Init(void)
   WTIMER0_TAPR_R = 0;          // prescale value for trigger
   WTIMER0_CTL_R |= 1 << 1;     // Stall Wtimer0 on CPU debugger halt
   WTIMER0_CTL_R |= 1;          // Kick off Wtimer0
-
 
   timeMeasureInit();
 
@@ -256,7 +255,7 @@ void OS_bWait(Sema4Type *semaPt)
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
     NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
-		
+
 #if PRIORITY_SCHED
     choose_next_with_prio();
 #endif
@@ -311,7 +310,7 @@ void OS_bSignal(Sema4Type *semaPt)
 static void remove_tcb(tcb_t *tcb, bool free_mem)
 {
   long sr = StartCritical();
-  if(tcb_list_head == 0)
+  if (tcb_list_head == 0)
   {
     // Empty list
     EndCritical(sr);
@@ -338,8 +337,8 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
       iter->next = tcb->next;
       if (free_mem)
         tcb->magic = 0; // Free this TCB, return to pool
-			tcb->next = 0;
-			EndCritical(sr);
+      tcb->next = 0;
+      EndCritical(sr);
       return;
     }
     iter = iter->next;
@@ -350,7 +349,7 @@ static void remove_tcb(tcb_t *tcb, bool free_mem)
 static void insert_tcb(tcb_t *new_tcb) // priority insert
 {
   long sr = StartCritical();
-	new_tcb->next = 0;
+  new_tcb->next = 0;
   if (tcb_list_head == 0)
   {
     tcb_list_head = new_tcb;
@@ -358,13 +357,13 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   }
   else
   {
-		tcb_t *tmp = tcb_list_head->next;
-		tcb_t *prev = tcb_list_head;
+    tcb_t *tmp = tcb_list_head->next;
+    tcb_t *prev = tcb_list_head;
 #if PRIORITY_SCHED
     // Maintain priority order
     while (tmp != tcb_list_head && tmp->priority <= new_tcb->priority)
     {
-			prev = prev->next;
+      prev = prev->next;
       tmp = tmp->next;
     }
     new_tcb->next = tmp;
@@ -374,7 +373,7 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
     tcb_list_head->next = new_tcb;
 #endif
   }
-	
+
   EndCritical(sr);
 }
 
@@ -443,22 +442,22 @@ int __OS_AddThread(void (*task)(void),
     EndCritical(sr);
     return 0;
   }
-  *(--tcb->sp) = 0x01000000L;      // xPSR, with Thumb state enabled
-  *(--tcb->sp) = (long)task;       // PC
-  *(--tcb->sp) = (long)TaskReturn; // LR
-  *(--tcb->sp) = 0x12121212;       // R12
-  *(--tcb->sp) = 0x03030303;       // R3
-  *(--tcb->sp) = 0x02020202;       // R2
-  *(--tcb->sp) = 0x01010101;       // R1
-  *(--tcb->sp) = 0x00000000;       // R0
-  *(--tcb->sp) = 0x11111111;       // R11
-  *(--tcb->sp) = 0x10101010;       // R10
-  *(--tcb->sp) = (parent_process) ? (long)parent_process->data:(long)(tcb->sp - 6);       // R9
-  *(--tcb->sp) = 0x08080808;       // R8
-  *(--tcb->sp) = 0x07070707;       // R7
-  *(--tcb->sp) = 0x06060606;       // R6
-  *(--tcb->sp) = 0x05050505;       // R5
-  *(--tcb->sp) = 0x04040404;       // R4
+  *(--tcb->sp) = 0x01000000L;                                                         // xPSR, with Thumb state enabled
+  *(--tcb->sp) = (long)task;                                                          // PC
+  *(--tcb->sp) = (long)TaskReturn;                                                    // LR
+  *(--tcb->sp) = 0x12121212;                                                          // R12
+  *(--tcb->sp) = 0x03030303;                                                          // R3
+  *(--tcb->sp) = 0x02020202;                                                          // R2
+  *(--tcb->sp) = 0x01010101;                                                          // R1
+  *(--tcb->sp) = 0x00000000;                                                          // R0
+  *(--tcb->sp) = 0x11111111;                                                          // R11
+  *(--tcb->sp) = 0x10101010;                                                          // R10
+  *(--tcb->sp) = (parent_process) ? (long)parent_process->data : (long)(tcb->sp - 6); // R9
+  *(--tcb->sp) = 0x08080808;                                                          // R8
+  *(--tcb->sp) = 0x07070707;                                                          // R7
+  *(--tcb->sp) = 0x06060606;                                                          // R6
+  *(--tcb->sp) = 0x05050505;                                                          // R5
+  *(--tcb->sp) = 0x04040404;                                                          // R4
 
   tcb->id = next_id++;
   tcb->priority = priority;
@@ -469,11 +468,11 @@ int __OS_AddThread(void (*task)(void),
   tcb->task = task;
   tcb->task_name = task_name;
   tcb->parent_process = parent_process;
-  if(tcb->parent_process)
+  if (tcb->parent_process)
   {
     tcb->parent_process->num_threads++;
   }
-  
+
   insert_tcb(tcb);
   numTasks++;
   EndCritical(sr);
@@ -668,7 +667,7 @@ void OS_Kill(void)
   long sr = StartCritical();
   //  tcb_t *next_tcb = cur_tcb->next;
   remove_tcb(cur_tcb, true);
-  if(cur_tcb->parent_process && (--(cur_tcb->parent_process->num_threads) <= 0))
+  if (cur_tcb->parent_process && (--(cur_tcb->parent_process->num_threads) <= 0))
   {
     // Last thread, free process memory
     Heap_Free(cur_tcb->parent_process->text);
@@ -853,7 +852,7 @@ void pop()
     TIMER3_TAV_R = head->wake_time;
     TIMER3_CTL_R |= 0x1;
   }
-	#if PRIORITY_SCHED
+#if PRIORITY_SCHED
   choose_next_with_prio();
 #endif
   EndCritical(sr);
@@ -877,7 +876,7 @@ void pushq(tcb_t *node)
     node->next = tcb_sleep_head;
     tcb_sleep_head = node;
     node->next->wake_time = cur_timer3 - node->wake_time;
-    if(node->next->wake_time < 80)
+    if (node->next->wake_time < 80)
     {
       node->next->wake_time = 80;
     }
@@ -895,16 +894,16 @@ void pushq(tcb_t *node)
       node->wake_time = node->wake_time - start->next->wake_time;
       start = start->next;
     }
-    if(node->wake_time < 80)
+    if (node->wake_time < 80)
     {
       node->wake_time = 80;
     }
     node->next = start->next;
     start->next = node;
-    if(node->next)
+    if (node->next)
     {
       node->next->wake_time -= node->wake_time;
-      if(node->next->wake_time < 80)
+      if (node->next->wake_time < 80)
       {
         node->next->wake_time = 80;
       }
@@ -947,26 +946,25 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
 {
   // outside is already disinterrupted && set node
 
-	
   node->next = 0;
   if (*semahead == 0)
   {
     *semahead = node;
   }
-  else if(node->priority < (*semahead)->priority)
-	{
-		tcb_t *tmp = *semahead;
-		*semahead = node;
-		node->next = tmp;
-	}
-	else
+  else if (node->priority < (*semahead)->priority)
   {
-		tcb_t *prev = *semahead;
-		tcb_t *start = (*semahead)->next;
-	
+    tcb_t *tmp = *semahead;
+    *semahead = node;
+    node->next = tmp;
+  }
+  else
+  {
+    tcb_t *prev = *semahead;
+    tcb_t *start = (*semahead)->next;
+
     while (start != 0 && start->priority <= node->priority)
     {
-			prev = prev->next;
+      prev = prev->next;
       start = start->next;
     }
     prev->next = node;
@@ -974,43 +972,41 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
   }
 }
 
-
-int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackSize, unsigned long priority)
+int OS_AddProcess(void (*entry)(void), void *text, void *data, unsigned long stackSize, unsigned long priority)
 {
   pcb_t *new_process = (pcb_t *)Heap_Malloc(sizeof(pcb_t));
   memset(new_process, 0, sizeof(new_process));
   new_process->data = data;
   new_process->text = text;
-  if(__OS_AddThread(entry, stackSize, priority, "Process main", new_process) == 0)
+  if (__OS_AddThread(entry, stackSize, priority, "Process main", new_process) == 0)
   {
     return -1;
   }
   tcb_t *tmp = cur_tcb;
-  while(tmp->parent_process == new_process)
+  while (tmp->parent_process == new_process)
   {
     tmp = tmp->next;
   }
 
-	return 0;
+  return 0;
 }
 
 int C_SVC_handler(unsigned int number, unsigned int *reg)
 {
-	switch(number)
-	{
-		case 0:
-			return OS_Id();
-		case 1:
-		  OS_Kill();
-			return reg[0];
-		case 2:
-			OS_Sleep(reg[0]);
-			return reg[0];
-		case 3:
-			return OS_Time();
-		case 4:
-			return OS_AddThread((void *)reg[0],reg[1],reg[2]);
-		
-	}
-	return 0;
+  switch (number)
+  {
+  case 0:
+    return OS_Id();
+  case 1:
+    OS_Kill();
+    return reg[0];
+  case 2:
+    OS_Sleep(reg[0]);
+    return reg[0];
+  case 3:
+    return OS_Time();
+  case 4:
+    return OS_AddThread((void *)reg[0], reg[1], reg[2]);
+  }
+  return 0;
 }
