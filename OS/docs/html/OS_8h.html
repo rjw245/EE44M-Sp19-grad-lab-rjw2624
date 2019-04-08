@@ -90,7 +90,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">OS.h File Reference</div>  </div>
 </div><!--header-->
@@ -117,6 +118,8 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct__pcb__s.html">_pcb_s</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct__tcb__s.html">_tcb_s</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structSema4.html">Sema4</a></td></tr>
@@ -142,13 +145,16 @@ Macros</h2></td></tr>
 <tr class="memitem:a0fb8aa2f0ea0a6494f1639dd97087013"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fb8aa2f0ea0a6494f1639dd97087013"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TCB_MAGIC</b>&#160;&#160;&#160;(0x900d900d)</td></tr>
 <tr class="separator:a0fb8aa2f0ea0a6494f1639dd97087013"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:accb79b9446dd2b953a1fb8437c5f6e15"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#accb79b9446dd2b953a1fb8437c5f6e15">OS_AddThread</a>(task,  stackSize,  priority)&#160;&#160;&#160;OS_AddThread_priv(task, stackSize, priority, #task)</td></tr>
+<tr class="memitem:accb79b9446dd2b953a1fb8437c5f6e15"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#accb79b9446dd2b953a1fb8437c5f6e15">OS_AddThread</a>(task,  stackSize,  priority)</td></tr>
 <tr class="separator:accb79b9446dd2b953a1fb8437c5f6e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf56561acbee98b34e8c42ff6b147255"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#adf56561acbee98b34e8c42ff6b147255">OS_AddPeriodicThread</a>(task,  period,  priority)&#160;&#160;&#160;OS_AddPeriodicThread_priv(task, period, priority, #task)</td></tr>
 <tr class="separator:adf56561acbee98b34e8c42ff6b147255"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:add17966847109f7551977a87ddfcd8aa"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="add17966847109f7551977a87ddfcd8aa"></a>
+typedef struct <a class="el" href="struct__pcb__s.html">_pcb_s</a>&#160;</td><td class="memItemRight" valign="bottom"><b>pcb_t</b></td></tr>
+<tr class="separator:add17966847109f7551977a87ddfcd8aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f5b511a2a589828581399459da62c6a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5f5b511a2a589828581399459da62c6a"></a>
 typedef struct <a class="el" href="struct__tcb__s.html">_tcb_s</a>&#160;</td><td class="memItemRight" valign="bottom"><b>tcb_t</b></td></tr>
 <tr class="separator:a5f5b511a2a589828581399459da62c6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -174,9 +180,9 @@ Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a075cf7301361417f66be1d5c22e36b0f">Jitter</a> (void)</td></tr>
 <tr class="memdesc:a075cf7301361417f66be1d5c22e36b0f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the max periodic task jitter measured thus far to the ST7735 display. <br /></td></tr>
 <tr class="separator:a075cf7301361417f66be1d5c22e36b0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66e5f5aba3fe61381d37e7ffb32b36e6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66e5f5aba3fe61381d37e7ffb32b36e6"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddThread_priv</b> (void(*task)(void), unsigned long stackSize, unsigned long priority, char *task_name)</td></tr>
-<tr class="separator:a66e5f5aba3fe61381d37e7ffb32b36e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e5c42edf8d08a40ccdee09e200d84b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e5c42edf8d08a40ccdee09e200d84b6"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>__OS_AddThread</b> (void(*task)(void), unsigned long stackSize, unsigned long priority, char *task_name, <a class="el" href="struct__pcb__s.html">pcb_t</a> *parent_process)</td></tr>
+<tr class="separator:a3e5c42edf8d08a40ccdee09e200d84b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc21b8aab03cbb1611186ca3ac9123d8"><td class="memItemLeft" align="right" valign="top">unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#adc21b8aab03cbb1611186ca3ac9123d8">OS_Id</a> (void)</td></tr>
 <tr class="separator:adc21b8aab03cbb1611186ca3ac9123d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21ee017683a4a2b593d5497a27addac0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a21ee017683a4a2b593d5497a27addac0"></a>
@@ -216,8 +222,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddPeriodicThread_p
 <tr class="separator:a251073790d2782617fd7474625761573"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a18553a7e1d82dcaaeb80a5524bd01cf2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a18553a7e1d82dcaaeb80a5524bd01cf2">OS_Launch</a> (unsigned long theTimeSlice)</td></tr>
 <tr class="separator:a18553a7e1d82dcaaeb80a5524bd01cf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3271236396a143a19c9650377e0f32ee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3271236396a143a19c9650377e0f32ee"></a>
-int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddProcess</b> (void(*entry)(void), void *text, void *data, unsigned long stackSize, unsigned long priority)</td></tr>
+<tr class="memitem:a3271236396a143a19c9650377e0f32ee"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a3271236396a143a19c9650377e0f32ee">OS_AddProcess</a> (void(*entry)(void), void *text, void *data, unsigned long stackSize, unsigned long priority)</td></tr>
+<tr class="memdesc:a3271236396a143a19c9650377e0f32ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Launch a process in the OS.  <a href="#a3271236396a143a19c9650377e0f32ee">More...</a><br /></td></tr>
 <tr class="separator:a3271236396a143a19c9650377e0f32ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e7e2088607214bc15b17ac57b57df1b"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6e7e2088607214bc15b17ac57b57df1b"></a>
 long&#160;</td><td class="memItemRight" valign="bottom"><b>StartCritical</b> (void)</td></tr>
@@ -231,6 +237,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>DisableInterrupts</b>
 <tr class="memitem:ab712356331a62b04aebcb373865e68c4"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab712356331a62b04aebcb373865e68c4"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>EnableInterrupts</b> (void)</td></tr>
 <tr class="separator:ab712356331a62b04aebcb373865e68c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:aa1c72d659051f84119a2c6373fe43bee"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aa1c72d659051f84119a2c6373fe43bee"></a>
+<a class="el" href="struct__tcb__s.html">tcb_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>cur_tcb</b></td></tr>
+<tr class="separator:aa1c72d659051f84119a2c6373fe43bee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Real Time Operating System for Labs 2 and 3 EE445M/EE380L.12. </p>
@@ -304,11 +316,11 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>EnableInterrupts</b> 
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;OS_AddThread_priv(task, stackSize, priority, #task)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>add a foregound thread to the scheduler stack size must be divisable by 8 (aligned to double word boundary) In Lab 2, you can ignore both the stackSize and priority fields In Lab 3, you can ignore the stackSize fields </p><dl class="params"><dt>Parameters</dt><dd>
+<b>Value:</b><div class="fragment"><div class="line">__OS_AddThread(task,\</div><div class="line">                                                               stackSize,\</div><div class="line">                                                               priority,\</div><div class="line">                                                               #task,\</div><div class="line">                                                               cur_tcb ? cur_tcb-&gt;parent_process : 0)</div></div><!-- fragment --><p>add a foregound thread to the scheduler stack size must be divisable by 8 (aligned to double word boundary) In Lab 2, you can ignore both the stackSize and priority fields In Lab 3, you can ignore the stackSize fields </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">task</td><td>Task function </td></tr>
     <tr><td class="paramname">stackSize</td><td>Size of the stack in bytes. Should be divisible by 8 </td></tr>
@@ -321,6 +333,63 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>EnableInterrupts</b> 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a class="anchor" id="a3271236396a143a19c9650377e0f32ee"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int OS_AddProcess </td>
+          <td>(</td>
+          <td class="paramtype">void(*)(void)&#160;</td>
+          <td class="paramname"><em>entry</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>text</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long&#160;</td>
+          <td class="paramname"><em>stackSize</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned long&#160;</td>
+          <td class="paramname"><em>priority</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Launch a process in the OS. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">entry</td><td>Entry point, usually main() of the process </td></tr>
+    <tr><td class="paramname">text</td><td>Text (code) section start address </td></tr>
+    <tr><td class="paramname">data</td><td>Data section start address </td></tr>
+    <tr><td class="paramname">stackSize</td><td>Size of the stack for the first thread </td></tr>
+    <tr><td class="paramname">priority</td><td>Priority for the first thread </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>int 0 on success, -1 on failure. </dd></dl>
+
+</div>
+</div>
 <a class="anchor" id="a5c387e683842fc4f9f846729a60186da"></a>
 <div class="memitem">
 <div class="memproto">

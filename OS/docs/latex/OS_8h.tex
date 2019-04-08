@@ -23,6 +23,8 @@ This graph shows which files directly or indirectly include this file\+:\nopageb
 \subsection*{Data Structures}
 \begin{DoxyCompactItemize}
 \item 
+struct \hyperlink{struct__pcb__s}{\+\_\+pcb\+\_\+s}
+\item 
 struct \hyperlink{struct__tcb__s}{\+\_\+tcb\+\_\+s}
 \item 
 struct \hyperlink{structSema4}{Sema4}
@@ -48,12 +50,15 @@ struct \hyperlink{structSema4}{Sema4}
 \#define {\bfseries T\+C\+B\+\_\+\+M\+A\+G\+IC}~(0x900d900d)\hypertarget{OS_8h_a0fb8aa2f0ea0a6494f1639dd97087013}{}\label{OS_8h_a0fb8aa2f0ea0a6494f1639dd97087013}
 
 \item 
-\#define \hyperlink{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}{O\+S\+\_\+\+Add\+Thread}(task,  stack\+Size,  priority)~O\+S\+\_\+\+Add\+Thread\+\_\+priv(task, stack\+Size, priority, \#task)
+\#define \hyperlink{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}{O\+S\+\_\+\+Add\+Thread}(task,  stack\+Size,  priority)
 \item 
 \#define \hyperlink{OS_8h_adf56561acbee98b34e8c42ff6b147255}{O\+S\+\_\+\+Add\+Periodic\+Thread}(task,  period,  priority)~O\+S\+\_\+\+Add\+Periodic\+Thread\+\_\+priv(task, period, priority, \#task)
 \end{DoxyCompactItemize}
 \subsection*{Typedefs}
 \begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{struct__pcb__s}{\+\_\+pcb\+\_\+s} {\bfseries pcb\+\_\+t}\hypertarget{OS_8h_add17966847109f7551977a87ddfcd8aa}{}\label{OS_8h_add17966847109f7551977a87ddfcd8aa}
+
 \item 
 typedef struct \hyperlink{struct__tcb__s}{\+\_\+tcb\+\_\+s} {\bfseries tcb\+\_\+t}\hypertarget{OS_8h_a5f5b511a2a589828581399459da62c6a}{}\label{OS_8h_a5f5b511a2a589828581399459da62c6a}
 
@@ -79,7 +84,7 @@ void \hyperlink{OS_8h_aacf0c377b570fc63b103c57e0fbc7acd}{O\+S\+\_\+b\+Signal} (\
 void \hyperlink{OS_8h_a075cf7301361417f66be1d5c22e36b0f}{Jitter} (void)\hypertarget{OS_8h_a075cf7301361417f66be1d5c22e36b0f}{}\label{OS_8h_a075cf7301361417f66be1d5c22e36b0f}
 
 \begin{DoxyCompactList}\small\item\em Print the max periodic task jitter measured thus far to the S\+T7735 display. \end{DoxyCompactList}\item 
-int {\bfseries O\+S\+\_\+\+Add\+Thread\+\_\+priv} (void($\ast$task)(void), unsigned long stack\+Size, unsigned long priority, char $\ast$task\+\_\+name)\hypertarget{OS_8h_a66e5f5aba3fe61381d37e7ffb32b36e6}{}\label{OS_8h_a66e5f5aba3fe61381d37e7ffb32b36e6}
+int {\bfseries \+\_\+\+\_\+\+O\+S\+\_\+\+Add\+Thread} (void($\ast$task)(void), unsigned long stack\+Size, unsigned long priority, char $\ast$task\+\_\+name, \hyperlink{struct__pcb__s}{pcb\+\_\+t} $\ast$parent\+\_\+process)\hypertarget{OS_8h_a3e5c42edf8d08a40ccdee09e200d84b6}{}\label{OS_8h_a3e5c42edf8d08a40ccdee09e200d84b6}
 
 \item 
 unsigned long \hyperlink{OS_8h_adc21b8aab03cbb1611186ca3ac9123d8}{O\+S\+\_\+\+Id} (void)
@@ -121,9 +126,8 @@ unsigned long \hyperlink{OS_8h_a251073790d2782617fd7474625761573}{O\+S\+\_\+\+Ms
 \item 
 void \hyperlink{OS_8h_a18553a7e1d82dcaaeb80a5524bd01cf2}{O\+S\+\_\+\+Launch} (unsigned long the\+Time\+Slice)
 \item 
-int {\bfseries O\+S\+\_\+\+Add\+Process} (void($\ast$entry)(void), void $\ast$text, void $\ast$data, unsigned long stack\+Size, unsigned long priority)\hypertarget{OS_8h_a3271236396a143a19c9650377e0f32ee}{}\label{OS_8h_a3271236396a143a19c9650377e0f32ee}
-
-\item 
+int \hyperlink{OS_8h_a3271236396a143a19c9650377e0f32ee}{O\+S\+\_\+\+Add\+Process} (void($\ast$entry)(void), void $\ast$text, void $\ast$data, unsigned long stack\+Size, unsigned long priority)
+\begin{DoxyCompactList}\small\item\em Launch a process in the OS. \end{DoxyCompactList}\item 
 long {\bfseries Start\+Critical} (void)\hypertarget{OS_8h_a6e7e2088607214bc15b17ac57b57df1b}{}\label{OS_8h_a6e7e2088607214bc15b17ac57b57df1b}
 
 \item 
@@ -134,6 +138,12 @@ void {\bfseries Disable\+Interrupts} (void)\hypertarget{OS_8h_ac866dbaf7b167e5c4
 
 \item 
 void {\bfseries Enable\+Interrupts} (void)\hypertarget{OS_8h_ab712356331a62b04aebcb373865e68c4}{}\label{OS_8h_ab712356331a62b04aebcb373865e68c4}
+
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{struct__tcb__s}{tcb\+\_\+t} $\ast$ {\bfseries cur\+\_\+tcb}\hypertarget{OS_8h_aa1c72d659051f84119a2c6373fe43bee}{}\label{OS_8h_aa1c72d659051f84119a2c6373fe43bee}
 
 \end{DoxyCompactItemize}
 
@@ -180,7 +190,15 @@ Add a background periodic task. Typically this function receives the highest pri
 \item[{}]{stack\+Size, }
 \item[{}]{priority}
 \end{DoxyParamCaption}
-)~O\+S\+\_\+\+Add\+Thread\+\_\+priv(task, stack\+Size, priority, \#task)}\hypertarget{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}{}\label{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}
+)}\hypertarget{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}{}\label{OS_8h_accb79b9446dd2b953a1fb8437c5f6e15}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+\_\_OS\_AddThread(task,\(\backslash\)
+                                                               stackSize,\(\backslash\)
+                                                               priority,\(\backslash\)
+                                                               #task,\(\backslash\)
+                                                               cur\_tcb ? cur\_tcb->parent\_process : 0)
+\end{DoxyCode}
 add a foregound thread to the scheduler stack size must be divisable by 8 (aligned to double word boundary) In Lab 2, you can ignore both the stack\+Size and priority fields In Lab 3, you can ignore the stack\+Size fields 
 \begin{DoxyParams}{Parameters}
 {\em task} & Task function \\
@@ -196,6 +214,37 @@ add a foregound thread to the scheduler stack size must be divisable by 8 (align
 
 
 \subsection{Function Documentation}
+\index{O\+S.\+h@{O\+S.\+h}!O\+S\+\_\+\+Add\+Process@{O\+S\+\_\+\+Add\+Process}}
+\index{O\+S\+\_\+\+Add\+Process@{O\+S\+\_\+\+Add\+Process}!O\+S.\+h@{O\+S.\+h}}
+\subsubsection[{\texorpdfstring{O\+S\+\_\+\+Add\+Process(void($\ast$entry)(void), void $\ast$text, void $\ast$data, unsigned long stack\+Size, unsigned long priority)}{OS_AddProcess(void(*entry)(void), void *text, void *data, unsigned long stackSize, unsigned long priority)}}]{\setlength{\rightskip}{0pt plus 5cm}int O\+S\+\_\+\+Add\+Process (
+\begin{DoxyParamCaption}
+\item[{void($\ast$)(void)}]{entry, }
+\item[{void $\ast$}]{text, }
+\item[{void $\ast$}]{data, }
+\item[{unsigned long}]{stack\+Size, }
+\item[{unsigned long}]{priority}
+\end{DoxyParamCaption}
+)}\hypertarget{OS_8h_a3271236396a143a19c9650377e0f32ee}{}\label{OS_8h_a3271236396a143a19c9650377e0f32ee}
+
+
+Launch a process in the OS. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em entry} & Entry point, usually main() of the process \\
+\hline
+{\em text} & Text (code) section start address \\
+\hline
+{\em data} & Data section start address \\
+\hline
+{\em stack\+Size} & Size of the stack for the first thread \\
+\hline
+{\em priority} & Priority for the first thread \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int 0 on success, -\/1 on failure. 
+\end{DoxyReturn}
 \index{O\+S.\+h@{O\+S.\+h}!O\+S\+\_\+\+Add\+S\+W1\+Task@{O\+S\+\_\+\+Add\+S\+W1\+Task}}
 \index{O\+S\+\_\+\+Add\+S\+W1\+Task@{O\+S\+\_\+\+Add\+S\+W1\+Task}!O\+S.\+h@{O\+S.\+h}}
 \subsubsection[{\texorpdfstring{O\+S\+\_\+\+Add\+S\+W1\+Task(void($\ast$task)(void), unsigned long priority)}{OS_AddSW1Task(void(*task)(void), unsigned long priority)}}]{\setlength{\rightskip}{0pt plus 5cm}int O\+S\+\_\+\+Add\+S\+W1\+Task (

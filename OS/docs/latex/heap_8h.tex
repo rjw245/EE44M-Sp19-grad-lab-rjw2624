@@ -5,8 +5,7 @@
 Implements memory heap for dynamic memory allocation. Follows standard malloc/calloc/realloc/free interface for allocating/unallocating memory. modified 8/31/08 Jonathan Valvano for style modified 12/16/11 Jonathan Valvano for 32-\/bit machine modified August 10, 2014 for C99 syntax This example accompanies the book \char`\"{}\+Embedded Systems\+: Real Time Operating Systems for A\+R\+M Cortex M Microcontrollers\char`\"{}, I\+S\+BN\+: 978-\/1466468863, Jonathan Valvano, copyright (c) 2014 Implementation Notes\+: This is a Knuth Heap. Each block has a header and a trailer, which I shall call the meta-\/sections. The meta-\/sections are each a single int32\+\_\+t that tells how many int32\+\_\+ts/words can be stored between the header and trailer. If the block is used, the meta-\/sections record the room as a positive number. If the block is unused, the meta-\/sections record the room as a negative number. Copyright 2014 by Jonathan W. Valvano, \href{mailto:valvano@mail.utexas.edu}{\tt valvano@mail.\+utexas.\+edu} You may use, edit, run or distribute this file as long as the above copyright notice remains T\+H\+IS S\+O\+F\+T\+W\+A\+RE IS P\+R\+O\+V\+I\+D\+ED \char`\"{}\+A\+S I\+S\char`\"{}. NO W\+A\+R\+R\+A\+N\+T\+I\+ES, W\+H\+E\+T\+H\+ER E\+X\+P\+R\+E\+SS, I\+M\+P\+L\+I\+ED OR S\+T\+A\+T\+U\+T\+O\+RY, I\+N\+C\+L\+U\+D\+I\+NG, B\+UT N\+OT L\+I\+M\+I\+T\+ED TO, I\+M\+P\+L\+I\+ED W\+A\+R\+R\+A\+N\+T\+I\+ES OF M\+E\+R\+C\+H\+A\+N\+T\+A\+B\+I\+L\+I\+TY A\+ND F\+I\+T\+N\+E\+SS F\+OR A P\+A\+R\+T\+I\+C\+U\+L\+AR P\+U\+R\+P\+O\+SE A\+P\+P\+LY TO T\+H\+IS S\+O\+F\+T\+W\+A\+RE. V\+A\+L\+V\+A\+NO S\+H\+A\+LL N\+OT, IN A\+NY C\+I\+R\+C\+U\+M\+S\+T\+A\+N\+C\+ES, BE L\+I\+A\+B\+LE F\+OR S\+P\+E\+C\+I\+AL, I\+N\+C\+I\+D\+E\+N\+T\+AL, OR C\+O\+N\+S\+E\+Q\+U\+E\+N\+T\+I\+AL D\+A\+M\+A\+G\+ES, F\+OR A\+NY R\+E\+A\+S\+ON W\+H\+A\+T\+S\+O\+E\+V\+ER. For more information about my classes, my research, and my books, see \href{http://users.ece.utexas.edu/~valvano/}{\tt http\+://users.\+ece.\+utexas.\+edu/$\sim$valvano/}.  
 
 
-This graph shows which files directly or indirectly include this file\+:
-\nopagebreak
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -21,7 +20,7 @@ struct \hyperlink{structheap__stats}{heap\+\_\+stats}
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
-\#define {\bfseries H\+E\+A\+P\+\_\+\+S\+I\+Z\+E\+\_\+\+B\+Y\+T\+ES}~(256)\hypertarget{heap_8h_af2910747af799b24cfaa2ab32861f592}{}\label{heap_8h_af2910747af799b24cfaa2ab32861f592}
+\#define {\bfseries H\+E\+A\+P\+\_\+\+S\+I\+Z\+E\+\_\+\+B\+Y\+T\+ES}~(2048)\hypertarget{heap_8h_af2910747af799b24cfaa2ab32861f592}{}\label{heap_8h_af2910747af799b24cfaa2ab32861f592}
 
 \item 
 \#define {\bfseries H\+E\+A\+P\+\_\+\+S\+I\+Z\+E\+\_\+\+W\+O\+R\+DS}~(H\+E\+A\+P\+\_\+\+S\+I\+Z\+E\+\_\+\+B\+Y\+T\+ES / sizeof(int32\+\_\+t))\hypertarget{heap_8h_a08198ef17b67d091f9eb38c544cb4680}{}\label{heap_8h_a08198ef17b67d091f9eb38c544cb4680}
