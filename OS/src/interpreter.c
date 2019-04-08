@@ -219,6 +219,9 @@ void interpreter_cmd(char *cmd_str)
     if (exec_elf(arg1, &env) != 0) { 
       UART_OutString("Failed to launch File.\r\n");
     }
+    if (exec_elf(arg1, &env) != 0) { 
+      UART_OutString("Failed to launch File.\r\n");
+    }
   }
   else if(strcmp(cmd, "test") == 0)
   {
