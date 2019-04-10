@@ -3,8 +3,8 @@
 
 void Motors_Init(void)
 {
-    // Initialize PB5 and PB7 as PWM outputs
-    // Initialize PB6 and PB4 as digital outputs
+    // Initialize PB5 and PB6 as PWM outputs
+    // Initialize PB4 and PB7 as digital outputs
 }
 
 void Motors_SetTorque(int32_t left_trq, int32_t right_trq)
