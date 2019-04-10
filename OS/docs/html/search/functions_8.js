@@ -1,8 +1,9 @@
 var searchData=
 [
-  ['pll_5finit',['PLL_Init',['../PLL_8h.html#a6c42c1a41857964a1cf126e28f5828b1',1,'PLL.h']]],
-  ['profiler_5fclear',['Profiler_Clear',['../profiler_8h.html#aac136c299cd1261916a32c6cb68a8b28',1,'profiler.h']]],
-  ['profiler_5fevent',['Profiler_Event',['../profiler_8h.html#a5ecc289aa64f3dc4268e3d85176ca338',1,'profiler.h']]],
-  ['profiler_5fforeach',['Profiler_Foreach',['../profiler_8h.html#a828422b77b8c01f615b99c1e060aa5de',1,'profiler.h']]],
-  ['profiler_5finit',['Profiler_Init',['../profiler_8h.html#a6f5baaa09bec86812a3c79abb07729d9',1,'profiler.h']]]
+  ['motors_5fbrake',['Motors_Brake',['../motors_8h.html#ac35a70f74e7097175bee3ad296713d33',1,'motors.h']]],
+  ['motors_5fbrake_5fleft',['Motors_Brake_Left',['../motors_8h.html#a0ddfe47225418fa87ef927b7935ccb0a',1,'motors.h']]],
+  ['motors_5fbrake_5fright',['Motors_Brake_Right',['../motors_8h.html#a04d533dd786973adc8c59ea77a96c111',1,'motors.h']]],
+  ['motors_5fsettorque',['Motors_SetTorque',['../motors_8h.html#a4b067e2e5dba0fcfb08ad3c9a50fb9ff',1,'motors.h']]],
+  ['motors_5fsettorque_5fleft',['Motors_SetTorque_Left',['../motors_8h.html#ab3885b1dc06c8dc262460919f636d25b',1,'motors.h']]],
+  ['motors_5fsettorque_5fright',['Motors_SetTorque_Right',['../motors_8h.html#ac9479b60f679d902299972216e82321a',1,'motors.h']]]
 ];

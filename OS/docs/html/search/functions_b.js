@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['sema4',['Sema4',['../structSema4.html',1,'']]],
-  ['st7735_2eh',['ST7735.h',['../ST7735_8h.html',1,'']]],
   ['st7735_5fcolor565',['ST7735_Color565',['../ST7735__lab3_8h.html#a29294596f660f05ad8738db73ee07cfa',1,'ST7735_lab3.h']]],
   ['st7735_5fdrawbitmap',['ST7735_DrawBitmap',['../ST7735__lab3_8h.html#aaf5af072e5213fcc3d6b852a2553e048',1,'ST7735_lab3.h']]],
   ['st7735_5fdrawchar',['ST7735_DrawChar',['../ST7735__lab3_8h.html#a66c54533bdb1555b1e488bb9fcf9885b',1,'ST7735_lab3.h']]],
@@ -15,7 +13,6 @@ var searchData=
   ['st7735_5finitb',['ST7735_InitB',['../ST7735__lab3_8h.html#aec8e637c759ad0adde0758c0935f383a',1,'ST7735_lab3.h']]],
   ['st7735_5finitr',['ST7735_InitR',['../ST7735__lab3_8h.html#a204a442207d7367ace616bd6bfd79348',1,'ST7735_lab3.h']]],
   ['st7735_5finvertdisplay',['ST7735_InvertDisplay',['../ST7735__lab3_8h.html#a2138bd237e97da48ad87137fb616be37',1,'ST7735_lab3.h']]],
-  ['st7735_5flab3_2eh',['ST7735_lab3.h',['../ST7735__lab3_8h.html',1,'']]],
   ['st7735_5fmessage',['ST7735_Message',['../ST7735__lab3_8h.html#a458e4307692b8df8ab1aef53666e1435',1,'ST7735_lab3.h']]],
   ['st7735_5foutchar',['ST7735_OutChar',['../ST7735__lab3_8h.html#a49a0a636404c51a7fe1b54768e47d1eb',1,'ST7735_lab3.h']]],
   ['st7735_5foutstring',['ST7735_OutString',['../ST7735__lab3_8h.html#a6bd647233ed938c4006694552b8fd9a0',1,'ST7735_lab3.h']]],

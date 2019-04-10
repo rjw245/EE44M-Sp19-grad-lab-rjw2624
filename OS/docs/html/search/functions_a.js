@@ -1,12 +1,8 @@
 var searchData=
 [
-  ['uart_5finchar',['UART_InChar',['../UART_8h.html#a00e894bb188320a2f4dcd5a78b80da52',1,'UART.h']]],
-  ['uart_5finit',['UART_Init',['../UART_8h.html#ad5cbed2a2222bb84e8b5c1caaa50634e',1,'UART.h']]],
-  ['uart_5finstring',['UART_InString',['../UART_8h.html#a4278ab3463fadff60a5a84792707c3a3',1,'UART.h']]],
-  ['uart_5finudec',['UART_InUDec',['../UART_8h.html#a0a28a219c31df1bd2182e4b3afbcc5cd',1,'UART.h']]],
-  ['uart_5finuhex',['UART_InUHex',['../UART_8h.html#a5a7efc717f2c844f08689418dd50ee43',1,'UART.h']]],
-  ['uart_5foutchar',['UART_OutChar',['../UART_8h.html#a4ef2f92682b12a347cf1f81cccda4da7',1,'UART.h']]],
-  ['uart_5foutstring',['UART_OutString',['../UART_8h.html#a2cbbed822dc8e6d801e6c9f21a2cd418',1,'UART.h']]],
-  ['uart_5foutudec',['UART_OutUDec',['../UART_8h.html#a9a53c5fe8486e0282990b11a218c2625',1,'UART.h']]],
-  ['uart_5foutuhex',['UART_OutUHex',['../UART_8h.html#a21661aabfda94ec88e9514856f062a41',1,'UART.h']]]
+  ['pll_5finit',['PLL_Init',['../PLL_8h.html#a6c42c1a41857964a1cf126e28f5828b1',1,'PLL.h']]],
+  ['profiler_5fclear',['Profiler_Clear',['../profiler_8h.html#aac136c299cd1261916a32c6cb68a8b28',1,'profiler.h']]],
+  ['profiler_5fevent',['Profiler_Event',['../profiler_8h.html#a5ecc289aa64f3dc4268e3d85176ca338',1,'profiler.h']]],
+  ['profiler_5fforeach',['Profiler_Foreach',['../profiler_8h.html#a828422b77b8c01f615b99c1e060aa5de',1,'profiler.h']]],
+  ['profiler_5finit',['Profiler_Init',['../profiler_8h.html#a6f5baaa09bec86812a3c79abb07729d9',1,'profiler.h']]]
 ];
