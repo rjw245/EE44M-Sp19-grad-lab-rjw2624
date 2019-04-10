@@ -6,8 +6,7 @@ Interface to two DC motors controlled by P\+WM. Allows differential driving.
 
 
 {\ttfamily \#include $<$stdint.\+h$>$}\\*
-Include dependency graph for motors.\+h\+:
-\nopagebreak
+Include dependency graph for motors.\+h\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -17,14 +16,14 @@ Include dependency graph for motors.\+h\+:
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-$\ast$copyright \hyperlink{motors_8h_a3a62fc75f0a6fe06e8162156722ba50e}{Copyright} (c) 2019 $\ast$$\ast$/void Motors\+\_\+\+Init(void)\hypertarget{motors_8h_a3a62fc75f0a6fe06e8162156722ba50e}{}\label{motors_8h_a3a62fc75f0a6fe06e8162156722ba50e}
+void \hyperlink{motors_8h_a5c0d48e46db133698dad2cbf5df21486}{Motors\+\_\+\+Init} (void)\hypertarget{motors_8h_a5c0d48e46db133698dad2cbf5df21486}{}\label{motors_8h_a5c0d48e46db133698dad2cbf5df21486}
 
 \begin{DoxyCompactList}\small\item\em Initialize the robot motors. \end{DoxyCompactList}\item 
-void \hyperlink{motors_8h_a4b067e2e5dba0fcfb08ad3c9a50fb9ff}{Motors\+\_\+\+Set\+Torque} (int32\+\_\+t left\+\_\+trq, int32\+\_\+t right\+\_\+trq)
+void \hyperlink{motors_8h_a1156160dc9b3c27db38c8c4b90c12caa}{Motors\+\_\+\+Set\+Torque} (int16\+\_\+t left\+\_\+trq, int16\+\_\+t right\+\_\+trq)
 \begin{DoxyCompactList}\small\item\em Set the torque for each of the two motors atomically. \end{DoxyCompactList}\item 
-void \hyperlink{motors_8h_ab3885b1dc06c8dc262460919f636d25b}{Motors\+\_\+\+Set\+Torque\+\_\+\+Left} (int32\+\_\+t left\+\_\+trq)
+void \hyperlink{motors_8h_aa71622b5e7e99d500b3f51066cea701c}{Motors\+\_\+\+Set\+Torque\+\_\+\+Left} (int16\+\_\+t left\+\_\+trq)
 \begin{DoxyCompactList}\small\item\em Set the torque of the left motor individually. \end{DoxyCompactList}\item 
-void \hyperlink{motors_8h_ac9479b60f679d902299972216e82321a}{Motors\+\_\+\+Set\+Torque\+\_\+\+Right} (int32\+\_\+t right\+\_\+trq)
+void \hyperlink{motors_8h_a5749c819b9d4d966fc5a6f7730b18850}{Motors\+\_\+\+Set\+Torque\+\_\+\+Right} (int16\+\_\+t right\+\_\+trq)
 \begin{DoxyCompactList}\small\item\em Set the torque of the left motor individually. \end{DoxyCompactList}\item 
 void \hyperlink{motors_8h_ac35a70f74e7097175bee3ad296713d33}{Motors\+\_\+\+Brake} (void)\hypertarget{motors_8h_ac35a70f74e7097175bee3ad296713d33}{}\label{motors_8h_ac35a70f74e7097175bee3ad296713d33}
 
@@ -64,25 +63,31 @@ Conventions\+:
 \end{DoxyItemize}
 \item Pin configurations\+:
 \begin{DoxyItemize}
-\item A+ (P\+B7) and B+ (P\+B5) will be configured as P\+WM outputs
-\item A-\/ (P\+B6) and B-\/ (P\+B4) will be configured as digital outputs.
+\item A-\/ (P\+B6) and B+ (P\+B5) will be configured as P\+WM outputs
+\item A+ (P\+B7) and B-\/ (P\+B4) will be configured as digital outputs.
+\item We alternate + and -\/ so that when both motors are driving forward (i.\+e. they are rotating O\+P\+P\+O\+S\+I\+TE directions) with the same torque, their digital and P\+WM output configurations will be identical.
 \end{DoxyItemize}
 \item H-\/\+Bridge convention\+:
 \begin{DoxyItemize}
 \item A value of 1 (high) on any of P\+B4/5/6/7 will connect the corresponding motor terminal (A/\+B/+/-\/) to battery power.
-\item A value of 0 (low) on any of P\+B4/5/6/7 will connect the corresponding motor terminal (A/\+B/+/-\/) to ground. 
+\item A value of 0 (low) on any of P\+B4/5/6/7 will connect the corresponding motor terminal (A/\+B/+/-\/) to ground.
 \end{DoxyItemize}
 \end{DoxyItemize}
+
+\begin{DoxyCopyright}{Copyright}
+Copyright (c) 2019 
+\end{DoxyCopyright}
+
 
 \subsection{Function Documentation}
 \index{motors.\+h@{motors.\+h}!Motors\+\_\+\+Set\+Torque@{Motors\+\_\+\+Set\+Torque}}
 \index{Motors\+\_\+\+Set\+Torque@{Motors\+\_\+\+Set\+Torque}!motors.\+h@{motors.\+h}}
-\subsubsection[{\texorpdfstring{Motors\+\_\+\+Set\+Torque(int32\+\_\+t left\+\_\+trq, int32\+\_\+t right\+\_\+trq)}{Motors_SetTorque(int32_t left_trq, int32_t right_trq)}}]{\setlength{\rightskip}{0pt plus 5cm}void Motors\+\_\+\+Set\+Torque (
+\subsubsection[{\texorpdfstring{Motors\+\_\+\+Set\+Torque(int16\+\_\+t left\+\_\+trq, int16\+\_\+t right\+\_\+trq)}{Motors_SetTorque(int16_t left_trq, int16_t right_trq)}}]{\setlength{\rightskip}{0pt plus 5cm}void Motors\+\_\+\+Set\+Torque (
 \begin{DoxyParamCaption}
-\item[{int32\+\_\+t}]{left\+\_\+trq, }
-\item[{int32\+\_\+t}]{right\+\_\+trq}
+\item[{int16\+\_\+t}]{left\+\_\+trq, }
+\item[{int16\+\_\+t}]{right\+\_\+trq}
 \end{DoxyParamCaption}
-)}\hypertarget{motors_8h_a4b067e2e5dba0fcfb08ad3c9a50fb9ff}{}\label{motors_8h_a4b067e2e5dba0fcfb08ad3c9a50fb9ff}
+)}\hypertarget{motors_8h_a1156160dc9b3c27db38c8c4b90c12caa}{}\label{motors_8h_a1156160dc9b3c27db38c8c4b90c12caa}
 
 
 Set the torque for each of the two motors atomically. 
@@ -96,11 +101,11 @@ Set the torque for each of the two motors atomically.
 \end{DoxyParams}
 \index{motors.\+h@{motors.\+h}!Motors\+\_\+\+Set\+Torque\+\_\+\+Left@{Motors\+\_\+\+Set\+Torque\+\_\+\+Left}}
 \index{Motors\+\_\+\+Set\+Torque\+\_\+\+Left@{Motors\+\_\+\+Set\+Torque\+\_\+\+Left}!motors.\+h@{motors.\+h}}
-\subsubsection[{\texorpdfstring{Motors\+\_\+\+Set\+Torque\+\_\+\+Left(int32\+\_\+t left\+\_\+trq)}{Motors_SetTorque_Left(int32_t left_trq)}}]{\setlength{\rightskip}{0pt plus 5cm}void Motors\+\_\+\+Set\+Torque\+\_\+\+Left (
+\subsubsection[{\texorpdfstring{Motors\+\_\+\+Set\+Torque\+\_\+\+Left(int16\+\_\+t left\+\_\+trq)}{Motors_SetTorque_Left(int16_t left_trq)}}]{\setlength{\rightskip}{0pt plus 5cm}void Motors\+\_\+\+Set\+Torque\+\_\+\+Left (
 \begin{DoxyParamCaption}
-\item[{int32\+\_\+t}]{left\+\_\+trq}
+\item[{int16\+\_\+t}]{left\+\_\+trq}
 \end{DoxyParamCaption}
-)}\hypertarget{motors_8h_ab3885b1dc06c8dc262460919f636d25b}{}\label{motors_8h_ab3885b1dc06c8dc262460919f636d25b}
+)}\hypertarget{motors_8h_aa71622b5e7e99d500b3f51066cea701c}{}\label{motors_8h_aa71622b5e7e99d500b3f51066cea701c}
 
 
 Set the torque of the left motor individually. 
@@ -112,11 +117,11 @@ Set the torque of the left motor individually.
 \end{DoxyParams}
 \index{motors.\+h@{motors.\+h}!Motors\+\_\+\+Set\+Torque\+\_\+\+Right@{Motors\+\_\+\+Set\+Torque\+\_\+\+Right}}
 \index{Motors\+\_\+\+Set\+Torque\+\_\+\+Right@{Motors\+\_\+\+Set\+Torque\+\_\+\+Right}!motors.\+h@{motors.\+h}}
-\subsubsection[{\texorpdfstring{Motors\+\_\+\+Set\+Torque\+\_\+\+Right(int32\+\_\+t right\+\_\+trq)}{Motors_SetTorque_Right(int32_t right_trq)}}]{\setlength{\rightskip}{0pt plus 5cm}void Motors\+\_\+\+Set\+Torque\+\_\+\+Right (
+\subsubsection[{\texorpdfstring{Motors\+\_\+\+Set\+Torque\+\_\+\+Right(int16\+\_\+t right\+\_\+trq)}{Motors_SetTorque_Right(int16_t right_trq)}}]{\setlength{\rightskip}{0pt plus 5cm}void Motors\+\_\+\+Set\+Torque\+\_\+\+Right (
 \begin{DoxyParamCaption}
-\item[{int32\+\_\+t}]{right\+\_\+trq}
+\item[{int16\+\_\+t}]{right\+\_\+trq}
 \end{DoxyParamCaption}
-)}\hypertarget{motors_8h_ac9479b60f679d902299972216e82321a}{}\label{motors_8h_ac9479b60f679d902299972216e82321a}
+)}\hypertarget{motors_8h_a5749c819b9d4d966fc5a6f7730b18850}{}\label{motors_8h_a5749c819b9d4d966fc5a6f7730b18850}
 
 
 Set the torque of the left motor individually. 

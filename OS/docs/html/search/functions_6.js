@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['interpreter_5fcmd',['interpreter_cmd',['../interpreter_8h.html#ad36afca5c99ec60b995fae704d95d014',1,'interpreter.h']]],
-  ['interpreter_5ftask',['interpreter_task',['../interpreter_8h.html#a0cf6f7b20306bd53e7f61b3ead179154',1,'interpreter.h']]]
+  ['jitter',['Jitter',['../OS_8h.html#a075cf7301361417f66be1d5c22e36b0f',1,'OS.h']]]
 ];

@@ -17,8 +17,10 @@
  *      - The red wire of right motor will be connected to B- and is controlled by PB4
  *      - The black wire of the right motor will be connected to B+ and is controlled by PB5
  *  - Pin configurations:
- *      - A+ (PB7) and B+ (PB5) will be configured as PWM outputs
- *      - A- (PB6) and B- (PB4) will be configured as digital outputs.
+ *      - A- (PB6) and B+ (PB5) will be configured as PWM outputs
+ *      - A+ (PB7) and B- (PB4) will be configured as digital outputs.
+ *      - We alternate + and - so that when both motors are driving forward (i.e. they are rotating OPPOSITE directions)
+ *        with the same torque, their digital and PWM output configurations will be identical.
  *  - H-Bridge convention:
  *      - A value of 1 (high) on any of PB4/5/6/7 will connect the corresponding motor terminal (A/B/+/-) to battery power.
  *      - A value of 0 (low) on any of PB4/5/6/7 will connect the corresponding motor terminal (A/B/+/-) to ground.
