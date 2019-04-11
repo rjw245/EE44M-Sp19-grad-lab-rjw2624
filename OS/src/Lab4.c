@@ -73,7 +73,7 @@
 // PD3, PD2, PD1, PD0, PC4
 
 #include "OS.h"
-#include "../inc/tm4c123gh6pm.h"
+#include "tm4c123gh6pm.h"
 #include "ST7735.h"
 #include "ADC.h"
 #include "UART.h"
