@@ -160,11 +160,11 @@ long x1, x2, x3;
 void DAS(void)
 {
   long output;
-  PD0 ^= 0x01;
+  //PD0 ^= 0x01;
   x3 = x2;
   x2 = x1;       // MACQ
   x1 = ADC_In(); // channel set when calling ADC_Init
-  PD0 ^= 0x01;
+ //PD0 ^= 0x01;
   if (Index3 < 64)
   {
     output = median(x1, x2, x3); // 3-wide median filter
@@ -177,7 +177,7 @@ void DAS(void)
       OS_Signal(&doFFT);
     }
   }
-  PD0 ^= 0x01;
+ // PD0 ^= 0x01;
 }
 void DSP(void)
 {
@@ -186,9 +186,9 @@ void DSP(void)
   while (1)
   {
     OS_Wait(&doFFT); // wait for 64 samples
-    PD2 = 0x04;
+    //PD2 = 0x04;
     cr4_fft_64_stm32(y, x, 64); // complex FFT of last 64 ADC values
-    PD2 = 0x00;
+    //PD2 = 0x00;
     Index3 = 0;                  // take another buffer
     DCcomponent = y[0] & 0xFFFF; // Real part at frequency 0, imaginary part should be zero
 	  
@@ -303,6 +303,7 @@ void Interpreter(void)
 
 void init_fs_task(void)
 {
+ 
 }
 
 //*******************lab 4 main **********
@@ -330,7 +331,7 @@ int realmain(void)
   NumCreated += OS_AddThread(&Interpreter, 128, 2);
   NumCreated += OS_AddThread(&DSP, 128, 3);
   NumCreated += OS_AddThread(&init_fs_task, 128, 1); 
-  NumCreated += OS_AddThread(&IdleTask, 128, 7); // runs when nothing useful to do
+  //NumCreated += OS_AddThread(&IdleTask, 128, 7); // runs when nothing useful to do
 
   OS_Launch(TIMESLICE); // doesn't return, interrupts enabled in here
   return 0;             // this never executes

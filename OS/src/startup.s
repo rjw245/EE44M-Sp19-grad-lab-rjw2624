@@ -596,8 +596,8 @@ PWM1Fault_Handler
         EXPORT  StartCritical
         EXPORT  EndCritical
         EXPORT  WaitForInterrupt
-		EXTERN disableTimeget
-		EXTERN enableTimeget
+;		EXTERN disableTimeget
+;		EXTERN enableTimeget
 
 
 
@@ -614,10 +614,10 @@ FIRST_EnableInterrupts
 ; outputs: none
 DisableInterrupts
         CPSID  I
-		PUSH {R0-R3,R14}
+;		PUSH {R0-R3,R14}
 
-		BL disableTimeget
-		POP {R0-R3,R14}
+;		BL disableTimeget
+;		POP {R0-R3,R14}
 		BX     LR
 
 ;*********** EnableInterrupts ***************
@@ -625,10 +625,10 @@ DisableInterrupts
 ; inputs:  none
 ; outputs: none
 EnableInterrupts
-		PUSH {R0-R3,R14}
+;		PUSH {R0-R3,R14}
 
-		BL enableTimeget
-		POP {R0-R3,R14}
+;		BL enableTimeget
+;		POP {R0-R3,R14}
 		CPSIE  I
         BX     LR
 
@@ -640,10 +640,10 @@ StartCritical
 
         MRS    R0, PRIMASK  ; save old status
 		CPSID  I            ; mask all (except faults)
-		PUSH {R0-R3,R14}
+;		PUSH {R0-R3,R14}
 
-		BL disableTimeget
-		POP {R0-R3,R14}
+;		BL disableTimeget
+;		POP {R0-R3,R14}
 		BX     LR
 
 ;*********** EndCritical ************************
@@ -651,10 +651,10 @@ StartCritical
 ; inputs:  previous I bit
 ; outputs: none
 EndCritical
-		PUSH {R0-R3,R14}
+;		PUSH {R0-R3,R14}
 
-		BL enableTimeget
-		POP {R0-R3,R14}
+;		BL enableTimeget
+;		POP {R0-R3,R14}
         MSR    PRIMASK, R0
         BX     LR
 

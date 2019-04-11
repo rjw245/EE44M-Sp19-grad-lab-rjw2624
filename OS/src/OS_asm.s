@@ -21,8 +21,8 @@
 	EXTERN next_tcb
     EXTERN save_ctx_global
     EXTERN ticks_since_boot
-	EXTERN disableTimeget
-	EXTERN enableTimeget
+	;EXTERN disableTimeget
+	;EXTERN enableTimeget
   EXTERN C_SVC_handler
 
    
@@ -60,9 +60,9 @@ TEST_OS_AddThread
 PendSV_Handler
 	CPSID IF ; Disable interrupts
 
-	PUSH {R0-R3,R14}
-	BL disableTimeget
-	POP {R0-R3,R14}
+;	PUSH {R0-R3,R14}
+;	BL disableTimeget
+;	POP {R0-R3,R14}
 
     LDR R0, =cur_tcb ; RO <= &cur_tcb
     LDR R1, [R0]     ; R1 <= cur_tcb
@@ -91,9 +91,9 @@ Load_Ctx
     LDR SP, [R1]    ; SP <= cur_tcb->sp
     POP {R4-R11}
 
-    PUSH {R0-R3,R14}
-    BL enableTimeget
-    POP {R0-R3,R14}
+;    PUSH {R0-R3,R14}
+;    BL enableTimeget
+;    POP {R0-R3,R14}
 
     CPSIE IF ; Enable interrupts
     BX LR
