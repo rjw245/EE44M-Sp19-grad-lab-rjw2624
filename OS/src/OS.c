@@ -517,7 +517,7 @@ unsigned long MaxJitter = 0;
 void Jitter(void)
 {
 
-  ST7735_Message(1, 0, "Max Jitter 0.1us=", MaxJitter);
+  ST7735_Message(0, 2, "Max Jitter 0.1us=", MaxJitter);
 }
 
 static void JitterGet(unsigned long cur_time, unsigned long PERIOD, int timer)

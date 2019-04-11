@@ -1489,6 +1489,8 @@ void static writecommand(unsigned char c)
 
 void static writedata(unsigned char c)
 {
+    OS_bWait(&LCDFree);
+
   volatile uint32_t response;
   // wait until SSI0 not busy/transmit FIFO empty
   while ((SSI0_SR_R & SSI_SR_BSY) == SSI_SR_BSY)
@@ -1503,6 +1505,8 @@ void static writedata(unsigned char c)
   }; // wait until response
   TFT_CS = TFT_CS_HIGH;
   response = SSI0_DR_R; // acknowledge response
+    OS_bSignal(&LCDFree);
+
 }
 // Subroutine to wait 1 msec
 // Inputs: None
@@ -1829,11 +1833,11 @@ void ST7735_DrawPixel(short x, short y, unsigned short color)
 
   if ((x < 0) || (x >= _width) || (y < 0) || (y >= _height))
     return;
-  OS_Wait(&pixel_semaphore);
+  OS_bWait(&pixel_semaphore);
   setAddrWindow(x, y, x + 1, y + 1);
-
+  //OS_bWait(&pixel_semaphore);
   pushColor(color);
-  OS_Signal(&pixel_semaphore);
+  //OS_bSignal(&pixel_semaphore);
 }
 
 //------------ST7735_DrawFastVLine------------
@@ -2235,7 +2239,6 @@ void ST7735_OutUDec2(unsigned long n, unsigned long l)
 void ST7735_Message(unsigned long d, unsigned long l, char *pt, long value)
 {
   unsigned long sl = 8 * d + l;
-  OS_bWait(&LCDFree);
   ST7735_OutString(0, sl, pt, ST7735_YELLOW);
   ST7735_OutUDec2(value, sl);
   OS_bSignal(&LCDFree);

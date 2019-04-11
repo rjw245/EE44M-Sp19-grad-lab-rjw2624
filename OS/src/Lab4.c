@@ -208,7 +208,7 @@ void Robot(void)
   unsigned long time;     // in 10msec,  0 to 1000
   OS_ClearMsTime();
   DataLost = 0; // new run with no lost data
-  OS_Fifo_Init(256);
+  //OS_Fifo_Init(256);
   printf("Robot running...");
   //eFile_RedirectToFile(Name); // robot0, robot1,...,robot7
   printf("time(sec)\tdata(volts)\tdistance(mm)\n\r");
