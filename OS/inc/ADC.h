@@ -28,12 +28,8 @@ int ADC_Init(uint32_t channelNum);
  * @brief Returns the most recent sample collected
  *        by the channel configured in ADC_Init(...)
  * 
- * If the channel has not finished collecting its first sample,
- * this function returns 0xFFFF.
- * 
- * If you call this rapidly, faster than the ADC samples, this
- * function may repeat values (since it always returns the most recent).
- * 
+ * This function uses busy-wait for the ADC sampling to be done
+ *
  * @return uint16_t The conversion result
  */
 uint16_t ADC_In(void);
