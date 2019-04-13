@@ -26,12 +26,6 @@
 #include "heap.h"
 
 
-#define PE3 (*((volatile unsigned long *)0x40024020))
-#define PD0 (*((volatile unsigned long *)0x40007004))
-#define PD1 (*((volatile unsigned long *)0x40007008))
-#define PD2 (*((volatile unsigned long *)0x40007010))
-#define PD3 (*((volatile unsigned long *)0x40007020))
-  
 #define PRIORITY_SCHED 1 // 0 for round robin, 1 for priority scheduler
 #define JITTERSIZE 64
 unsigned long const JitterSize = JITTERSIZE;
@@ -115,14 +109,12 @@ static uint64_t get_system_time(void)
 
 void SysTick_Handler(void)
 {
-    PD3 = 0x08;
   ContextSwitch(true);
 #if PRIORITY_SCHED
   // Need to make sure we wrap to list head
   // if we reach the end of the set of highest prio tasks
   choose_next_with_prio();
 #endif
-    PD3 = 0x00;
 }
 
 static void TaskReturn(void)
@@ -137,8 +129,8 @@ void OS_Init(void)
   //FIRST_DisableInterrupts();
   PLL_Init(Bus80MHz);
   UART_Init();
-  ST7735_InitR(INITR_REDTAB);
-  ST7735_FillScreen(0xFFFF);
+//   ST7735_InitR(INITR_REDTAB);
+//   ST7735_FillScreen(0xFFFF);
 
   // Activate PendSV interrupt with lowest priority
   NVIC_SYS_PRI3_R |= (7 << 21);
@@ -907,7 +899,6 @@ void pushq(tcb_t *node)
   }
   else if (node->wake_time < cur_timer3)
   {
-    PD0 = 0x1;
     node->next = tcb_sleep_head;
     tcb_sleep_head = node;
     node->next->wake_time = cur_timer3 - node->wake_time;
@@ -917,12 +908,10 @@ void pushq(tcb_t *node)
     }
     TIMER3_TAV_R = node->wake_time;
     TIMER3_TAILR_R = node->wake_time;
-     PD0 = 0x0;
     // NVIC_UNPEND1_R = 1 << (35 - 32); // if before this statement end tick could end, then remove.
   }
   else
   {
-    PD1 = 0x2;
     start->wake_time = cur_timer3; // Make up to date
     node->wake_time -= start->wake_time;
     while (start->next != 0 && start->next->wake_time <= node->wake_time)
@@ -946,15 +935,12 @@ void pushq(tcb_t *node)
     }
   }
   TIMER3_CTL_R |= 0x1; // enable timer 3
-  PD1=0;
 }
 
 void Timer3A_Handler()
 {
-  PD2 = 4;
   pop();
   TIMER3_ICR_R = TIMER_ICR_TATOCINT;
-  PD2 = 0;
 }
 
 void pop_sema(tcb_t **semahead)

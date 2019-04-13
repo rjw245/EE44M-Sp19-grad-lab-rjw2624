@@ -510,6 +510,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\IR.c</FilePath>
             </File>
+            <File>
+              <FileName>motors.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\motors.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -799,6 +804,11 @@
               <FileName>IR.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\IR.h</FilePath>
+            </File>
+            <File>
+              <FileName>motors.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\motors.h</FilePath>
             </File>
           </Files>
         </Group>
