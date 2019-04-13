@@ -510,6 +510,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\IR.c</FilePath>
             </File>
+            <File>
+              <FileName>can.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\can.c</FilePath>
+            </File>
+            <File>
+              <FileName>can0.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\can0.c</FilePath>
+            </File>
+            <File>
+              <FileName>interrupt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\lib\interrupt.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

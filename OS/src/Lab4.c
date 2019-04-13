@@ -81,6 +81,7 @@
 
 #include "ff.h"
 #include "diskio.h"
+#include "motors.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -110,8 +111,7 @@ void PortD_Init(void)
   GPIO_PORTD_AFSEL_R &= ~0x0F; // disable alt funct on PD3-0
   GPIO_PORTD_DEN_R |= 0x0F;    // enable digital I/O on PD3-0
   GPIO_PORTD_PCTL_R = ~0x0000FFFF;
-  GPIO_PORTD_AMSEL_R &= ~0x0F;
-  ; // disable analog functionality on PD
+  GPIO_PORTD_AMSEL_R &= ~0x0F; // disable analog functionality on PD
 }
 unsigned long NumCreated; // number of foreground threads created
 unsigned long NumSamples; // incremented every sample
@@ -191,7 +191,7 @@ void DSP(void)
     //PD2 = 0x00;
     Index3 = 0;                  // take another buffer
     DCcomponent = y[0] & 0xFFFF; // Real part at frequency 0, imaginary part should be zero
-	  
+
     ST7735_Message(1, 0, "IR3 (mm) =", DCcomponent);
   }
 }
@@ -303,7 +303,6 @@ void Interpreter(void)
 
 void init_fs_task(void)
 {
- 
 }
 
 //*******************lab 4 main **********
@@ -324,13 +323,13 @@ int realmain(void)
   //*******attach background tasks***********
   OS_AddSW1Task(&SW1Push, 2); // PF4, SW1
   OS_AddSW2Task(&SW2Push, 3); // PF0
-	OS_InitSemaphore(&doFFT, 0);
+  OS_InitSemaphore(&doFFT, 0);
 
   NumCreated = 0;
   // create initial foreground threads
   NumCreated += OS_AddThread(&Interpreter, 128, 2);
   NumCreated += OS_AddThread(&DSP, 128, 3);
-  NumCreated += OS_AddThread(&init_fs_task, 128, 1); 
+  NumCreated += OS_AddThread(&init_fs_task, 128, 1);
   //NumCreated += OS_AddThread(&IdleTask, 128, 7); // runs when nothing useful to do
 
   OS_Launch(TIMESLICE); // doesn't return, interrupts enabled in here
@@ -345,8 +344,27 @@ int realmain(void)
 
 #define PROG_STEPS (20)
 
+void motor_task(void)
+{
+  static int torque = -1000;
+  Motors_SetTorque(torque, torque);
+  torque = -torque;
+}
+
+int motor_testmain(void)
+{
+  OS_Init(); // initialize, disable interrupts
+  Motors_Init();
+  NumCreated = 0;
+  // create initial foreground threads
+  NumCreated += OS_AddPeriodicThread(&motor_task, 100 * TIME_1MS, 2);
+
+  OS_Launch(TIMESLICE); // doesn't return, interrupts enabled in here
+  return 0;             // this never executes
+}
+
 // Main stub
 int main(void)
 {
-  realmain();
+  return motor_testmain();
 }
