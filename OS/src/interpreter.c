@@ -13,6 +13,7 @@
 #include "profiler.h"
 #include "timeMeasure.h"
 #include "loader.h"
+#include "can0.h"
 
 #define MAX_LINE_LENGTH (128)
 
