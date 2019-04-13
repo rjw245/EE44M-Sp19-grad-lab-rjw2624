@@ -10,13 +10,13 @@
 
 int16_t constrain_duty(int16_t user_input)
 {
-  if(user_input >= PWM_PERIOD)
+  if(user_input >= PWM_PERIOD/2)
   {
-    user_input = PWM_PERIOD - 1;
+    user_input = PWM_PERIOD/2 - 1;
   }
-  else if(user_input <= -PWM_PERIOD)
+  else if(user_input <= -(PWM_PERIOD/2))
   {
-    user_input = -(PWM_PERIOD - 1);
+    user_input = -(PWM_PERIOD/2 - 1);
   }
   return user_input;
 }
@@ -67,7 +67,7 @@ static void __set_left(int16_t left_trq)
   else
   {
     PB7 = 0;
-    PWM0_0_CMPA_R = (-left_trq);
+    PWM0_0_CMPA_R = (PWM_PERIOD/2 + left_trq);
   }
 
 }
@@ -84,7 +84,7 @@ static void __set_right(int16_t right_trq)
   else
   {
     PB4 = 0;
-    PWM0_1_CMPA_R = (-right_trq);
+    PWM0_1_CMPA_R = (PWM_PERIOD/2 + right_trq);
   }
 }
 
