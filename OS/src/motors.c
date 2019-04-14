@@ -6,7 +6,7 @@
 #define PB4 (*((volatile unsigned long *)0x40005040))
 #define PB7 (*((volatile unsigned long *)0x40005200))
 
-#define PWM_PERIOD (80000000 / 5000) // 16000 ticks for 5Khz PWM period
+#define PWM_PERIOD (80000000 / 40000) // 2000 ticks for 40Khz PWM period
 
 int16_t constrain_duty(int16_t user_input)
 {
@@ -57,34 +57,36 @@ void Motors_Init(void)
 
 static void __set_left(int16_t left_trq)
 {
+  left_trq = -left_trq;
   left_trq = constrain_duty(left_trq);
   // PB6 (PWM0) and PB7 (digital out)
   if(left_trq > 0)
   {
     PB7 = 1<<7;
-    PWM0_0_CMPA_R = left_trq;
+    PWM0_0_CMPA_R = (PWM_PERIOD/2 - left_trq);
   }
   else
   {
     PB7 = 0;
-    PWM0_0_CMPA_R = (PWM_PERIOD/2 + left_trq);
+    PWM0_0_CMPA_R = -left_trq;
   }
 
 }
 
 static void __set_right(int16_t right_trq)
 {
+  right_trq = -right_trq;
   right_trq = constrain_duty(right_trq);
   // PB5 (PWM0) and PB4 (digital out)
   if(right_trq > 0)
   {
     PB4 = 1<<4;
-    PWM0_1_CMPA_R = right_trq;
+    PWM0_1_CMPA_R = (PWM_PERIOD/2 - right_trq);
   }
   else
   {
     PB4 = 0;
-    PWM0_1_CMPA_R = (PWM_PERIOD/2 + right_trq);
+    PWM0_1_CMPA_R = -right_trq;
   }
 }
 

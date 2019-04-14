@@ -346,9 +346,15 @@ int realmain(void)
 
 void motor_task(void)
 {
+  static int step = 1;
   static int torque = -1000;
+  // Motors_SetTorque(torque, torque);
   Motors_SetTorque(torque, torque);
-  torque = -torque;
+  torque += step;
+  if((torque > 1000) || (torque < -1000))
+  {
+    step = -step;
+  }
 }
 
 int motor_testmain(void)
@@ -357,7 +363,7 @@ int motor_testmain(void)
   Motors_Init();
   NumCreated = 0;
   // create initial foreground threads
-  NumCreated += OS_AddPeriodicThread(&motor_task, 100 * TIME_1MS, 2);
+  NumCreated += OS_AddPeriodicThread(&motor_task, 1 * TIME_1MS, 2);
 
   OS_Launch(TIMESLICE); // doesn't return, interrupts enabled in here
   return 0;             // this never executes
