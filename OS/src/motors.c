@@ -5,10 +5,11 @@
 
 #define PB4 (*((volatile unsigned long *)0x40005040))
 #define PB7 (*((volatile unsigned long *)0x40005200))
+#define PB4_PB7 (*((volatile unsigned long *)0x40005240))
 
 #define PWM_PERIOD (80000000 / 40000) // 2000 ticks for 40Khz PWM period
 
-int16_t constrain_duty(int16_t user_input)
+static int16_t constrain_duty(int16_t user_input)
 {
   if(user_input >= PWM_PERIOD/2)
   {
@@ -47,12 +48,12 @@ void Motors_Init(void)
   PWM0_0_LOAD_R = PWM_PERIOD/2; // count from zero to this number and back to zero in (period - 1) cycles
   PWM0_1_LOAD_R = PWM_PERIOD/2; // count from zero to this number and back to zero in (period - 1) cycles
   // Synchronize PWM comparator updates, put in up/down mode, enable generators
-  PWM0_0_CTL_R |= (PWM_0_CTL_CMPAUPD|PWM_0_CTL_MODE|PWM_0_CTL_ENABLE);
-  PWM0_1_CTL_R |= (PWM_1_CTL_CMPAUPD|PWM_1_CTL_MODE|PWM_1_CTL_ENABLE);
+  PWM0_ENUPD_R = (PWM_ENUPD_ENUPD0_GSYNC|PWM_ENUPD_ENUPD3_GSYNC);
+  PWM0_0_CTL_R = (PWM_0_CTL_CMPAUPD|PWM_0_CTL_MODE|PWM_0_CTL_ENABLE);
+  PWM0_1_CTL_R = (PWM_1_CTL_CMPAUPD|PWM_1_CTL_MODE|PWM_1_CTL_ENABLE);
   PWM0_CTL_R = 0x3; // Synchronously update generators 0 and 1
-  Motors_SetTorque(0, 0);
   PWM0_SYNC_R = 0x3; // Reset counters synchronously so they count in-step
-  PWM0_ENABLE_R |= (PWM_ENABLE_PWM3EN|PWM_ENABLE_PWM0EN); // Enable M0PWM0,3
+  Motors_Brake();
 }
 
 static void __set_left(int16_t left_trq)
@@ -70,7 +71,6 @@ static void __set_left(int16_t left_trq)
     PB7 = 0;
     PWM0_0_CMPA_R = -left_trq;
   }
-
 }
 
 static void __set_right(int16_t right_trq)
@@ -90,38 +90,50 @@ static void __set_right(int16_t right_trq)
   }
 }
 
-static void __sync_update(void)
+static inline void __sync_update(void)
 {
-  PWM0_CTL_R |= 0x3; // Synchronously update generators 0 and 1
+  PWM0_CTL_R = 0x3; // Synchronously update generators 0 and 1
 }
 
 void Motors_SetTorque(int16_t left_trq, int16_t right_trq)
 {
   __set_left(left_trq);
   __set_right(right_trq);
+  PWM0_ENABLE_R |= (PWM_ENABLE_PWM0EN|PWM_ENABLE_PWM3EN); // Enable both PWMs
   __sync_update();
 }
 
 void Motors_SetTorque_Left(int16_t left_trq)
 {
   __set_left(left_trq);
+  PWM0_ENABLE_R |= PWM_ENABLE_PWM0EN; // Enable M0PWM0
   __sync_update();
 }
 
 void Motors_SetTorque_Right(int16_t right_trq)
 {
   __set_right(right_trq);
+  PWM0_ENABLE_R |= PWM_ENABLE_PWM3EN; // Enable M0PWM3
   __sync_update();
 }
 
 void Motors_Brake(void)
 {
+  PB4_PB7 = 0;
+  PWM0_ENABLE_R &= ~(PWM_ENABLE_PWM0EN|PWM_ENABLE_PWM3EN); // Disable both PWMs
+  __sync_update();
 }
 
 void Motors_Brake_Left(void)
 {
+  PB7 = 0;
+  PWM0_ENABLE_R &= ~PWM_ENABLE_PWM0EN; // Disable M0PWM0
+  __sync_update();
 }
 
 void Motors_Brake_Right(void)
 {
+  PB4 = 0;
+  PWM0_ENABLE_R &= ~PWM_ENABLE_PWM3EN; // Disable M0PWM3
+  __sync_update();
 }

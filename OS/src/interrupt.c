@@ -29,12 +29,12 @@
 //
 //*****************************************************************************
 
-#include "../inc/hw_ints.h"
-#include "../inc/hw_nvic.h"
-#include "../inc/hw_types.h"
-#include "../driverlib/cpu.h"
-#include "../driverlib/debug.h"
-#include "../driverlib/interrupt.h"
+#include "hw_ints.h"
+#include "hw_nvic.h"
+#include "hw_types.h"
+#include "cpu.h"
+#include "debug.h"
+#include "interrupt.h"
 
 //*****************************************************************************
 //

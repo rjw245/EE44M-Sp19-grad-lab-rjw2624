@@ -4,6 +4,9 @@
  *
  * @brief Interface to two DC motors controlled by PWM. Allows differential driving.
  * 
+ * This library makes use of PWM module 0, outputs 0 and 3.
+ * These are produced by PWM module 0's generators numbered 0 and 1.
+ * 
  * Conventions:
  *  - Definition of "left" versus "right":
  *      - The "left motor" is the motor on your left when the robot is on the ground with the servo pointed away from you.

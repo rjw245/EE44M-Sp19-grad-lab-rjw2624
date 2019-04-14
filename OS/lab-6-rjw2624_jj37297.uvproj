@@ -515,6 +515,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\motors.c</FilePath>
             </File>
+            <File>
+              <FileName>can.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\can.c</FilePath>
+            </File>
+            <File>
+              <FileName>can0.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\can0.c</FilePath>
+            </File>
+            <File>
+              <FileName>interrupt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\interrupt.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -809,6 +824,21 @@
               <FileName>motors.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\motors.h</FilePath>
+            </File>
+            <File>
+              <FileName>can.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\can.h</FilePath>
+            </File>
+            <File>
+              <FileName>can0.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\can0.h</FilePath>
+            </File>
+            <File>
+              <FileName>interrupt.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\interrupt.h</FilePath>
             </File>
           </Files>
         </Group>
