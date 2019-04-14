@@ -511,19 +511,9 @@
               <FilePath>.\src\IR.c</FilePath>
             </File>
             <File>
-              <FileName>can.c</FileName>
+              <FileName>motors.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\can.c</FilePath>
-            </File>
-            <File>
-              <FileName>can0.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\can0.c</FilePath>
-            </File>
-            <File>
-              <FileName>interrupt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\lib\interrupt.c</FilePath>
+              <FilePath>.\src\motors.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -814,6 +804,11 @@
               <FileName>IR.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\IR.h</FilePath>
+            </File>
+            <File>
+              <FileName>motors.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\motors.h</FilePath>
             </File>
           </Files>
         </Group>
