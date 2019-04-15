@@ -66,8 +66,8 @@ PendSV_Handler
 ;	BL disableTimeget
 ;	POP {R0-R3,R14}
 
-    LDR R0, =cur_tcb ; RO <= &cur_tcb
-    LDR R1, [R0]     ; R1 <= cur_tcb
+    LDR R0, =cur_tcb ; R0 <- &cur_tcb
+    LDR R1, [R0]     ; R1 <- cur_tcb
     ; Check if we should save context
     LDR R2, =save_ctx_global
     LDR R2, [R2]
@@ -79,25 +79,26 @@ Save_Ctx
 Choose_Next_Task
 ;    LDR R3, =ticks_since_boot
 ;    LDR R3, [R3]
-    LDR R6, =next_tcb ; R6 <= &next_tcb
+    LDR R6, =next_tcb ; R6 <- &next_tcb
 
-    LDR R1, [R6]     ; R1 <= next_tcb
-    STR R1, [R0]    ; cur_tcb <= next_tcb	
-    LDR R5, [R1,#4] ; R5 <= cur_tcb->next
+    LDR R2, [R6]     ; R2 <- next_tcb
+    STR R2, [R0]    ; cur_tcb <- next_tcb	
+    LDR R5, [R2,#4] ; R5 <- cur_tcb->next
     STR R5, [R6]    ; next_tcb = cur_tcb->next
- 
-;    LDR R2, [R0,#8] ; R2 <= cur_tcb->wake_time
-;    SUBS R3, R2, R3 ; R3 <= wake_time - ticks_since_boot
+
+;    LDR R2, [R0,#8] ; R2 <- cur_tcb->wake_time
+;    SUBS R3, R2, R3 ; R3 <- wake_time - ticks_since_boot
 ;    BGT Choose_Next_Task
 Load_Ctx
-    PUSH {R0,R1,LR}
-    MOV R0, R1 ; cur_tcb is in R1
+    LDR R0, =cur_tcb ; R0 <- &cur_tcb
+    LDR R0, [R0]     ; R0 <- cur_tcb
+    PUSH {R0,LR}
     BL __UnveilTaskStack
-    POP {R0,R1,LR}
-    PUSH {R0,R1,LR}
+    POP {R0,LR}
+    PUSH {R0,LR}
     BL __UnveilTaskHeap
-    POP {R0,R1,LR}
-    LDR SP, [R1]    ; SP <= cur_tcb->sp
+    POP {R0,LR}
+    LDR SP, [R0]    ; SP <- cur_tcb->sp
     POP {R4-R11}
 
 ;    PUSH {R0-R3,R14}

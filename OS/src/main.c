@@ -34,9 +34,12 @@
 #include "heap.h"
 #include <string.h>
 
-Sema4Type ptr_set;
+Sema4Type a_malloc;
+Sema4Type a_malloc2;
+Sema4Type b_malloc;
 
 volatile int *volatile illegal = 0;
+volatile int *volatile illegal2 = 0;
 volatile int *volatile dummy = 0;
 
 void TaskA(void)
@@ -47,7 +50,10 @@ void TaskA(void)
   y = x + y;
   illegal = (int *)Heap_Malloc(128);
   *illegal = 123;
-  OS_bSignal(&ptr_set);
+  OS_bSignal(&a_malloc);
+  OS_bWait(&b_malloc);
+  illegal2 = (int *)Heap_Malloc(10);
+  OS_bSignal(&a_malloc2);
   while (1)
     ;
 }
@@ -57,8 +63,10 @@ void TaskB(void)
   int z = 1;
   z = z << 2 | z;
 
-  OS_bWait(&ptr_set);
+  OS_bWait(&a_malloc);
   dummy = (int*)Heap_Malloc(128);
+  OS_bSignal(&b_malloc);
+  OS_bWait(&a_malloc2);
   z = *illegal;
   while(1);
 }
@@ -68,7 +76,9 @@ int main(void)
   OS_Init();
   OS_AddThread(TaskA, 64, 0);
   OS_AddThread(TaskB, 64, 0);
-  OS_InitSemaphore(&ptr_set, 0);
+  OS_InitSemaphore(&a_malloc, 0);
+  OS_InitSemaphore(&a_malloc2, 0);
+  OS_InitSemaphore(&b_malloc, 0);
   OS_Launch(TIME_1MS);
   while (1)
     ;
