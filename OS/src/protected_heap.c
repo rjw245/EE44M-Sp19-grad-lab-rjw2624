@@ -43,10 +43,10 @@ subrgn_meta_t __heap_subrgn_table[MAX_TASKS];
 
 static bool check_subregions_free(int32_t *start, int32_t desiredWords, tcb_t *requesting_tcb)
 {
-  int subregion_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
-  int subregion_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+  int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
+  int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
-  for (int i = subregion_start; i <= subregion_end; i++)
+  for (int i = subrgn_start; i <= subrgn_end; i++)
   {
     if ((__heap_subrgn_table[i].task_id != requesting_tcb->id) && (__heap_subrgn_table[i].task_id != -1))
     {
@@ -58,10 +58,10 @@ static bool check_subregions_free(int32_t *start, int32_t desiredWords, tcb_t *r
 
 static void alloc_subregions(int32_t *start, int32_t desiredWords, tcb_t *requesting_tcb)
 {
-  int subregion_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
-  int subregion_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+  int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
+  int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
-  for (int i = subregion_start; i <= subregion_end; i++)
+  for (int i = subrgn_start; i <= subrgn_end; i++)
   {
     __heap_subrgn_table[i].owner = requesting_tcb;
     __heap_subrgn_table[i].task_id = requesting_tcb->id;
@@ -70,12 +70,20 @@ static void alloc_subregions(int32_t *start, int32_t desiredWords, tcb_t *reques
   }
 }
 
+static void partition_subregion_freespace(int32_t* last_subrgn_block)
+{
+    int32_t *free_start = nextBlockHeader(last_subrgn_block);
+    int32_t subrgn_free_words = SUBREGION_SIZE_WORDS - ((free_start - HEAP_START) % SUBREGION_SIZE_WORDS);
+    splitAndMarkBlockUsed(free_start, subrgn_free_words-2);
+    markBlockUnused(free_start);
+}
+
 static void free_subregions(int32_t *start, int32_t blockWords)
 {
-  int subregion_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
-  int subregion_end = (start + blockWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+  int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
+  int subrgn_end = (start + blockWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
-  for (int i = subregion_start; i <= subregion_end; i++)
+  for (int i = subrgn_start; i <= subrgn_end; i++)
   {
     __heap_subrgn_table[i].num_allocs--;
     if (__heap_subrgn_table[i].num_allocs == 0)
@@ -155,6 +163,7 @@ void *Heap_Malloc(int32_t desiredBytes)
         }
         alloc_subregions(blockStart, desiredWords, cur_tcb);
         __UnveilTaskHeap(cur_tcb); // Update allowed subregions
+        partition_subregion_freespace(blockStart);
         MemProtect_EnableMPU();
         return blockStart + 1;
       }

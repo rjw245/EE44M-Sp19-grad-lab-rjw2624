@@ -37,6 +37,7 @@
 Sema4Type ptr_set;
 
 volatile int *volatile illegal = 0;
+volatile int *volatile dummy = 0;
 
 void TaskA(void)
 {
@@ -54,13 +55,12 @@ void TaskA(void)
 void TaskB(void)
 {
   int z = 1;
-  for (;;)
-  {
-    z = z << 2 | z;
+  z = z << 2 | z;
 
-    OS_bWait(&ptr_set);
-    z = *illegal;
-  }
+  OS_bWait(&ptr_set);
+  dummy = (int*)Heap_Malloc(128);
+  z = *illegal;
+  while(1);
 }
 
 int main(void)
