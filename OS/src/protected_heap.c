@@ -33,12 +33,13 @@ static void mergeBlockWithBelow(int32_t *upperBlockStart);
 typedef struct
 {
   tcb_t *owner;
+  int task_id;
   unsigned int num_allocs;
 } subrgn_meta_t;
 
 // Heap has as many individually-protected subregions as the maximum
 // number of tasks in the system
-static subrgn_meta_t subrgn_table[MAX_TASKS];
+subrgn_meta_t __heap_subrgn_table[MAX_TASKS];
 
 static bool check_subregions_free(int32_t *start, int32_t desiredWords, tcb_t *requesting_tcb)
 {
@@ -47,7 +48,7 @@ static bool check_subregions_free(int32_t *start, int32_t desiredWords, tcb_t *r
 
   for (int i = subregion_start; i <= subregion_end; i++)
   {
-    if ((subrgn_table[i].owner != requesting_tcb) && (subrgn_table[i].owner != NULL))
+    if ((__heap_subrgn_table[i].task_id != requesting_tcb->id) && (__heap_subrgn_table[i].task_id != -1))
     {
       return false;
     }
@@ -62,25 +63,27 @@ static void alloc_subregions(int32_t *start, int32_t desiredWords, tcb_t *reques
 
   for (int i = subregion_start; i <= subregion_end; i++)
   {
-    subrgn_table[i].owner = requesting_tcb;
+    __heap_subrgn_table[i].owner = requesting_tcb;
+    __heap_subrgn_table[i].task_id = requesting_tcb->id;
     requesting_tcb->heap_prot_msk |= 1 << i;
-    subrgn_table[i].num_allocs++;
+    __heap_subrgn_table[i].num_allocs++;
   }
 }
 
-static void free_subregions(int32_t *start, int32_t desiredWords)
+static void free_subregions(int32_t *start, int32_t blockWords)
 {
   int subregion_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
-  int subregion_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+  int subregion_end = (start + blockWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
   for (int i = subregion_start; i <= subregion_end; i++)
   {
-    subrgn_table[i].num_allocs--;
-    if (subrgn_table[i].num_allocs == 0)
+    __heap_subrgn_table[i].num_allocs--;
+    if (__heap_subrgn_table[i].num_allocs == 0)
     {
-      // Subregion can be allocated to someone else
-      subrgn_table[i].owner->heap_prot_msk &= ~(1 << i);
-      subrgn_table[i].owner = NULL;
+      // Subregion can now be allocated to someone else
+      __heap_subrgn_table[i].owner->heap_prot_msk &= ~(1 << i);
+      __heap_subrgn_table[i].owner = NULL;
+      __heap_subrgn_table[i].task_id = -1;
     }
   }
 }
@@ -89,8 +92,9 @@ int32_t Heap_Init(void)
 {
   for (int i = 0; i < MAX_TASKS; i++)
   {
-    subrgn_table[i].owner = NULL;
-    subrgn_table[i].num_allocs = 0;
+    __heap_subrgn_table[i].owner = NULL;
+    __heap_subrgn_table[i].num_allocs = 0;
+    __heap_subrgn_table[i].task_id = -1;
   }
   int32_t *blockStart = HEAP_START;
   int32_t *blockEnd = (HEAP_START + HEAP_SIZE_WORDS - 1);
@@ -105,7 +109,7 @@ int32_t Heap_Init(void)
 
   // Last 8 heap subregions
   MemProtect_SelectRegion(5);
-  MemProtect_CfgRegion(Heap + (SUBREGION_SIZE_WORDS / 2), 10, AP_PNA_UNA);
+  MemProtect_CfgRegion(Heap + (HEAP_SIZE_WORDS / 2), 10, AP_PNA_UNA);
   MemProtect_CfgSubregions(0); // Prot all subregions
   MemProtect_EnableRegion();
 

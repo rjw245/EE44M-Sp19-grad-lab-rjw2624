@@ -31,23 +31,24 @@
 #include "UART.h"
 #include "interpreter.h"
 #include "memprotect.h"
+#include "heap.h"
 #include <string.h>
 
 Sema4Type ptr_set;
 
-int *illegal = 0;
+volatile int *volatile illegal = 0;
 
 void TaskA(void)
 {
   int x = 1;
   int y = 1;
-  for (;;)
-  {
-    x = x + y;
-    y = x + y;
-    illegal = &x;
-    OS_bSignal(&ptr_set);
-  }
+  x = x + y;
+  y = x + y;
+  illegal = (int *)Heap_Malloc(128);
+  *illegal = 123;
+  OS_bSignal(&ptr_set);
+  while (1)
+    ;
 }
 
 void TaskB(void)
@@ -69,6 +70,7 @@ int main(void)
   OS_AddThread(TaskB, 64, 0);
   OS_InitSemaphore(&ptr_set, 0);
   OS_Launch(TIME_1MS);
-  while(1);
+  while (1)
+    ;
   return 0;
 }

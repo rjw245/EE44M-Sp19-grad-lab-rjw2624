@@ -133,6 +133,7 @@ void OS_Init(void)
   protect_stacks();
   PLL_Init(Bus80MHz);
   UART_Init();
+  Heap_Init();
 //   ST7735_InitR(INITR_REDTAB);
 //   ST7735_FillScreen(0xFFFF);
 
