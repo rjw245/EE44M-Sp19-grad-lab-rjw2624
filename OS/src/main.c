@@ -65,9 +65,10 @@ void TaskB(void)
 int main(void)
 {
   OS_Init();
-  OS_AddThread(TaskA, 256, 0);
-  OS_AddThread(TaskB, 256, 0);
+  OS_AddThread(TaskA, 128, 0);
+  OS_AddThread(TaskB, 128, 0);
   OS_InitSemaphore(&ptr_set, 0);
   OS_Launch(TIME_1MS);
+  while(1);
   return 0;
 }

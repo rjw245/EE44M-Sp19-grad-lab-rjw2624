@@ -50,6 +50,8 @@ void push_semaq(tcb_t *node, tcb_t **semahead);
 uint32_t peek_priority(tcb_t *head);
 static void insert_tcb(tcb_t *new_tcb);
 static void remove_tcb(tcb_t *tcb, bool free_mem);
+static void protect_stacks(void);
+void __UnveilTaskStack(tcb_t *tcb);
 
 #if PRIORITY_SCHED
 static void choose_next_with_prio(void)
@@ -128,6 +130,7 @@ static void TaskReturn(void)
 void OS_Init(void)
 {
   //FIRST_DisableInterrupts();
+  protect_stacks();
   PLL_Init(Bus80MHz);
   UART_Init();
 //   ST7735_InitR(INITR_REDTAB);
@@ -383,16 +386,15 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   EndCritical(sr);
 }
 
-#define MAX_TASKS (7)
-#define MAX_STACK_DWORDS (128) // 256 * 10tasks * 8Bytes = ~20K
+#define MAX_TASKS (10)
+#define MAX_STACK_DWORDS (128) // 128 * 10tasks * 8Bytes = ~10K
 
 static int next_id = 0;
 static tcb_t tcb_pool[MAX_TASKS];
 static tcb_t checkpoint_tcb;
 static long long *checkpoint_stack = (long long *)0x20007600;
 // Stacks need to be dword aligned
-static __align(64 * 8 * 8) long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
-
+static __align(128 * 8 * 8) long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
 
 static void protect_stacks(void)
 {
@@ -403,18 +405,18 @@ static void protect_stacks(void)
 
   // First 8 stacks
   MemProtect_SelectRegion(6);
-  MemProtect_CfgRegion(&stack_pool[0], 12, AP_PNA_UNA);
+  MemProtect_CfgRegion(&stack_pool[0], 13, AP_PNA_UNA);
   MemProtect_CfgSubregions(0); // Prot all subregions
   MemProtect_EnableRegion();
 
   // Last 2 stacks
   MemProtect_SelectRegion(7);
-  MemProtect_CfgRegion(&stack_pool[8], 12, AP_PNA_UNA);
+  MemProtect_CfgRegion(&stack_pool[8], 13, AP_PNA_UNA);
   MemProtect_CfgSubregions(0xFC); // Disable prot of all but first 2 subregions
   MemProtect_EnableRegion();
 }
 
-static void UnveilTaskStack(tcb_t *tcb)
+void __UnveilTaskStack(tcb_t *tcb)
 {
   if (tcb->subregion_msk & 0xFF)
   {
@@ -483,6 +485,7 @@ int __OS_AddThread(void (*task)(void),
       if(strcmp(task_name,"&checkpoint_entire" )!=0 && strcmp(task_name,"&restart_entire" )!=0){
         tcb = &tcb_pool[i];
         tcb->sp = (long *)&stack_pool[i][stackDWords];
+        tcb->subregion_msk = 1 << i;
         break;
       }
       else
