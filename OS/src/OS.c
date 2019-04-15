@@ -20,10 +20,10 @@
 #include "Switch.h"
 #include "ST7735.h"
 #include "profiler.h"
-//#include "timeMeasure.h"
 #include "UART.h"
 #include "PLL.h"
 #include "heap.h"
+#include "memprotect.h"
 
 
 #define PRIORITY_SCHED 1 // 0 for round robin, 1 for priority scheduler
@@ -77,6 +77,7 @@ static void choose_next_with_prio(void)
 static void ContextSwitch(bool save_ctx)
 {
   save_ctx_global = save_ctx;
+  MemProtect_DisableMPU();
   NVIC_INT_CTRL_R |= NVIC_INT_CTRL_PEND_SV;
   Profiler_Event(EVENT_FGTH_START, cur_tcb->task_name);
 }
@@ -390,7 +391,47 @@ static tcb_t tcb_pool[MAX_TASKS];
 static tcb_t checkpoint_tcb;
 static long long *checkpoint_stack = (long long *)0x20007600;
 // Stacks need to be dword aligned
-static long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
+static __align(64 * 8 * 8) long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
+
+
+static void protect_stacks(void)
+{
+  // Whole addr space
+  MemProtect_SelectRegion(0);
+  MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_URW);
+  MemProtect_EnableRegion();
+
+  // First 8 stacks
+  MemProtect_SelectRegion(6);
+  MemProtect_CfgRegion(&stack_pool[0], 12, AP_PNA_UNA);
+  MemProtect_CfgSubregions(0); // Prot all subregions
+  MemProtect_EnableRegion();
+
+  // Last 2 stacks
+  MemProtect_SelectRegion(7);
+  MemProtect_CfgRegion(&stack_pool[8], 12, AP_PNA_UNA);
+  MemProtect_CfgSubregions(0xFC); // Disable prot of all but first 2 subregions
+  MemProtect_EnableRegion();
+}
+
+static void UnveilTaskStack(tcb_t *tcb)
+{
+  if (tcb->subregion_msk & 0xFF)
+  {
+    MemProtect_SelectRegion(6);
+    MemProtect_DisableRegion();
+    MemProtect_CfgSubregions(tcb->subregion_msk & 0xFF);
+    MemProtect_EnableRegion();
+  }
+  else
+  {
+
+    MemProtect_SelectRegion(7);
+    MemProtect_DisableRegion();
+    MemProtect_CfgSubregions(tcb->subregion_msk >> 8);
+    MemProtect_EnableRegion();
+  }
+}
 
 int __OS_AddThread(void (*task)(void),
                    unsigned long stackSize,
@@ -836,6 +877,12 @@ void OS_Launch(unsigned long theTimeSlice)
   NVIC_EN1_R = 1 << (35 - 32); // 9) enable IRQ 35 in NVIC
   NVIC_EN3_R |= 1 << 0;        // Enable wtimer1A interrupt
   NVIC_EN3_R |= 1 << 1;        // Enable wtimerB interrupt
+
+  __dsb(0xF);
+  __isb(0xF);
+  MemProtect_EnableMPU();
+  __dsb(0xF);
+  __isb(0xF);
 
   timeMeasurestart();
   ContextSwitch(false);

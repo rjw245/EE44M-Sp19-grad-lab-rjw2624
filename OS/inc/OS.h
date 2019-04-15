@@ -51,6 +51,7 @@ typedef struct _tcb_s
   void (*task)(void);
   char * task_name;
   pcb_t *parent_process;
+  unsigned int subregion_msk;
 } tcb_t;
 
 

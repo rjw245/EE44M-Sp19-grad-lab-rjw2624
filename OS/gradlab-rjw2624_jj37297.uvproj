@@ -466,11 +466,6 @@
               <FilePath>.\src\timeMeasure.c</FilePath>
             </File>
             <File>
-              <FileName>Lab4.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\Lab4.c</FilePath>
-            </File>
-            <File>
               <FileName>cr4_fft_64_stm32.s</FileName>
               <FileType>2</FileType>
               <FilePath>.\src\cr4_fft_64_stm32.s</FilePath>
@@ -530,186 +525,21 @@
               <FileType>1</FileType>
               <FilePath>.\src\interrupt.c</FilePath>
             </File>
+            <File>
+              <FileName>memprotect.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\memprotect.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\main.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Include</GroupName>
           <Files>
-            <File>
-              <FileName>asmdefs.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\asmdefs.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_adc.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_adc.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_aes.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_aes.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_can.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_can.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_ccm.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_ccm.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_comp.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_comp.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_des.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_des.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_eeprom.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_eeprom.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_emac.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_emac.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_epi.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_epi.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_ethernet.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_ethernet.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_fan.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_fan.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_flash.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_flash.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_gpio.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_gpio.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_hibernate.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_hibernate.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_i2c.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_i2c.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_i2s.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_i2s.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_ints.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_ints.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_lcd.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_lcd.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_lpc.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_lpc.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_memmap.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_memmap.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_nvic.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_nvic.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_peci.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_peci.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_pwm.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_pwm.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_qei.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_qei.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_shamd5.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_shamd5.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_ssi.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_ssi.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_sysctl.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_sysctl.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_sysexc.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_sysexc.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_timer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_timer.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_types.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_types.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_uart.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_uart.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_udma.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_udma.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_usb.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_usb.h</FilePath>
-            </File>
-            <File>
-              <FileName>hw_watchdog.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\inc\hw_watchdog.h</FilePath>
-            </File>
             <File>
               <FileName>PLL.h</FileName>
               <FileType>5</FileType>
@@ -839,6 +669,11 @@
               <FileName>interrupt.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\inc\interrupt.h</FilePath>
+            </File>
+            <File>
+              <FileName>memprotect.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\inc\memprotect.h</FilePath>
             </File>
           </Files>
         </Group>

@@ -95,6 +95,11 @@ Load_Ctx
 ;    BL enableTimeget
 ;    POP {R0-R3,R14}
 
+    LDR R0, =0xE000ED94 ; Load MPU CTL reg
+    LDR R1, [R0]
+    ORR R1, #1
+    STR R1, [R0]        ; Enable MPU
+
     CPSIE IF ; Enable interrupts
     BX LR
     
