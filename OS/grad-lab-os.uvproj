@@ -481,11 +481,6 @@
               <FilePath>.\src\ff.c</FilePath>
             </File>
             <File>
-              <FileName>heap.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\src\heap.c</FilePath>
-            </File>
-            <File>
               <FileName>loader.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\loader.c</FilePath>
@@ -534,6 +529,11 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\src\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>protected_heap.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\src\protected_heap.c</FilePath>
             </File>
           </Files>
         </Group>
