@@ -79,8 +79,8 @@ static void free_subregions(int32_t *start, int32_t desiredWords)
     if (subrgn_table[i].num_allocs == 0)
     {
       // Subregion can be allocated to someone else
-      subrgn_table[i].owner = NULL;
       subrgn_table[i].owner->heap_prot_msk &= ~(1 << i);
+      subrgn_table[i].owner = NULL;
     }
   }
 }
