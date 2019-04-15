@@ -173,7 +173,7 @@ void OS_Init(void)
 
   //timeMeasureInit();
 
-  OS_AddThread(IdleTask, 128, 255);
+  OS_AddThread(IdleTask, 64, 255);
   Profiler_Init();
   Heap_Init();
 }
@@ -386,15 +386,14 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   EndCritical(sr);
 }
 
-#define MAX_TASKS (10)
-#define MAX_STACK_DWORDS (128) // 128 * 10tasks * 8Bytes = ~10K
+#define MAX_STACK_DWORDS (64) // 64 * 16tasks * 8Bytes = ~8K
 
 static int next_id = 0;
 static tcb_t tcb_pool[MAX_TASKS];
 static tcb_t checkpoint_tcb;
 static long long *checkpoint_stack = (long long *)0x20007600;
 // Stacks need to be dword aligned
-static __align(128 * 8 * 8) long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
+static __align(MAX_STACK_DWORDS * sizeof(long long) * 8) long long stack_pool[MAX_TASKS][MAX_STACK_DWORDS];
 
 static void protect_stacks(void)
 {
@@ -405,14 +404,14 @@ static void protect_stacks(void)
 
   // First 8 stacks
   MemProtect_SelectRegion(6);
-  MemProtect_CfgRegion(&stack_pool[0], 13, AP_PNA_UNA);
+  MemProtect_CfgRegion(&stack_pool[0], 12, AP_PNA_UNA);
   MemProtect_CfgSubregions(0); // Prot all subregions
   MemProtect_EnableRegion();
 
-  // Last 2 stacks
+  // Last 8 stacks
   MemProtect_SelectRegion(7);
-  MemProtect_CfgRegion(&stack_pool[8], 13, AP_PNA_UNA);
-  MemProtect_CfgSubregions(0xFC); // Disable prot of all but first 2 subregions
+  MemProtect_CfgRegion(&stack_pool[8], 12, AP_PNA_UNA);
+  MemProtect_CfgSubregions(0); // Prot all subregions
   MemProtect_EnableRegion();
 }
 
