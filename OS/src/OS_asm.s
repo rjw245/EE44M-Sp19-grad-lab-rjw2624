@@ -24,6 +24,7 @@
 	;EXTERN disableTimeget
 	;EXTERN enableTimeget
     EXTERN __UnveilTaskStack
+    EXTERN __UnveilTaskHeap
   EXTERN C_SVC_handler
 
    
@@ -89,10 +90,13 @@ Choose_Next_Task
 ;    SUBS R3, R2, R3 ; R3 <= wake_time - ticks_since_boot
 ;    BGT Choose_Next_Task
 Load_Ctx
-    PUSH {R1,LR}
+    PUSH {R0,R1,LR}
     MOV R0, R1 ; cur_tcb is in R1
     BL __UnveilTaskStack
-    POP {R1,LR}
+    POP {R0,R1,LR}
+    PUSH {R0,R1,LR}
+    BL __UnveilTaskHeap
+    POP {R0,R1,LR}
     LDR SP, [R1]    ; SP <= cur_tcb->sp
     POP {R4-R11}
 

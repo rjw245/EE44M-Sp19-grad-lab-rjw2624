@@ -417,11 +417,11 @@ static void protect_stacks(void)
 
 void __UnveilTaskStack(tcb_t *tcb)
 {
-  if (tcb->subregion_msk & 0xFF)
+  if (tcb->stack_prot_msk & 0xFF)
   {
     MemProtect_SelectRegion(6);
     MemProtect_DisableRegion();
-    MemProtect_CfgSubregions(tcb->subregion_msk & 0xFF);
+    MemProtect_CfgSubregions(tcb->stack_prot_msk & 0xFF);
     MemProtect_EnableRegion();
   }
   else
@@ -429,7 +429,7 @@ void __UnveilTaskStack(tcb_t *tcb)
 
     MemProtect_SelectRegion(7);
     MemProtect_DisableRegion();
-    MemProtect_CfgSubregions(tcb->subregion_msk >> 8);
+    MemProtect_CfgSubregions(tcb->stack_prot_msk >> 8);
     MemProtect_EnableRegion();
   }
 }
@@ -484,7 +484,7 @@ int __OS_AddThread(void (*task)(void),
       if(strcmp(task_name,"&checkpoint_entire" )!=0 && strcmp(task_name,"&restart_entire" )!=0){
         tcb = &tcb_pool[i];
         tcb->sp = (long *)&stack_pool[i][stackDWords];
-        tcb->subregion_msk = 1 << i;
+        tcb->stack_prot_msk = 1 << i;
         break;
       }
       else

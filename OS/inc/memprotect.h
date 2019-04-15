@@ -12,6 +12,7 @@
 #define _MEM_PROTECT_H_
 
 #include <stdint.h>
+#include "tm4c123gh6pm.h"
 
 #define AP_PNA_UNA (0) //!< Privileged no access, unprivileged no access
 #define AP_PRW_UNA (1) //!< Privileged r/w, unprivileged no access
