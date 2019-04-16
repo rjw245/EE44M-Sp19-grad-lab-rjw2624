@@ -48,11 +48,13 @@ void TaskA(void)
   int y = 1;
   x = x + y;
   y = x + y;
+  illegal = (int *)Heap_Malloc(2000);
+  Heap_Free(illegal);
   illegal = (int *)Heap_Malloc(128);
   *illegal = 123;
   OS_bSignal(&a_malloc);
   OS_bWait(&b_malloc);
-  illegal2 = (int *)Heap_Malloc(10);
+  illegal2 = (int *)Heap_Malloc(128);
   OS_bSignal(&a_malloc2);
   while (1)
     ;
@@ -71,7 +73,7 @@ void TaskB(void)
   while(1);
 }
 
-int main(void)
+int twotask_main(void)
 {
   OS_Init();
   OS_AddThread(TaskA, 64, 0);
@@ -83,4 +85,59 @@ int main(void)
   while (1)
     ;
   return 0;
+}
+
+#define MakeTask(num) void Task##num(void) {\
+  int *alloc = Heap_Malloc(sizeof(int));\
+  *alloc = num;\
+  while(1);\
+}
+
+MakeTask(0)
+MakeTask(1)
+MakeTask(2)
+MakeTask(3)
+MakeTask(4)
+MakeTask(5)
+MakeTask(6)
+MakeTask(7)
+MakeTask(8)
+MakeTask(9)
+MakeTask(10)
+MakeTask(11)
+MakeTask(12)
+MakeTask(13)
+MakeTask(14)
+MakeTask(15)
+
+int _16task_main(void)
+{
+  OS_Init();
+  OS_AddThread(Task0, 64, 0);
+  OS_AddThread(Task1, 64, 0);
+  OS_AddThread(Task2, 64, 0);
+  OS_AddThread(Task3, 64, 0);
+  OS_AddThread(Task4, 64, 0);
+  OS_AddThread(Task5, 64, 0);
+  OS_AddThread(Task6, 64, 0);
+  OS_AddThread(Task7, 64, 0);
+  OS_AddThread(Task8, 64, 0);
+  OS_AddThread(Task9, 64, 0);
+  OS_AddThread(Task10, 64, 0);
+  OS_AddThread(Task11, 64, 0);
+  OS_AddThread(Task12, 64, 0);
+  OS_AddThread(Task13, 64, 0);
+  OS_AddThread(Task14, 64, 0);
+
+  // Task 15 actually can't be scheduled, it's the 17th task after the idle task
+  OS_AddThread(Task15, 64, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
+int main(void)
+{
+  _16task_main();
 }
