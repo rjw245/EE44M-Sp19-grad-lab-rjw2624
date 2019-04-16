@@ -1,0 +1,21 @@
+
+\chapter{Design}
+
+\section{Requirements}
+
+For this project, I will guarantee mutual isolation of tasks' stack and heap memory. Stack-allocated variables in one task shall not be readable nor writable by any other task. Similarly, memory allocated to a task on the heap will not be readable nor writable by any other task (until is freed and reallocated).
+
+This implementation does not support process loading from disk (introduced in lab 5 of EE380L). All tasks are assumed to be compiled with the OS code, as is common for embedded RTOSes.
+
+Importantly, this implementation does not protect task code. Tasks are able to execute any functions that they can be linked against.
+
+Task memory will be protected automatically upon task creation and heap allocation.
+
+As a proof of concept, my implementation can protect memory of up to sixteen different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make isolating tasks optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
+
+\section{MPU Functionality}
+
+The MPU is a hardware unit used to protect regions of memory. It supports up to eight configurable memory regions. Each region is configured with a base address, size, and permissions for both privileged and unprivileged access. The region's base address must be aligned to the size of the region. Each region is further divided into eight equally-sized subregions which can be individually enabled or disabled. My design will leverage subregions heavily to maximize the number of tasks that can be mutually isolated.
+
+\section{Stack Protection}
+\section{Heap Protection}
