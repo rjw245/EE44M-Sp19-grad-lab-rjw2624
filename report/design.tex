@@ -31,11 +31,9 @@ Task stacks are allocated from a pool of statically allocated memory. Sixteen st
 
 \section{Heap Protection}
 
-Any memory allocated to a task on the heap is also guaranteed to be isolated from other tasks. This is achieved by grouping memory allocations together into MPU subregions by the owner task. When tasks are allocated memory, the heap manager associates the task's ID with all MPU subregions touched by the allocated block. The task now ``owns'' those subregions, and no other task will be allowed to acquire a block in those subregions. In this way, the heap manager guarantees that every subregion will contain allocated blocks for at most one task. At this point, heap memory protection is as simple as prohibiting access to heap subregions that the running task doesn't ``own''.
+The heap is implemented as a simple Knuth heap, based upon the implementation from lab 5, with some changes to accomodate the MPU. Any memory allocated to a task on the heap is guaranteed to be isolated from other tasks. This is achieved by grouping memory allocations together into MPU subregions by the owner task. When tasks are allocated memory, the heap manager associates the task's ID with all MPU subregions touched by the allocated block. The task now ``owns'' those subregions, and no other task will be allowed to acquire a block in those subregions. In this way, the heap manager guarantees that every subregion will contain blocks belonging to at most one task. At this point, protecting the heap is as simple as prohibiting access to heap subregions where the running task doesn't have any blocks.
 
 A naive solution would be to statically partition the heap into sixteen pieces and allocate one to each task in the system. However, the approach I have chosen ought to scale better to systems where tasks may vary in their demand for heap memory. For example, if only eight out of sixteen tasks use the heap, then any blocks statically allocated to the other eight tasks would go unused -- a huge waste. In the case where there are sixteen tasks in the system and they each take turns acquiring heap memory, my solution will allocate each a subregion and converge to the simpler approach.
-
-Figure \ref{fig:heap_prot} shows an example heap where three tasks have each been allocated memory. Any given subregion will only contain memory for at most one task. It's possible for a task's memory to span multiple subregions, as in subregions 1 and 2. This design is susceptible to some amount of internal and external fragmentation, though less than the naive solution I described. You can see internal fragmentation at the end of subregion 0. Only small allocations can fit in the remaining free space of subregion 0, and they must be allocated to Task A to be put there in the first place (since Task A has claimed that subregion). As for external fragmentation, suppose Task C were to request 256 Bytes from the heap manager -- this is larger than one subregion. For that reason, the allocation \textit{could not} fit in the empty subregion 5. It would instead be placed in subregions 7 and 8, leaving subregion 5 to go to waste until a small enough block could be allocated there.
 
 \begin{figure}[hbtp]
 	\centering
@@ -45,6 +43,27 @@ Figure \ref{fig:heap_prot} shows an example heap where three tasks have each bee
 \end{figure}
 % https://www.draw.io/#G1K-jvmSFl7cc_w53rWbj7vP-SnMSNnW15
 
-\section{Context Switch}
+Figure \ref{fig:heap_prot} shows an example heap where three tasks have each been allocated memory. Each subregion will contain memory for at most one task. It's possible for a task's memory to span multiple subregions, as in subregions 1 and 2. This design is susceptible to some amount of internal and external fragmentation, though less than the naive solution I described earlier. You can see internal fragmentation at the end of subregion 0. Only small allocations can fit in the remaining free space of subregion 0, and they must be allocated to Task A to be put there in the first place (since Task A has claimed that subregion). As for external fragmentation, suppose Task C were to request 256 Bytes from the heap manager -- this is larger than one subregion. For that reason, the allocation \textit{could not} fit in the empty subregion 5. It would instead be placed in subregions 7 and 8, leaving subregion 5 to go to waste until a small enough block could be allocated there.
+
+\section{Changes to TCB and Context Switch}
+
+The TCB is expanded to include two masks which encode the stack and heap subregions the task is allowed to access. These additions are italicized in Listing \ref{lst:tcb}.
+
+\begin{lstlisting}[language=c, caption={TCB struct definition}, captionpos=b, label={lst:tcb}]
+typedef struct _tcb_s {
+    long *sp;
+    struct _tcb_s *next;
+    uint32_t wake_time;
+    unsigned long id;
+    uint8_t priority;
+    uint32_t period;
+    unsigned long magic;
+    void (*task)(void);
+    char * task_name;
+    pcb_t *parent_process;
+    (*@\textit{unsigned int stack\_prot\_msk;}@*)
+    (*@\textit{unsigned int heap\_prot\_msk;}@*)
+} tcb_t;
+\end{lstlisting}
 
 During a context switch, the OS configures the MPU to allow access only to stack and heap subregions associated with the next running task. All other subregions (either associated with other tasks or unused) are protected.
