@@ -67,3 +67,26 @@ typedef struct _tcb_s {
 \end{lstlisting}
 
 During a context switch, the OS configures the MPU to allow access only to stack and heap subregions associated with the next running task. All other subregions (either associated with other tasks or unused) are protected.
+
+\section{Final MPU Region Configuration}
+
+Given the design described, MPU regions are configured as in Figure \ref{table:mpu_cfg}
+
+\begin{table}[H]
+    \begin{tabular}{|l|l|l|l|l|l|}
+    \hline
+    \multirow{2}{*}{\textbf{}} & \multirow{2}{*}{\textbf{Base}} & \multirow{2}{*}{\textbf{Size}} & \multicolumn{2}{l|}{\textbf{Access}}        & \multirow{2}{*}{\textbf{Notes}}                                                   \\ \cline{4-5}
+                               &                                &                                & \textbf{Unprivileged} & \textbf{Privileged} &                                                                                   \\ \hline
+    0                          & 0x00000000                     & 4GB                            & R/W                   & R/W                 & \begin{tabular}[c]{@{}l@{}}Allow access\\ if no other\\ rule applies\end{tabular} \\ \hline
+    1                          & 0x00000000                     & 32B                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Catch null\\ pointer\end{tabular}                      \\ \hline
+    2                          &                                &                                &                       &                     &                                                                                   \\ \hline
+    3                          &                                &                                &                       &                     &                                                                                   \\ \hline
+    4                          & \texttt{\&Heap}                & 1KB                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Heap\\ region 0\end{tabular}                           \\ \hline
+    5                          & \texttt{\&Heap} + 1KB          & 1KB                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Heap\\ region 1\end{tabular}                           \\ \hline
+    6                          & \texttt{\&Stack\_Pool}         & 4KB                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Stack pool\\ region 0\end{tabular}                     \\ \hline
+    7                          & \texttt{\&Stack\_Pool} + 4KB   & 4KB                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Stack pool\\ region 1\end{tabular}                     \\ \hline
+    \end{tabular}
+    \caption{MPU Region Configutation.}
+    \label{table:mpu_cfg}
+\end{table}
+
