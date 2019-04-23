@@ -17,6 +17,8 @@ As a proof of concept, my implementation can protect memory of up to sixteen dif
 
 The MPU is a hardware unit used to protect regions of memory. It supports up to eight configurable memory regions. Each region is configured with a base address, size, and permissions for both privileged and unprivileged access. The region's base address must be aligned to the size of the region. Each region is further divided into eight equally-sized subregions which can be individually enabled or disabled. My design will leverage subregions heavily to maximize the number of tasks that can be mutually isolated.
 
+The MPU implements relative priority between regions. Regions are indexed 0 to 7 where a higher index indicates priority over lower indices. For a given memory access, the MPU region with the highest index containing the relevant address will be used to authorize the access.
+
 \section{Stack Protection}
 
 Task stacks are allocated from a pool of statically allocated memory. Sixteen stacks each of 64 double words are declared to be allocated as tasks are created at runtime. Two consecutive MPU regions are initialized to span from the beginning of the stack pool up to the end. Using two regions allows us to evenly divide the pool into sixteen subregions each of which perfectly aligns with the boundaries of a single task stack. Therefore there is a one-to-one correspondence between MPU subregion and task ID. To protect the stack pool with the MPU, the stack pool must be aligned to the size of one of the MPU regions, which is $8\times64$ double words, or 4096 bytes.
@@ -72,22 +74,5 @@ During a context switch, the OS configures the MPU to allow access only to stack
 
 Given the design described, MPU regions are configured as in Figure \ref{table:mpu_cfg}
 
-\begin{table}[H]
-    \begin{tabular}{|l|l|l|l|l|l|}
-    \hline
-    \multirow{2}{*}{\textbf{}} & \multirow{2}{*}{\textbf{Base}} & \multirow{2}{*}{\textbf{Size}} & \multicolumn{2}{l|}{\textbf{Access}}        & \multirow{2}{*}{\textbf{Notes}}                                                   \\ \cline{4-5}
-                               &                                &                                & \textbf{Unprivileged} & \textbf{Privileged} &                                                                                   \\ \hline
-    0                          & 0x00000000                     & 4GB                            & R/W                   & R/W                 & \begin{tabular}[c]{@{}l@{}}Allow access\\ if no other\\ rule applies\end{tabular} \\ \hline
-    1                          &                                &                                &                       &                     &                                                                                   \\ \hline
-    % 1                          & 0x00000000                     & 32B                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Catch null\\ pointer\end{tabular}                      \\ \hline
-    2                          &                                &                                &                       &                     &                                                                                   \\ \hline
-    3                          &                                &                                &                       &                     &                                                                                   \\ \hline
-    4                          & \texttt{\&Heap}                & 1KB                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Heap\\ region 0\end{tabular}                           \\ \hline
-    5                          & \texttt{\&Heap} + 1KB          & 1KB                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Heap\\ region 1\end{tabular}                           \\ \hline
-    6                          & \texttt{\&Stack\_Pool}         & 4KB                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Stack pool\\ region 0\end{tabular}                     \\ \hline
-    7                          & \texttt{\&Stack\_Pool} + 4KB   & 4KB                            & None                  & None                & \begin{tabular}[c]{@{}l@{}}Stack pool\\ region 1\end{tabular}                     \\ \hline
-    \end{tabular}
-    \caption{MPU Region Configutation.}
-    \label{table:mpu_cfg}
-\end{table}
+\input{mpu_cfg}
 
