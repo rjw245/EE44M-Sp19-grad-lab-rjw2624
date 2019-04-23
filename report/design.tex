@@ -11,7 +11,7 @@ Importantly, this implementation does not protect task code. Tasks are able to e
 
 Task memory will be protected automatically upon task creation and heap allocation.
 
-As a proof of concept, my implementation can protect memory of up to sixteen different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make isolating tasks optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
+As a proof of concept, my implementation can protect memory of up to sixteen different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
 
 \section{MPU Functionality}
 
@@ -27,15 +27,23 @@ Task stacks are allocated from a pool of statically allocated memory. Sixteen st
 	\caption{Illustration of how the stack pool is organized in memory. Two consecutive MPU regions are configured to span the pool. The pool holds sixteen consecutive 512B stacks which each align with a MPU subregion. The whole stack pool is aligned to a 4KB boundary.}
 	\label{fig:stack_prot}
 \end{figure}
+% https://www.draw.io/#G1K-jvmSFl7cc_w53rWbj7vP-SnMSNnW15
 
 \section{Heap Protection}
 
+Any memory allocated to a task on the heap is also guaranteed to be isolated from other tasks. This is achieved by grouping memory allocations together into MPU subregions by the owner task. When tasks are allocated memory, the heap manager associates the task's ID with all MPU subregions touched by the allocated block. The task now ``owns'' those subregions, and no other task will be allowed to acquire a block in those subregions. In this way, the heap manager guarantees that every subregion will contain allocated blocks for at most one task. At this point, heap memory protection is as simple as prohibiting access to heap subregions that the running task doesn't ``own''.
+
+A naive solution would be to statically partition the heap into sixteen pieces and allocate one to each task in the system. However, the approach I have chosen ought to scale better to systems where tasks may vary in their demand for heap memory. For example, if only eight out of sixteen tasks use the heap, then any blocks statically allocated to the other eight tasks would go unused -- a huge waste. In the case where there are sixteen tasks in the system and they each take turns acquiring heap memory, my solution will allocate each a subregion and converge to the simpler approach.
+
+Figure \ref{fig:heap_prot} shows an example heap where three tasks have each been allocated memory. Any given subregion will only contain memory for at most one task. It's possible for a task's memory to span multiple subregions, as in subregions 1 and 2. This design is susceptible to some amount of internal and external fragmentation, though less than the naive solution I described. You can see internal fragmentation at the end of subregion 0. Only small allocations can fit in the remaining free space of subregion 0, and they must be allocated to Task A to be put there in the first place (since Task A has claimed that subregion). As for external fragmentation, suppose Task C were to request 256 Bytes from the heap manager -- this is larger than one subregion. For that reason, the allocation \textit{could not} fit in the empty subregion 5. It would instead be placed in subregions 7 and 8, leaving subregion 5 to go to waste until a small enough block could be allocated there.
+
 \begin{figure}[hbtp]
 	\centering
-	\includegraphics[width=0.8\columnwidth]{figs/heap_prot.png}
-	\caption{Illustration of how the heap is organized in memory. Two consecutive MPU regions are configured to span the heap, each with eight subregions. Memory allocated to different tasks will always be placed in different subregions such that every subregion's blocks are associated with at most one task.}
+	\includegraphics[width=0.7\linewidth]{figs/heap_prot.png}
+	\caption{Illustration of how the heap is organized in memory. Two consecutive MPU regions are configured to span the heap, each with eight subregions. Memory allocated to different tasks will always be placed in different subregions such that every subregion's blocks are associated with at most one task. Allocated blocks are shown, color-coded according to which task requested them.}
 	\label{fig:heap_prot}
 \end{figure}
+% https://www.draw.io/#G1K-jvmSFl7cc_w53rWbj7vP-SnMSNnW15
 
 \section{Context Switch}
 
