@@ -1,6 +1,29 @@
 
 \chapter{Design}
 
+\section{Planning pivot...}
+
+I plan to change my current strategy in the following ways:
+
+\begin{itemize}
+    
+ \item Allocate task stacks in the heap. Effectively all protected process mem will be in heap.
+ \item Enlarge the heap and allocate more MPU regions to it so it can be further subdivided.
+    \begin{itemize}
+        \item Supports more processes, increased flexibility.
+    \end{itemize}
+ \item Support isolating process memory
+    \begin{itemize}
+        \item Support complete OS SVC interface
+        \item Isolate code and data at the process level
+        \item Isolate stacks at the thread level
+    \end{itemize}
+ \item Be less permissive. Change catch-all region 0 to "No Access"
+ \item Protect OS code and data
+
+\end{itemize}
+
+
 \section{Requirements}
 
 For this project, I will guarantee mutual isolation of tasks' stack and heap memory. Stack-allocated variables in one task shall not be readable nor writable by any other task. Similarly, memory allocated to a task on the heap will not be readable nor writable by any other task (until is freed and reallocated).
