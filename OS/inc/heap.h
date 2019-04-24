@@ -34,9 +34,11 @@
 #ifndef HEAP_H
 #define HEAP_H
 
+#include "OS.h"
+
 // feel free to change HEAP_SIZE_BYTES to however
 // big you want the heap to be
-#define HEAP_SIZE_BYTES (10240)
+#define HEAP_SIZE_BYTES (16384)
 #define HEAP_SIZE_WORDS (HEAP_SIZE_BYTES / sizeof(int32_t))
 
 #define HEAP_OK 0
@@ -69,7 +71,10 @@ int32_t Heap_Init(void);
  * @return void* pointing to the allocated memory or will return NULL
  * if there isn't sufficient space to satisfy allocation request
  */
-void* Heap_Malloc(int32_t desiredBytes);
+#define Heap_Malloc(desiredBytes) __Heap_Malloc(desiredBytes, cur_tcb)
+
+
+void* __Heap_Malloc(int32_t desiredBytes, tcb_t *owner);
 
 
 /**

@@ -95,9 +95,9 @@ Load_Ctx
     ; PUSH {R0,LR}
     ; BL __UnveilTaskStack
     ; POP {R0,LR}
-    ; PUSH {R0,LR}
-    ; BL __UnveilTaskHeap
-    ; POP {R0,LR}
+    PUSH {R0,LR}
+    BL __UnveilTaskHeap
+    POP {R0,LR}
     LDR SP, [R0]    ; SP <- cur_tcb->sp
     POP {R4-R11}
 

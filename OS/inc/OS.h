@@ -21,8 +21,6 @@
 
 #include <stdint.h>
 
-#define MAX_TASKS (16)
-
 // edit these depending on your clock
 #define TIME_1MS 80000
 #define TIME_2MS (2 * TIME_1MS)
@@ -51,8 +49,7 @@ typedef struct _tcb_s
   void (*task)(void);
   char * task_name;
   pcb_t *parent_process;
-  unsigned int stack_prot_msk;
-  unsigned int heap_prot_msk;
+  uint32_t heap_prot_msk;
   long *stack_base;
 } tcb_t;
 
