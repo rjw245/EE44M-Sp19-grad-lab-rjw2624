@@ -88,8 +88,7 @@ int twotask_main(void)
 }
 
 #define MakeTask(num) void Task##num(void) {\
-  int *alloc = Heap_Malloc(sizeof(int));\
-  *alloc = num;\
+  int stack_var = OS_Id();\
   while(1);\
 }
 

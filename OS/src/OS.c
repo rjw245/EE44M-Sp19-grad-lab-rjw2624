@@ -50,7 +50,7 @@ void push_semaq(tcb_t *node, tcb_t **semahead);
 uint32_t peek_priority(tcb_t *head);
 static void insert_tcb(tcb_t *new_tcb);
 static void remove_tcb(tcb_t *tcb, bool free_mem);
-// static void protect_stacks(void);
+static void unprotect_all_mem(void);
 void __UnveilTaskStack(tcb_t *tcb);
 
 #if PRIORITY_SCHED
@@ -130,7 +130,7 @@ static void TaskReturn(void)
 void OS_Init(void)
 {
   //FIRST_DisableInterrupts();
-  // protect_stacks();
+  unprotect_all_mem();
   PLL_Init(Bus80MHz);
   UART_Init();
   Heap_Init();
@@ -391,25 +391,25 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
 static int next_id = 0;
 // Stacks need to be dword aligned
 
-// static void protect_stacks(void)
-// {
-//   // Whole addr space
-//   MemProtect_SelectRegion(0);
-//   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_URW);
-//   MemProtect_EnableRegion();
+static void unprotect_all_mem(void)
+{
+  // Whole addr space
+  MemProtect_SelectRegion(0);
+  MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_URW);
+  MemProtect_EnableRegion();
 
-//   // First 8 stacks
-//   MemProtect_SelectRegion(6);
-//   MemProtect_CfgRegion(&stack_pool[0], 12, AP_PNA_UNA);
-//   MemProtect_CfgSubregions(0); // Prot all subregions
-//   MemProtect_EnableRegion();
+  // First 8 stacks
+  // MemProtect_SelectRegion(6);
+  // MemProtect_CfgRegion(&stack_pool[0], 12, AP_PNA_UNA);
+  // MemProtect_CfgSubregions(0); // Prot all subregions
+  // MemProtect_EnableRegion();
 
-//   // Last 8 stacks
-//   MemProtect_SelectRegion(7);
-//   MemProtect_CfgRegion(&stack_pool[8], 12, AP_PNA_UNA);
-//   MemProtect_CfgSubregions(0); // Prot all subregions
-//   MemProtect_EnableRegion();
-// }
+  // Last 8 stacks
+  // MemProtect_SelectRegion(7);
+  // MemProtect_CfgRegion(&stack_pool[8], 12, AP_PNA_UNA);
+  // MemProtect_CfgSubregions(0); // Prot all subregions
+  // MemProtect_EnableRegion();
+}
 
 // void __UnveilTaskStack(tcb_t *tcb)
 // {
@@ -479,13 +479,18 @@ int __OS_AddThread(void (*task)(void),
     EndCritical(sr);
     return 0;
   }
-  long *stack = Heap_Malloc(stackSize*sizeof(uint64_t));
+  long *stack = Heap_Malloc(stackSize*sizeof(uint64_t)+4); // Add extra 4 in case misaligned
   if (stack == 0)
   {
     // Didn't find stack space
     Heap_Free(tcb);
     EndCritical(sr);
     return 0;
+  }
+  if((unsigned long)stack & 7)
+  {
+    // Align to 8-byte boundary
+    stack = stack+1;
   }
   tcb->stack_base = stack;
   tcb->sp = stack+(stackSize-1)*2;
