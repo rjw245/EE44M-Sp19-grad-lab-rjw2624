@@ -92,12 +92,12 @@ Choose_Next_Task
 Load_Ctx
     LDR R0, =cur_tcb ; R0 <- &cur_tcb
     LDR R0, [R0]     ; R0 <- cur_tcb
-    PUSH {R0,LR}
-    BL __UnveilTaskStack
-    POP {R0,LR}
-    PUSH {R0,LR}
-    BL __UnveilTaskHeap
-    POP {R0,LR}
+    ; PUSH {R0,LR}
+    ; BL __UnveilTaskStack
+    ; POP {R0,LR}
+    ; PUSH {R0,LR}
+    ; BL __UnveilTaskHeap
+    ; POP {R0,LR}
     LDR SP, [R0]    ; SP <- cur_tcb->sp
     POP {R4-R11}
 

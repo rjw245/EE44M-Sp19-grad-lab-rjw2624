@@ -1,4 +1,3 @@
-
 \chapter{Design}
 
 \section{Planning pivot...}
@@ -26,13 +25,16 @@ I plan to change my current strategy in the following ways:
 
 \section{Requirements}
 
-For this project, I will guarantee mutual isolation of tasks' stack and heap memory. Stack-allocated variables in one task shall not be readable nor writable by any other task. Similarly, memory allocated to a task on the heap will not be readable nor writable by any other task (until is freed and reallocated).
+For this project, I will guarantee mutual isolation of tasks' stack and heap memory. Stack-allocated variables in one task shall not be readable nor writable by any other task. Similarly, memory allocated to a task on the heap will not be readable nor writable by any other task (until is freed and reallocated). My design will also aim to add minimal overhead to the OS. The MPU hardware should not be massively reconfigured at every context switch.
 
 This implementation does not support process loading from disk (introduced in lab 5 of EE380L). All tasks are assumed to be compiled with the OS code, as is common for embedded RTOSes.
+\todo{This will no longer be true after my newest changes.}
 
-Importantly, this implementation does not protect task code. Tasks are able to execute any functions that they can be linked against.
+Importantly, this implementation does not protect task code. Tasks are able to execute any functions that they can be linked against. \todo{After my changes, process code will be protected.}
 
 Task memory will be protected automatically upon task creation and heap allocation.
+
+\todo{Stacks protected at task-level, heap protected at process-level.}
 
 As a proof of concept, my implementation can protect memory of up to sixteen different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
 

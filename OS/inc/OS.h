@@ -53,6 +53,7 @@ typedef struct _tcb_s
   pcb_t *parent_process;
   unsigned int stack_prot_msk;
   unsigned int heap_prot_msk;
+  long *stack_base;
 } tcb_t;
 
 

@@ -113,21 +113,36 @@ MakeTask(15)
 int _16task_main(void)
 {
   OS_Init();
+  heap_stats_t heap_stats = Heap_Stats();
   OS_AddThread(Task0, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task1, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task2, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task3, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task4, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task5, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task6, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task7, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task8, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task9, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task10, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task11, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task12, 64, 0);
   OS_AddThread(Task13, 64, 0);
+  heap_stats = Heap_Stats();
   OS_AddThread(Task14, 64, 0);
+  heap_stats = Heap_Stats();
 
   // Task 15 actually can't be scheduled, it's the 17th task after the idle task
   OS_AddThread(Task15, 64, 0);

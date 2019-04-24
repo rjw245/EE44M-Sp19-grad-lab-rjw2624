@@ -10,11 +10,13 @@
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{multirow}
+\usepackage[colorinlistoftodos,prependcaption,textsize=small]{todonotes}
 \usepackage{setspace}
-\doublespacing
+\doublespace
+
+\renewcommand\todo[1]{\textcolor{red}{#1}}
 
 \begin{document}
-
 
 \title{Memory Protection with the MPU \\
     \large EE380L Grad Project}
