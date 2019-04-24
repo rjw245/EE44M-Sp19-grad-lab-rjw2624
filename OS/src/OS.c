@@ -386,10 +386,7 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
   EndCritical(sr);
 }
 
-#define MAX_STACK_DWORDS (64) // 64 * 16tasks * 8Bytes = ~8K
-
-static int next_id = 0;
-// Stacks need to be dword aligned
+#define MAX_STACK_DWORDS (256)
 
 static void unprotect_all_mem(void)
 {
@@ -411,34 +408,12 @@ static void unprotect_all_mem(void)
   // MemProtect_EnableRegion();
 }
 
-// void __UnveilTaskStack(tcb_t *tcb)
-// {
-//   if (tcb->stack_prot_msk & 0xFF)
-//   {
-//     MemProtect_SelectRegion(6);
-//     MemProtect_DisableRegion();
-//     MemProtect_CfgSubregions(tcb->stack_prot_msk & 0xFF);
-//     MemProtect_EnableRegion();
-//   }
-//   else
-//   {
-
-//     MemProtect_SelectRegion(7);
-//     MemProtect_DisableRegion();
-//     MemProtect_CfgSubregions(tcb->stack_prot_msk >> 8);
-//     MemProtect_EnableRegion();
-//   }
-// }
-
 int __OS_AddThread(void (*task)(void),
-                   unsigned long stackSize,
+                   unsigned long stackDWords,
                    unsigned long priority,
                    char *task_name,
                    pcb_t *parent_process)
 {
-  unsigned long stackDWords = stackSize;
-    //(stackSize / 8) + (stackSize % 8 == 0 ? 0 : 1); // Round up integer div
-
   long sr = StartCritical();
   // Validate input
   if (task == 0)
@@ -453,17 +428,11 @@ int __OS_AddThread(void (*task)(void),
     EndCritical(sr);
     return 0; // Fail
   }
-  if (stackSize < 56)
+  if (stackDWords < 8)
   {
     // Stack too small to fit initial state
     EndCritical(sr);
     return 0; // Fail
-  }
-  if (numTasks >= MAX_TASKS)
-  {
-    // Ran out of TCBs
-    EndCritical(sr);
-    return 0;
   }
   if (stackDWords > MAX_STACK_DWORDS)
   {
@@ -479,7 +448,7 @@ int __OS_AddThread(void (*task)(void),
     EndCritical(sr);
     return 0;
   }
-  long *stack = Heap_Malloc(stackSize*sizeof(uint64_t)+4); // Add extra 4 in case misaligned
+  long *stack = Heap_Malloc(stackDWords*sizeof(uint64_t)+4); // Add extra 4 in case misaligned
   if (stack == 0)
   {
     // Didn't find stack space
@@ -487,13 +456,13 @@ int __OS_AddThread(void (*task)(void),
     EndCritical(sr);
     return 0;
   }
+  tcb->stack_base = stack; // Save heap pointer so we can free later
   if((unsigned long)stack & 7)
   {
     // Align to 8-byte boundary
     stack = stack+1;
   }
-  tcb->stack_base = stack;
-  tcb->sp = stack+(stackSize-1)*2;
+  tcb->sp = stack+(stackDWords-1)*2;
 
   *(--tcb->sp) = 0x01000000L;      // xPSR, with Thumb state enabled
   *(--tcb->sp) = (long)task;       // PC
@@ -512,6 +481,7 @@ int __OS_AddThread(void (*task)(void),
   *(--tcb->sp) = 0x05050505;       // R5
   *(--tcb->sp) = 0x04040404;       // R4
 
+  static int next_id = 0;
   tcb->id = next_id++;
   tcb->priority = priority;
   tcb->period = 0; // 0 = aperiodic
@@ -732,8 +702,14 @@ void OS_Kill(void)
     Heap_Free(cur_tcb->parent_process->data);
     Heap_Free(cur_tcb->parent_process);
   }
+  tcb_t *free_tcb = cur_tcb;
+  long *free_stack = cur_tcb->stack_base;
   cur_tcb = next_tcb;
   next_tcb = cur_tcb->next;
+
+  Heap_Free(free_stack);
+  Heap_Free(free_tcb);
+
   numTasks--;
   NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
   ContextSwitch(false);
@@ -1038,13 +1014,13 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
 }
 
 
-int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackSize, unsigned long priority)
+int OS_AddProcess(void(*entry)(void),void *text, void *data, unsigned long stackDWords, unsigned long priority)
 {
   pcb_t *new_process = (pcb_t *)Heap_Malloc(sizeof(pcb_t));
   memset(new_process, 0, sizeof(new_process));
   new_process->data = data;
   new_process->text = text;
-  if(__OS_AddThread(entry, stackSize, priority, "Process main", new_process) == 0)
+  if(__OS_AddThread(entry, stackDWords, priority, "Process main", new_process) == 0)
   {
     return -1;
   }

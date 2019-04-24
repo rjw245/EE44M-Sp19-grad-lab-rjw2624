@@ -109,6 +109,25 @@ MakeTask(13)
 MakeTask(14)
 MakeTask(15)
 
+void self_starter(void)
+{
+  OS_AddThread(self_starter, 64, 0);
+  OS_AddThread(self_starter, 64, 0);
+  heap_stats_t heap_stats = Heap_Stats();
+	OS_Kill();
+  heap_stats = Heap_Stats();
+}
+
+int self_starter_main(void)
+{
+  OS_Init();
+  OS_AddThread(self_starter, 64, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
 int _16task_main(void)
 {
   OS_Init();
@@ -153,5 +172,5 @@ int _16task_main(void)
 
 int main(void)
 {
-  _16task_main();
+  self_starter_main();
 }
