@@ -111,7 +111,8 @@ MakeTask(15)
 
 void short_task(void)
 {
-	OS_Sleep(10);
+  heap_stats_t heap_stats = Heap_Stats();
+	for(int i=0; i<10000; i++);
 	OS_Kill();
 }
 
@@ -119,7 +120,6 @@ void root_task(void)
 {
 	while(1)
 	{
-		OS_AddThread(short_task, 32, 0);
 	}
 }
 
@@ -127,6 +127,11 @@ int short_task_main(void)
 {
   OS_Init();
   OS_AddThread(root_task, 32, 0);
+	for(int i=0; i< 20; i++)
+	{
+		
+		OS_AddThread(short_task, 32, 0);
+	}
   OS_Launch(TIME_1MS);
   while (1)
     ;
@@ -188,6 +193,16 @@ int _16task_main(void)
 
   // Task 15 actually can't be scheduled, it's the 17th task after the idle task
   OS_AddThread(Task15, 64, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
+int idle_main(void)
+{
+  OS_Init();
+  //OS_AddThread(root_task, 32, 0);
   OS_Launch(TIME_1MS);
   while (1)
     ;

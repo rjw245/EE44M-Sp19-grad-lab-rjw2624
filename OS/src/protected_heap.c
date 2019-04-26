@@ -15,7 +15,7 @@
 #define SUBREGION_SIZE_WORDS (SUBREGION_SIZE_BYTES / sizeof(int32_t))
 
 //The actual heap is just a big array.
-static __align(SUBREGION_SIZE_BYTES * 8) int32_t Heap[HEAP_SIZE_WORDS];
+__align(SUBREGION_SIZE_BYTES * 8) int32_t Heap[HEAP_SIZE_WORDS];
 
 static int32_t inHeapRange(int32_t *address);
 static int32_t blockUsed(int32_t *block);

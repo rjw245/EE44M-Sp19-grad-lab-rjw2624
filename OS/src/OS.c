@@ -50,7 +50,6 @@ uint32_t peek_priority(tcb_t *head);
 static void insert_tcb(tcb_t *new_tcb);
 static void remove_tcb(tcb_t *tcb);
 static void unprotect_all_mem(void);
-void __UnveilTaskStack(tcb_t *tcb);
 
 #if PRIORITY_SCHED
 static void choose_next_with_prio(void)
@@ -89,8 +88,8 @@ static void IdleTask(void)
   while (1)
   {
     // Do maintenance
-    //NVIC_ST_CURRENT_R = 0;
-    //ContextSwitch(true);
+    NVIC_ST_CURRENT_R = 0;
+    ContextSwitch(true);
   }
 }
 
@@ -707,7 +706,8 @@ void OS_Kill(void)
   tcb_t *free_tcb = cur_tcb;
   long *free_stack = cur_tcb->stack_base;
   cur_tcb = next_tcb;
-  next_tcb = cur_tcb->next;
+  // next_tcb = cur_tcb->next;
+  choose_next_with_prio();
 
   // Disable MPU to allow OS to touch task's stack
   // TODO enable privileged/unprivileged mode to make this unnecessary
