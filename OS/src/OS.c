@@ -452,7 +452,9 @@ int __OS_AddThread(void (*task)(void),
   if (stack == 0)
   {
     // Didn't find stack space
+    MemProtect_DisableMPU();
     Heap_Free(tcb);
+    MemProtect_EnableMPU();
     EndCritical(sr);
     return 0;
   }

@@ -109,6 +109,30 @@ MakeTask(13)
 MakeTask(14)
 MakeTask(15)
 
+void short_task(void)
+{
+	OS_Sleep(10);
+	OS_Kill();
+}
+
+void root_task(void)
+{
+	while(1)
+	{
+		OS_AddThread(short_task, 32, 0);
+	}
+}
+
+int short_task_main(void)
+{
+  OS_Init();
+  OS_AddThread(root_task, 32, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
 void self_starter(void)
 {
   OS_AddThread(self_starter, 64, 0);
@@ -172,5 +196,5 @@ int _16task_main(void)
 
 int main(void)
 {
-  self_starter_main();
+  short_task_main();
 }

@@ -531,9 +531,9 @@
               <FilePath>.\src\main.c</FilePath>
             </File>
             <File>
-              <FileName>heap.c</FileName>
+              <FileName>protected_heap.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\src\heap.c</FilePath>
+              <FilePath>.\src\protected_heap.c</FilePath>
             </File>
           </Files>
         </Group>
