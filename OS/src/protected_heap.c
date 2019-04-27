@@ -140,6 +140,9 @@ void __UnveilTaskHeap(tcb_t *tcb)
   {
     MemProtect_SelectRegion(i);
     MemProtect_DisableRegion();
+    // TODO if the task is in a loaded process, it probably SHOULD NOT have
+    // access to OS memory in the heap, and should only interface with the 
+    // OS through the SVC call interface.
     MemProtect_CfgSubregions(((heap_prot_msk | OS_heap_ownership.heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
     MemProtect_EnableRegion();
   }

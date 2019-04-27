@@ -1048,6 +1048,11 @@ int OS_AddProcess(void (*entry)(void), void *text, void *data, unsigned long sta
   pcb_t *new_process = (pcb_t *)__Heap_Malloc(sizeof(pcb_t), &OS_heap_ownership);
   memset(new_process, 0, sizeof(new_process));
   heap_owner_init(&new_process->h_o);
+  // Keep in mind, data and text were loaded into RAM from a throwaway task.
+  // (see interpreter.c)
+  // Therefore, we can assume here that these have been placed into their own subregion.
+  // Changing ownership of their subregions will not give the process any memory it shouldn't
+  // have access to.
   __Heap_ChangeOwner(data, &new_process->h_o);
   __Heap_ChangeOwner(text, &new_process->h_o);
   new_process->data = data;

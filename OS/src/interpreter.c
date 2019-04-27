@@ -29,6 +29,11 @@ static Sema4Type exec_elf_sema;
 static char elf_path[32];
 static void exec_elf_task(void)
 {
+  // It is important to load the ELF in a separate task. This way,
+  // code and data loaded in RAM will be stored in their own subregion.
+  // From there, it is easy to transfer ownership to the parent process,
+  // since the code and data are not mixed in with other heap blocks
+  // within their subregion(s).
   if (exec_elf(elf_path, &env) != 0) {
     UART_OutString("Failed to launch File.\r\n");
   }
