@@ -22,11 +22,19 @@ static uint16_t sample_buffer[10];
 static const char strtok_delim[] = "\t ";
 long sr = 0;
 
-
-
-
 static const ELFSymbol_t exports[] = { { "ST7735_Message", (void*) &ST7735_Message } };
 static const ELFEnv_t env = { exports, 1 };
+
+static Sema4Type exec_elf_sema;
+static char elf_path[32];
+static void exec_elf_task(void)
+{
+  if (exec_elf(elf_path, &env) != 0) {
+    UART_OutString("Failed to launch File.\r\n");
+  }
+  OS_bSignal(&exec_elf_sema);
+  OS_Kill();
+}
 
 void TEST_OS(void)
 {
@@ -49,6 +57,7 @@ void TEST_OS(void)
 void interpreter_task(void)
 {
   static char uart_in_buf[1024];
+  OS_InitSemaphore(&exec_elf_sema, 1);
   while (1)
   {
     UART_OutString("> ");
@@ -217,12 +226,9 @@ void interpreter_cmd(char *cmd_str)
   else if(strcmp(cmd, "load") == 0)
   {
     arg1 = strtok(NULL, strtok_delim);
-    if (exec_elf(arg1, &env) != 0) { 
-      UART_OutString("Failed to launch File.\r\n");
-    }
-    if (exec_elf(arg1, &env) != 0) { 
-      UART_OutString("Failed to launch File.\r\n");
-    }
+    OS_bWait(&exec_elf_sema);
+    strncpy(elf_path, arg1, sizeof(elf_path));
+    OS_AddThread(exec_elf_task, 32, 0);
   }
   else if(strcmp(cmd, "test") == 0)
   {

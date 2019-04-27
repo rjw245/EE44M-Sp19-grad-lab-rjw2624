@@ -440,7 +440,7 @@ int __OS_AddThread(void (*task)(void),
     return 0;
   }
 
-  tcb_t *tcb = __Heap_Malloc(sizeof(tcb_t), &OS_TCB);
+  tcb_t *tcb = __Heap_Malloc(sizeof(tcb_t), &OS_TCB.h_o);
   if (tcb == 0)
   {
     // Didn't find a free TCB for some reason
@@ -448,11 +448,9 @@ int __OS_AddThread(void (*task)(void),
     return 0;
   }
 
-  // Give TCB an ID so we can pass it to malloc
-  static int next_id = 1; // ID 0 reserved for OS
-  tcb->id = next_id++;
+  heap_owner_init(&tcb->h_o);
 
-  long *stack = __Heap_Malloc(stackDWords * sizeof(uint64_t) + 4, tcb); // Add extra 4 in case misaligned
+  long *stack = __Heap_Malloc(stackDWords * sizeof(uint64_t) + 4, &tcb->h_o); // Add extra 4 in case misaligned
   if (stack == 0)
   {
     // Didn't find stack space
@@ -515,6 +513,8 @@ int __OS_AddThread(void (*task)(void),
   tcb->task = task;
   tcb->task_name = task_name;
   tcb->parent_process = parent_process;
+  static int next_id = 1; // ID 0 reserved for OS
+  tcb->id = next_id++;
   if (tcb->parent_process)
   {
     tcb->parent_process->num_threads++;
@@ -1048,8 +1048,11 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
 
 int OS_AddProcess(void (*entry)(void), void *text, void *data, unsigned long stackDWords, unsigned long priority)
 {
-  pcb_t *new_process = (pcb_t *)__Heap_Malloc(sizeof(pcb_t), &OS_TCB);
+  pcb_t *new_process = (pcb_t *)__Heap_Malloc(sizeof(pcb_t), &OS_TCB.h_o);
   memset(new_process, 0, sizeof(new_process));
+  heap_owner_init(&new_process->h_o);
+  __Heap_ChangeOwner(data, &new_process->h_o);
+  __Heap_ChangeOwner(text, &new_process->h_o);
   new_process->data = data;
   new_process->text = text;
   if (__OS_AddThread(entry, stackDWords, priority, "Process main", new_process) == 0)

@@ -34,7 +34,7 @@ static void mergeBlockWithBelow(int32_t *upperBlockStart);
 
 typedef struct
 {
-  tcb_t *owner;
+  heap_owner_t *owner;
   int task_id;
   unsigned int num_allocs;
 } subrgn_meta_t;
@@ -43,14 +43,14 @@ typedef struct
 // number of tasks in the system
 subrgn_meta_t __heap_subrgn_table[NUM_SUBREGIONS];
 
-static bool check_subregions_free(int32_t *start, int32_t desiredWords, tcb_t *requesting_tcb)
+static bool check_subregions_free(int32_t *start, int32_t desiredWords, heap_owner_t *requester)
 {
   int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
   int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
   for (int i = subrgn_start; i <= subrgn_end; i++)
   {
-    if ((__heap_subrgn_table[i].task_id != requesting_tcb->id) && (__heap_subrgn_table[i].task_id != -1))
+    if ((__heap_subrgn_table[i].task_id != requester->id) && (__heap_subrgn_table[i].task_id != -1))
     {
       return false;
     }
@@ -58,16 +58,16 @@ static bool check_subregions_free(int32_t *start, int32_t desiredWords, tcb_t *r
   return true;
 }
 
-static void alloc_subregions(int32_t *start, int32_t desiredWords, tcb_t *requesting_tcb)
+static void alloc_subregions(int32_t *start, int32_t desiredWords, heap_owner_t *requester)
 {
   int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
   int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
   for (int i = subrgn_start; i <= subrgn_end; i++)
   {
-    __heap_subrgn_table[i].owner = requesting_tcb;
-    __heap_subrgn_table[i].task_id = requesting_tcb->id;
-    requesting_tcb->heap_prot_msk |= 1 << i;
+    __heap_subrgn_table[i].owner = requester;
+    __heap_subrgn_table[i].task_id = requester->id;
+    requester->heap_prot_msk |= 1 << i;
     __heap_subrgn_table[i].num_allocs++;
   }
 }
@@ -131,16 +131,21 @@ int32_t Heap_Init(void)
 extern tcb_t OS_TCB;
 void __UnveilTaskHeap(tcb_t *tcb)
 {
+  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk;
+  if(tcb->parent_process)
+  {
+    heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;
+  }
   for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
   {
     MemProtect_SelectRegion(i);
     MemProtect_DisableRegion();
-    MemProtect_CfgSubregions(((tcb->heap_prot_msk | OS_TCB.heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
+    MemProtect_CfgSubregions(((heap_prot_msk | OS_TCB.h_o.heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
     MemProtect_EnableRegion();
   }
 }
 
-void *__Heap_Malloc(int32_t desiredBytes, tcb_t *owner)
+void *__Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner)
 {
   __dsb(0xF);
   __isb(0xF);
@@ -267,14 +272,15 @@ void *Heap_Realloc(void *oldBlock, int32_t desiredBytes)
   return newBlockPtr;
 }
 
-int32_t __Heap_ChangeOwner(void *pointer, tcb_t *tcb)
+int32_t __Heap_ChangeOwner(void *pointer, heap_owner_t *new_owner)
 {
   uint32_t numWords = blockRoom(pointer);
   long sr = StartCritical();
   free_subregions(pointer, numWords);
-  alloc_subregions(pointer, numWords, tcb);
+  alloc_subregions(pointer, numWords, new_owner);
   __UnveilTaskHeap(cur_tcb); // Update allowed subregions
   EndCritical(sr);
+  return HEAP_OK;
 }
 
 int32_t Heap_Free(void *pointer)

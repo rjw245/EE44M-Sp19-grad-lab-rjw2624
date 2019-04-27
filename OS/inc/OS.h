@@ -20,6 +20,7 @@
 #define OS_H
 
 #include <stdint.h>
+#include "heap.h"
 
 // edit these depending on your clock
 #define TIME_1MS 80000
@@ -34,6 +35,7 @@ typedef struct _pcb_s
   unsigned long num_threads;
   void *text;
   void *data;
+  heap_owner_t h_o;
 } pcb_t;
 
 typedef struct _tcb_s
@@ -49,8 +51,8 @@ typedef struct _tcb_s
   void (*task)(void);
   char * task_name;
   pcb_t *parent_process;
-  uint32_t heap_prot_msk;
   long *stack_base;
+  heap_owner_t h_o;
 } tcb_t;
 
 
