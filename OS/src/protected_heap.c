@@ -128,7 +128,7 @@ int32_t Heap_Init(void)
   return HEAP_OK;
 }
 
-extern tcb_t OS_TCB;
+extern heap_owner_t OS_heap_ownership;
 void __UnveilTaskHeap(tcb_t *tcb)
 {
   uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk;
@@ -140,7 +140,7 @@ void __UnveilTaskHeap(tcb_t *tcb)
   {
     MemProtect_SelectRegion(i);
     MemProtect_DisableRegion();
-    MemProtect_CfgSubregions(((heap_prot_msk | OS_TCB.h_o.heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
+    MemProtect_CfgSubregions(((heap_prot_msk | OS_heap_ownership.heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
     MemProtect_EnableRegion();
   }
 }

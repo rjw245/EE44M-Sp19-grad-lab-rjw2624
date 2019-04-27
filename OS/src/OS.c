@@ -130,7 +130,7 @@ static void TaskReturn(void)
   //while (1);
 }
 
-tcb_t OS_TCB;
+heap_owner_t OS_heap_ownership;
 
 void OS_Init(void)
 {
@@ -139,9 +139,6 @@ void OS_Init(void)
   PLL_Init(Bus80MHz);
   UART_Init();
   Heap_Init();
-
-  // OS holds a TCB so that it can request mem from the heap
-  OS_TCB.id = 0; // Identifies OS
 
   // Activate PendSV interrupt with lowest priority
   NVIC_SYS_PRI3_R |= (7 << 21);
@@ -440,7 +437,7 @@ int __OS_AddThread(void (*task)(void),
     return 0;
   }
 
-  tcb_t *tcb = __Heap_Malloc(sizeof(tcb_t), &OS_TCB.h_o);
+  tcb_t *tcb = __Heap_Malloc(sizeof(tcb_t), &OS_heap_ownership);
   if (tcb == 0)
   {
     // Didn't find a free TCB for some reason
@@ -1048,7 +1045,7 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
 
 int OS_AddProcess(void (*entry)(void), void *text, void *data, unsigned long stackDWords, unsigned long priority)
 {
-  pcb_t *new_process = (pcb_t *)__Heap_Malloc(sizeof(pcb_t), &OS_TCB.h_o);
+  pcb_t *new_process = (pcb_t *)__Heap_Malloc(sizeof(pcb_t), &OS_heap_ownership);
   memset(new_process, 0, sizeof(new_process));
   heap_owner_init(&new_process->h_o);
   __Heap_ChangeOwner(data, &new_process->h_o);
