@@ -161,38 +161,38 @@ int _16task_main(void)
 {
   OS_Init();
   heap_stats_t heap_stats = Heap_Stats();
-  OS_AddThread(Task0, 64, 0);
+  OS_AddThread(Task0, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task1, 64, 0);
+  OS_AddThread(Task1, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task2, 64, 0);
+  OS_AddThread(Task2, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task3, 64, 0);
+  OS_AddThread(Task3, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task4, 64, 0);
+  OS_AddThread(Task4, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task5, 64, 0);
+  OS_AddThread(Task5, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task6, 64, 0);
+  OS_AddThread(Task6, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task7, 64, 0);
+  OS_AddThread(Task7, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task8, 64, 0);
+  OS_AddThread(Task8, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task9, 64, 0);
+  OS_AddThread(Task9, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task10, 64, 0);
+  OS_AddThread(Task10, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task11, 64, 0);
+  OS_AddThread(Task11, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task12, 64, 0);
-  OS_AddThread(Task13, 64, 0);
+  OS_AddThread(Task12, 32, 0);
+  OS_AddThread(Task13, 32, 0);
   heap_stats = Heap_Stats();
-  OS_AddThread(Task14, 64, 0);
+  OS_AddThread(Task14, 32, 0);
   heap_stats = Heap_Stats();
 
   // Task 15 actually can't be scheduled, it's the 17th task after the idle task
-  OS_AddThread(Task15, 64, 0);
+  OS_AddThread(Task15, 32, 0);
   OS_Launch(TIME_1MS);
   while (1)
     ;
@@ -211,5 +211,5 @@ int idle_main(void)
 
 int main(void)
 {
-  short_task_main();
+  _16task_main();
 }

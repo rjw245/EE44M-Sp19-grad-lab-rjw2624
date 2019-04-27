@@ -77,7 +77,12 @@ static void choose_next_with_prio(void)
 static void ContextSwitch(bool save_ctx)
 {
   save_ctx_global = save_ctx;
-  MemProtect_DisableMPU();
+  
+    __dsb(0xF);
+    __isb(0xF);
+    MemProtect_DisableMPU();
+    __dsb(0xF);
+    __isb(0xF);
   NVIC_INT_CTRL_R |= NVIC_INT_CTRL_PEND_SV;
   Profiler_Event(EVENT_FGTH_START, cur_tcb->task_name);
 }
@@ -451,9 +456,18 @@ int __OS_AddThread(void (*task)(void),
   if (stack == 0)
   {
     // Didn't find stack space
+    
+    __dsb(0xF);
+    __isb(0xF);
     MemProtect_DisableMPU();
+    __dsb(0xF);
+    __isb(0xF);
     Heap_Free(tcb);
+    __dsb(0xF);
+    __isb(0xF);
     MemProtect_EnableMPU();
+    __dsb(0xF);
+    __isb(0xF);
     EndCritical(sr);
     return 0;
   }
@@ -463,9 +477,14 @@ int __OS_AddThread(void (*task)(void),
     // Align to 8-byte boundary
     stack = stack + 1;
   }
-  tcb->sp = stack + (stackDWords - 1) * 2;
+  tcb->sp = stack + (stackDWords - 1) * 2 - 1;
 
-  MemProtect_DisableMPU();
+  
+    __dsb(0xF);
+    __isb(0xF);
+    MemProtect_DisableMPU();
+    __dsb(0xF);
+    __isb(0xF);
   *(--tcb->sp) = 0x01000000L;                                                         // xPSR, with Thumb state enabled
   *(--tcb->sp) = (long)task;                                                          // PC
   *(--tcb->sp) = (long)TaskReturn;                                                    // LR
@@ -482,7 +501,11 @@ int __OS_AddThread(void (*task)(void),
   *(--tcb->sp) = 0x06060606;                                                          // R6
   *(--tcb->sp) = 0x05050505;                                                          // R5
   *(--tcb->sp) = 0x04040404;                                                          // R4
+  __dsb(0xF);
+  __isb(0xF);
   MemProtect_EnableMPU();
+  __dsb(0xF);
+  __isb(0xF);
 
   tcb->priority = priority;
   tcb->period = 0; // 0 = aperiodic
@@ -711,7 +734,12 @@ void OS_Kill(void)
 
   // Disable MPU to allow OS to touch task's stack
   // TODO enable privileged/unprivileged mode to make this unnecessary
-  MemProtect_DisableMPU();
+  
+    __dsb(0xF);
+    __isb(0xF);
+    MemProtect_DisableMPU();
+    __dsb(0xF);
+    __isb(0xF);
   Heap_Free(free_stack);
   Heap_Free(free_tcb);
 

@@ -142,13 +142,21 @@ void __UnveilTaskHeap(tcb_t *tcb)
 
 void *__Heap_Malloc(int32_t desiredBytes, tcb_t *owner)
 {
+    __dsb(0xF);
+    __isb(0xF);
     MemProtect_DisableMPU();
+    __dsb(0xF);
+    __isb(0xF);
 
     int32_t desiredWords = (desiredBytes + sizeof(int32_t) - 1) / sizeof(int32_t);
     int32_t *blockStart = HEAP_START; // implements first fit
     if (desiredWords <= 0)
     {
+        __dsb(0xF);
+        __isb(0xF);
         MemProtect_EnableMPU();
+        __dsb(0xF);
+        __isb(0xF);
         return 0; //NULL
     }
     while (inHeapRange(blockStart))
@@ -161,19 +169,31 @@ void *__Heap_Malloc(int32_t desiredBytes, tcb_t *owner)
             {
                 if (splitAndMarkBlockUsed(blockStart, desiredWords))
                 {
+                    __dsb(0xF);
+                    __isb(0xF);
                     MemProtect_EnableMPU();
+                    __dsb(0xF);
+                    __isb(0xF);
                     return 0; //NULL
                 }
                 alloc_subregions(blockStart, desiredWords, owner);
                 __UnveilTaskHeap(cur_tcb); // Update allowed subregions for cur task
                 partition_subregion_freespace(blockStart);
+                __dsb(0xF);
+                __isb(0xF);
                 MemProtect_EnableMPU();
+                __dsb(0xF);
+                __isb(0xF);
                 return blockStart + 1;
             }
         }
         blockStart = nextBlockHeader(blockStart);
     }
+    __dsb(0xF);
+    __isb(0xF);
     MemProtect_EnableMPU();
+    __dsb(0xF);
+    __isb(0xF);
     return 0; //NULL
 }
 
@@ -357,7 +377,12 @@ heap_stats_t Heap_Stats(void)
 
     //just go through each block to get stats on heap usage
     blockStart = HEAP_START;
+    
+    __dsb(0xF);
+    __isb(0xF);
     MemProtect_DisableMPU();
+    __dsb(0xF);
+    __isb(0xF);
     while (inHeapRange(blockStart))
     {
         if (blockUsed(blockStart))
@@ -372,7 +397,11 @@ heap_stats_t Heap_Stats(void)
         }
         blockStart = nextBlockHeader(blockStart);
     }
+    __dsb(0xF);
+    __isb(0xF);
     MemProtect_EnableMPU();
+    __dsb(0xF);
+    __isb(0xF);
     stats.wordsOverhead = HEAP_SIZE_WORDS - stats.wordsAllocated - stats.wordsAvailable;
     return stats;
 }
