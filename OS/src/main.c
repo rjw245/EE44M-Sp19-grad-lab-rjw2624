@@ -32,6 +32,8 @@
 #include "interpreter.h"
 #include "memprotect.h"
 #include "heap.h"
+#include "ff.h"
+#include "diskio.h"
 #include <string.h>
 
 Sema4Type a_malloc;
@@ -210,7 +212,27 @@ int idle_main(void)
   return 0;
 }
 
+
+static FATFS g_sFatFs;
+void init_fs_task(void)
+{
+  f_mount(&g_sFatFs, "", 0);
+}
+
+extern void disk_timerproc (void);
+int Load_Process_Main(void)
+{
+  OS_Init();
+  OS_AddPeriodicThread(disk_timerproc, TIME_1MS, 0);
+  OS_AddThread(&init_fs_task, 128, 1); 
+  OS_AddThread(interpreter_task, 128, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
 int main(void)
 {
-  twotask_main();
+  Load_Process_Main();
 }

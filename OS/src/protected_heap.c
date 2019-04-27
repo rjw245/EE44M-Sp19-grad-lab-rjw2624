@@ -152,7 +152,7 @@ void *__Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner)
 {
   __dsb(0xF);
   __isb(0xF);
-  MemProtect_DisableMPU();
+  unsigned long mpu_stat = MemProtect_StartCritical();
   __dsb(0xF);
   __isb(0xF);
 
@@ -199,7 +199,7 @@ void *__Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner)
   }
   __dsb(0xF);
   __isb(0xF);
-  MemProtect_EnableMPU();
+  MemProtect_EndCritical(mpu_stat);
   __dsb(0xF);
   __isb(0xF);
   return 0; //NULL
@@ -314,7 +314,7 @@ int32_t Heap_Free(void *pointer)
 
   __dsb(0xF);
   __isb(0xF);
-  MemProtect_DisableMPU();
+  unsigned long mpu_stat = MemProtect_StartCritical();
   __dsb(0xF);
   __isb(0xF);
 
@@ -345,7 +345,7 @@ int32_t Heap_Free(void *pointer)
   __UnveilTaskHeap(cur_tcb); // Update allowed subregions
   __dsb(0xF);
   __isb(0xF);
-  MemProtect_EnableMPU();
+  MemProtect_EndCritical(mpu_stat);
   __dsb(0xF);
   __isb(0xF);
   return HEAP_OK;
@@ -409,7 +409,7 @@ heap_stats_t Heap_Stats(void)
 
   __dsb(0xF);
   __isb(0xF);
-  MemProtect_DisableMPU();
+  unsigned long mpu_stat = MemProtect_StartCritical();
   __dsb(0xF);
   __isb(0xF);
   while (inHeapRange(blockStart))
@@ -428,7 +428,7 @@ heap_stats_t Heap_Stats(void)
   }
   __dsb(0xF);
   __isb(0xF);
-  MemProtect_EnableMPU();
+  MemProtect_EndCritical(mpu_stat);
   __dsb(0xF);
   __isb(0xF);
   stats.wordsOverhead = HEAP_SIZE_WORDS - stats.wordsAllocated - stats.wordsAvailable;

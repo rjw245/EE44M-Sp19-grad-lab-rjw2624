@@ -732,18 +732,23 @@ void OS_Kill(void)
   // Disable MPU to allow OS to touch task's stack
   // TODO enable privileged/unprivileged mode to make this unnecessary
   
-    __dsb(0xF);
-    __isb(0xF);
-    MemProtect_DisableMPU();
-    __dsb(0xF);
-    __isb(0xF);
+  __dsb(0xF);
+  __isb(0xF);
+  unsigned long mpu_stat = MemProtect_StartCritical();
+  __dsb(0xF);
+  __isb(0xF);
   Heap_Free(free_stack);
   Heap_Free(free_tcb);
 
   numTasks--;
   NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
-  ContextSwitch(false);
+  ContextSwitch(false);  
   EndCritical(sr);
+  __dsb(0xF);
+  __isb(0xF);
+  MemProtect_EndCritical(mpu_stat);
+  __dsb(0xF);
+  __isb(0xF);
   while (1)
     ;
 }

@@ -48,6 +48,18 @@ static inline void MemProtect_DisableMPU(void)
   NVIC_MPU_CTRL_R &= ~1;
 }
 
+static inline unsigned long MemProtect_StartCritical(void)
+{
+  unsigned long tmp = NVIC_MPU_CTRL_R & 1;
+  NVIC_MPU_CTRL_R &= ~1;
+  return tmp;
+}
+
+static inline void MemProtect_EndCritical(unsigned long mpu_status)
+{
+  NVIC_MPU_CTRL_R |= (mpu_status & 1);
+}
+
 /**
  * @brief Enable a specific protection region.
  *        Select a region beforehand with MemProtect_SelectRegion.
