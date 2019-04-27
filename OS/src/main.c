@@ -69,6 +69,7 @@ void TaskB(void)
   dummy = (int*)Heap_Malloc(128);
   OS_bSignal(&b_malloc);
   OS_bWait(&a_malloc2);
+	Heap_Free(illegal);
   z = *illegal;
   while(1);
 }
