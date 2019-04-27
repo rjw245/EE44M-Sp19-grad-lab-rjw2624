@@ -269,6 +269,9 @@ void *Heap_Realloc(void *oldBlock, int32_t desiredBytes)
 
 int32_t Heap_Free(void *pointer)
 {
+    // Make sure access permitted by MPU.
+    // Don't allow freeing someone else's memory.
+    volatile int32_t test_access = *((int32_t*)pointer);
 
     int32_t *blockStart;
     int32_t *blockEnd;
@@ -293,6 +296,12 @@ int32_t Heap_Free(void *pointer)
         return HEAP_ERROR_CORRUPTED_HEAP;
     }
     //-----End error checking-------
+
+    __dsb(0xF);
+    __isb(0xF);
+    MemProtect_DisableMPU();
+    __dsb(0xF);
+    __isb(0xF);
 
     if (markBlockUnused(blockStart))
     {
@@ -319,6 +328,11 @@ int32_t Heap_Free(void *pointer)
         mergeBlockWithBelow(blockStart);
     }
     __UnveilTaskHeap(cur_tcb); // Update allowed subregions
+    __dsb(0xF);
+    __isb(0xF);
+    MemProtect_EnableMPU();
+    __dsb(0xF);
+    __isb(0xF);
     return HEAP_OK;
 }
 

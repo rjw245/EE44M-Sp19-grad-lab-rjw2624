@@ -210,5 +210,5 @@ int idle_main(void)
 
 int main(void)
 {
-  short_task_main();
+  twotask_main();
 }
