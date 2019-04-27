@@ -1056,11 +1056,6 @@ int OS_AddProcess(void (*entry)(void), void *text, void *data, unsigned long sta
   {
     return -1;
   }
-  tcb_t *tmp = cur_tcb;
-  while (tmp->parent_process == new_process)
-  {
-    tmp = tmp->next;
-  }
 
   return 0;
 }
