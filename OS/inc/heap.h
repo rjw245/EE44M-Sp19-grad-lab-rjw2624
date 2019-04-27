@@ -106,6 +106,22 @@ void* Heap_Realloc(void* oldBlock, int32_t desiredBytes);
 
 
 /**
+ * @brief Change ownership of block to the given task.
+ * This is only meant to be used by the OS for task management
+ * in processes.
+ * 
+ * @param pointer Pointer to the start of the block in the heap.
+ * @param tcb Task that will own the block after this call exits successfully.
+ * @return int32_t HEAP_OK if everything is ok;
+ * HEAP_ERROR_POINTER_OUT_OF_RANGE if pointer points outside the heap;
+ * HEAP_ERROR_CORRUPTED_HEAP if heap has been corrupted or trying to
+ * unallocate memory that has already been unallocated;
+ */
+int32_t __Heap_Acquire(void *pointer, tcb_t *tcb);
+
+
+
+/**
  * @brief return a block to the heap
  *
  * @param pointer the pointer to memory to unallocate
