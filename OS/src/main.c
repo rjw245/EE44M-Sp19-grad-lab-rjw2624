@@ -118,6 +118,10 @@ void short_task(void)
 
 void root_task(void)
 {
+	for(int i=0; i< 20; i++)
+	{
+		OS_AddThread(short_task, 32, 0);
+	}
 	while(1)
 	{
 	}
@@ -127,11 +131,6 @@ int short_task_main(void)
 {
   OS_Init();
   OS_AddThread(root_task, 32, 0);
-	for(int i=0; i< 20; i++)
-	{
-		
-		OS_AddThread(short_task, 32, 0);
-	}
   OS_Launch(TIME_1MS);
   while (1)
     ;
@@ -211,5 +210,5 @@ int idle_main(void)
 
 int main(void)
 {
-  _16task_main();
+  short_task_main();
 }

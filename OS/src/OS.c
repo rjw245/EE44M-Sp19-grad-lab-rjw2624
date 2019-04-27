@@ -480,11 +480,11 @@ int __OS_AddThread(void (*task)(void),
   tcb->sp = stack + (stackDWords - 1) * 2 - 1;
 
   
-    __dsb(0xF);
-    __isb(0xF);
-    MemProtect_DisableMPU();
-    __dsb(0xF);
-    __isb(0xF);
+  __dsb(0xF);
+  __isb(0xF);
+  MemProtect_DisableMPU();
+  __dsb(0xF);
+  __isb(0xF);
   *(--tcb->sp) = 0x01000000L;                                                         // xPSR, with Thumb state enabled
   *(--tcb->sp) = (long)task;                                                          // PC
   *(--tcb->sp) = (long)TaskReturn;                                                    // LR
