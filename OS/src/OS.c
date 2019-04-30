@@ -51,6 +51,20 @@ static void insert_tcb(tcb_t *new_tcb);
 static void remove_tcb(tcb_t *tcb);
 static void unprotect_all_mem(void);
 
+static void PortF_Init(void)
+{
+  SYSCTL_RCGCGPIO_R |= 0x20; // activate port F
+  while ((SYSCTL_PRGPIO_R & 0x20) == 0)
+  {
+  };
+  GPIO_PORTF_DIR_R |= 0x0F;    // make PF3-0 output heartbeats
+  GPIO_PORTF_AFSEL_R &= ~0x0F; // disable alt funct on PF3-0
+  GPIO_PORTF_DEN_R |= 0x0F;    // enable digital I/O on PF3-0
+  GPIO_PORTF_PCTL_R = ~0x0000FFFF;
+  GPIO_PORTF_AMSEL_R &= ~0x0F;
+  ; // disable analog functionality on PF
+}
+
 #if PRIORITY_SCHED
 static void choose_next_with_prio(void)
 {
@@ -139,6 +153,7 @@ void OS_Init(void)
   PLL_Init(Bus80MHz);
   UART_Init();
   Heap_Init();
+  PortF_Init();
 
   // Activate PendSV interrupt with lowest priority
   NVIC_SYS_PRI3_R |= (7 << 21);
