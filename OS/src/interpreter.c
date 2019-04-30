@@ -233,7 +233,7 @@ void interpreter_cmd(char *cmd_str)
     arg1 = strtok(NULL, strtok_delim);
     OS_bWait(&exec_elf_sema);
     strncpy(elf_path, arg1, sizeof(elf_path));
-    OS_AddThread(exec_elf_task, 32, 0);
+    OS_AddThread(exec_elf_task, 256, 0);
   }
   else if(strcmp(cmd, "test") == 0)
   {

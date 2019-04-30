@@ -223,9 +223,9 @@ extern void disk_timerproc (void);
 int Load_Process_Main(void)
 {
   OS_Init();
-  OS_AddPeriodicThread(disk_timerproc, TIME_1MS, 0);
-  OS_AddThread(&init_fs_task, 128, 1); 
-  OS_AddThread(interpreter_task, 128, 0);
+  OS_AddPeriodicThread(disk_timerproc, TIME_1MS, 5);
+  OS_AddThread(&init_fs_task, 128, 0); 
+  OS_AddThread(interpreter_task, 128, 2);
   OS_Launch(TIME_1MS);
   while (1)
     ;

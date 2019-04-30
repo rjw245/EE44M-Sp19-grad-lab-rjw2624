@@ -277,10 +277,14 @@ void *Heap_Realloc(void *oldBlock, int32_t desiredBytes)
 
 int32_t __Heap_ChangeOwner(void *pointer, heap_owner_t *new_owner)
 {
-  uint32_t numWords = blockRoom(pointer);
+  int32_t *blockStart;
+  int32_t blockWords;
+
+  blockStart = ((int32_t *)pointer) - 1;
+  blockWords = blockRoom(blockStart);
   long sr = StartCritical();
-  free_subregions(pointer, numWords);
-  alloc_subregions(pointer, numWords, new_owner);
+  free_subregions(pointer, blockWords);
+  alloc_subregions(pointer, blockWords, new_owner);
   __UnveilTaskHeap(cur_tcb); // Update allowed subregions
   EndCritical(sr);
   return HEAP_OK;
