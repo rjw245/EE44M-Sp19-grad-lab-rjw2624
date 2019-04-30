@@ -764,8 +764,6 @@ void OS_Kill(void)
   MemProtect_EndCritical(mpu_stat);
   __dsb(0xF);
   __isb(0xF);
-  while (1)
-    ;
 }
 
 void OS_Suspend(void)
