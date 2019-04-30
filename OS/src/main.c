@@ -223,6 +223,8 @@ extern void disk_timerproc (void);
 int Load_Process_Main(void)
 {
   OS_Init();
+  ST7735_InitR(INITR_REDTAB);
+  ST7735_FillScreen(ST7735_WHITE);
   OS_AddPeriodicThread(disk_timerproc, TIME_1MS, 5);
   OS_AddThread(&init_fs_task, 128, 0); 
   OS_AddThread(interpreter_task, 128, 2);
