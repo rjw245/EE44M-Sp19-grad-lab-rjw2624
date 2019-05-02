@@ -27,16 +27,13 @@ I plan to change my current strategy in the following ways:
 
 For this project, I will guarantee mutual isolation of tasks' stack and heap memory. Stack-allocated variables in one task shall not be readable nor writable by any other task. Similarly, memory allocated to a task on the heap will not be readable nor writable by any other task (until is freed and reallocated). My design will also aim to add minimal overhead to the OS. The MPU hardware should not be massively reconfigured at every context switch.
 
-This implementation does not support process loading from disk (introduced in lab 5 of EE380L). All tasks are assumed to be compiled with the OS code, as is common for embedded RTOSes.
-\todo{This will no longer be true after my newest changes.}
+This implementation supports process loading from disk (introduced in lab 5 of EE380L). Code and data of a loaded process will belong to the process control block and will be accessible to all child tasks. However, the stacks of each task in the process will remain mutually isolated. Also, any heap memory allocated to a task will be accessible only to it -- not to any other task in the system.
 
-Importantly, this implementation does not protect task code. Tasks are able to execute any functions that they can be linked against. \todo{After my changes, process code will be protected.}
+Importantly, this implementation does not protect task code if the task is compiled with the OS (i.e. not loaded as a process from disk). Tasks compiled into the OS executable are able to execute any functions that they can be linked against. However, as previously mentioned, code and data of loaded processes \textit{are} protected.
 
 Task memory will be protected automatically upon task creation and heap allocation.
 
-\todo{Stacks protected at task-level, heap protected at process-level.}
-
-As a proof of concept, my implementation can protect memory of up to sixteen different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
+As a proof of concept, my implementation can protect memory of up to thirty-two different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
 
 \section{MPU Functionality}
 
@@ -44,40 +41,41 @@ The MPU is a hardware unit used to protect regions of memory. It supports up to 
 
 The MPU implements relative priority between regions. Regions are indexed 0 to 7 where a higher index indicates priority over lower indices. For a given memory access, the MPU region with the highest index containing the relevant address will be used to authorize the access.
 
-\section{Stack Protection}
-
-Task stacks are allocated from a pool of statically allocated memory. Sixteen stacks each of 64 double words are declared to be allocated as tasks are created at runtime. Two consecutive MPU regions are initialized to span from the beginning of the stack pool up to the end. Using two regions allows us to evenly divide the pool into sixteen subregions each of which perfectly aligns with the boundaries of a single task stack. Therefore there is a one-to-one correspondence between MPU subregion and task ID. To protect the stack pool with the MPU, the stack pool must be aligned to the size of one of the MPU regions, which is $8\times64$ double words, or 4096 bytes.
-
-\begin{figure}[hbtp]
-	\centering
-	\includegraphics[width=0.4\columnwidth]{figs/stack_prot.png}
-	\caption{Illustration of how the stack pool is organized in memory. Two consecutive MPU regions are configured to span the pool. The pool holds sixteen consecutive 512B stacks which each align with a MPU subregion. The whole stack pool is aligned to a 4KB boundary.}
-	\label{fig:stack_prot}
-\end{figure}
-% https://www.draw.io/#G1K-jvmSFl7cc_w53rWbj7vP-SnMSNnW15
-
 \section{Heap Protection}
 
-The heap is implemented as a simple Knuth heap, based upon the implementation from lab 5, with some changes to accomodate the MPU. Any memory allocated to a task on the heap is guaranteed to be isolated from other tasks. This is achieved by grouping memory allocations together into MPU subregions by the owner task. When tasks are allocated memory, the heap manager associates the task's ID with all MPU subregions touched by the allocated block. The task now ``owns'' those subregions, and no other task will be allowed to acquire a block in those subregions. In this way, the heap manager guarantees that every subregion will contain blocks belonging to at most one task. At this point, protecting the heap is as simple as prohibiting access to heap subregions where the running task doesn't have any blocks.
+The heap is implemented as a simple Knuth heap, based upon the implementation from lab 5, with some changes to accomodate the MPU. Any memory allocated to a task on the heap is guaranteed to be isolated from other tasks. This is achieved by grouping memory allocations together into MPU subregions by the owner task. When tasks are allocated memory, the heap manager associates the task's ID with all MPU subregions touched by the allocated block. The task now ``owns'' those subregions, and no other task will be allocated memory in those subregions. In this way, the heap manager guarantees that every subregion will contain blocks belonging to at most one task. When the last allocated block in a given subregion is freed, the owner task relinquishes ownership of the subregion, and the heap manager is free to allocate memory in that subregion to another task. At this point, protecting the heap is as simple as prohibiting access to heap subregions that the running task doesn't ``own''.
 
-A naive solution would be to statically partition the heap into sixteen pieces and allocate one to each task in the system. However, the approach I have chosen ought to scale better to systems where tasks may vary in their demand for heap memory. For example, if only eight out of sixteen tasks use the heap, then any blocks statically allocated to the other eight tasks would go unused -- a huge waste. In the case where there are sixteen tasks in the system and they each take turns acquiring heap memory, my solution will allocate each a subregion and converge to the simpler approach.
+A naive solution would be to statically partition the heap into equal-size pieces and allocate one to each task in the system. However, the approach I have chosen ought to scale better to systems where tasks may vary in their demand for heap memory. For example, if only half of all tasks use the heap, then any blocks statically allocated to the other tasks would go unused -- a huge waste. In the case where there are thirty-two tasks in the system (the maximum) and all of them demand heap memory, my solution will allocate each a subregion and converge to the simpler approach.
 
 \begin{figure}[hbtp]
 	\centering
 	\includegraphics[width=0.7\linewidth]{figs/heap_prot.png}
-	\caption{Illustration of how the heap is organized in memory. Two consecutive MPU regions are configured to span the heap, each with eight subregions. Memory allocated to different tasks will always be placed in different subregions such that every subregion's blocks are associated with at most one task. Allocated blocks are shown, color-coded according to which task requested them.}
+	\caption{Illustration of how the heap is organized in memory. Four consecutive MPU regions are configured to span the heap, each with eight subregions. Memory allocated to different tasks will always be placed in different subregions such that each subregion's blocks are associated with at most one task. Allocated blocks are shown, color-coded according to which task requested them.}
 	\label{fig:heap_prot}
 \end{figure}
 % https://www.draw.io/#G1K-jvmSFl7cc_w53rWbj7vP-SnMSNnW15
 
 Figure \ref{fig:heap_prot} shows an example heap where three tasks have each been allocated memory. Each subregion will contain memory for at most one task. It's possible for a task's memory to span multiple subregions, as in subregions 1 and 2. This design is susceptible to some amount of internal and external fragmentation, though less than the naive solution I described earlier. You can see internal fragmentation at the end of subregion 0. Only small allocations can fit in the remaining free space of subregion 0, and they must be allocated to Task A to be put there in the first place (since Task A has claimed that subregion). As for external fragmentation, suppose Task C were to request 256 Bytes from the heap manager -- this is larger than one subregion. For that reason, the allocation \textit{could not} fit in the empty subregion 5. It would instead be placed in subregions 7 and 8, leaving subregion 5 to go to waste until a small enough block could be allocated there.
 
-\section{Changes to TCB and Context Switch}
+\section{Stack Protection}
 
-The TCB is expanded to include two masks which encode the stack and heap subregions the task is allowed to access. These additions are italicized in Listing \ref{lst:tcb}.
+To protect tasks' stack memory, I simply allocate stack memory on the heap to the relevant task. This approach is more flexible than a stack pool, where stacks of a certain maximum size must be statically allocated, which can lead to wasted memory.
 
-\begin{lstlisting}[language=c, caption={TCB struct definition}, captionpos=b, label={lst:tcb}]
-typedef struct _tcb_s {
+\section{Changes to TCB, PCB, and Context Switch}
+
+The TCB and PCB are expanded to include a struct of type \texttt{heap\_owner\_t} used by the heap manager to manage MPU subregions. The TCB now also contains a pointer to the base of its stack, which used to free the task stack upon killing the task. These changes are italicized in Listings \ref{lst:pcb} and \ref{lst:tcb}. The contents of the \texttt{heap\_owner\_t} struct are shown in Listing \ref{lst:heap_owner_t}.
+\begin{lstlisting}[language=c, caption={Process Control Block definition}, captionpos=b, label={lst:pcb}, float]
+typedef struct _pcb_s
+{
+    unsigned long num_threads;
+    void *text;
+    void *data;
+    (*@\textit{heap\_owner\_t h\_o;}@*)
+} pcb_t;
+\end{lstlisting}
+\begin{lstlisting}[language=c, caption={Task Control Block definition}, captionpos=b, label={lst:tcb}, float]
+typedef struct _tcb_s
+{
     long *sp;
     struct _tcb_s *next;
     uint32_t wake_time;
@@ -88,12 +86,35 @@ typedef struct _tcb_s {
     void (*task)(void);
     char * task_name;
     pcb_t *parent_process;
-    (*@\textit{unsigned int stack\_prot\_msk;}@*)
-    (*@\textit{unsigned int heap\_prot\_msk;}@*)
+    (*@\textit{long *stack\_base;}@*)
+    (*@\textit{heap\_owner\_t h\_o;}@*)
 } tcb_t;
 \end{lstlisting}
+\begin{lstlisting}[language=c, caption={heap\_owner\_t struct definition}, captionpos=b, label={lst:heap_owner_t}, float]
+typedef struct _heap_owner_s
+{
+    unsigned long id;
+    uint32_t heap_prot_msk;
+} heap_owner_t;
+\end{lstlisting}
 
-During a context switch, the OS configures the MPU to allow access only to stack and heap subregions associated with the next running task. All other subregions (either associated with other tasks or unused) are protected. The MPU regions themselves do not need to be reprogrammed at each context switch. These are programmed once at initialization. Only the subregion masks for each region need to be reprogrammed during the context switch. This keeps the context switch fairly light.
+The \texttt{heap\_owner\_t} struct is a handle used by the heap manager to identify tasks and processes in the system whose memory ought to be mutually isolated. The \texttt{id} field uniquely identifies the memory's owner, whether that be a task or a process. The heap manager will allow blocks with the same owner ID to be grouped together in the same subregion; blocks with different owner IDs must be placed in different subregions. The \texttt{heap\_prot\_msk} field is a mask indicating which heap subregions this task or process has memory in and therefore ought to be allowed to access.
+
+During a context switch, the OS configures the MPU to allow access only to heap subregions associated with the next running task. This is indicated by the \texttt{heap\_prot\_msk} field in the \texttt{heap\_owner\_t} struct of the TCB \textit{and} PCB (if applicable) associated with the next task. All other subregions (either associated with other tasks or unused) are protected. The pseudo-code in Listing \ref{lst:subregions} illustrates this procedure.
+
+\begin{lstlisting}[language=c, caption={Pseudo-code demonstrating how subregions are made accessible based on the TCB \textit{and} PCB.}, captionpos=b, label={lst:subregions}, float]
+u32 accessible_subregions = tcb->h_o.heap_prot_msk;
+
+if(tcb->parent_process)
+{
+  accessible_subregions |= tcb->parent_process->h_o.heap_prot_msk;
+}
+
+MPU_ConfigureSubregions(accessible_subregions);
+
+\end{lstlisting}
+
+The MPU regions themselves do not need to be reprogrammed at each context switch. These are programmed once at initialization. Only the subregion masks for each region need to be reprogrammed during the context switch. This keeps the context switch fairly light.
 
 \section{Final MPU Region Configuration}
 

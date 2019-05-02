@@ -1061,6 +1061,8 @@ void push_semaq(tcb_t *node, tcb_t **semahead)
   }
 }
 
+int32_t * protected_text = 0;
+
 int OS_AddProcess(void (*entry)(void), void *text, void *data, unsigned long stackDWords, unsigned long priority)
 {
   pcb_t *new_process = (pcb_t *)__Heap_Malloc(sizeof(pcb_t), &OS_heap_ownership);
@@ -1075,6 +1077,7 @@ int OS_AddProcess(void (*entry)(void), void *text, void *data, unsigned long sta
   __Heap_ChangeOwner(text, &new_process->h_o);
   new_process->data = data;
   new_process->text = text;
+  protected_text = text; // For testing memory protection. TODO delete later
   if (__OS_AddThread(entry, stackDWords, priority, "Process main", new_process) == 0)
   {
     return -1;

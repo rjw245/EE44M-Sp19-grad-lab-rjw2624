@@ -87,6 +87,8 @@ static void print_event(const event_t *event)
   UART_OutString(event_str);
 }
 
+extern int32_t * protected_text;
+
 void interpreter_cmd(char *cmd_str)
 {
   char *cmd, *arg1, *arg2, *arg3, *arg4, *arg5, *arg6;
@@ -239,5 +241,9 @@ void interpreter_cmd(char *cmd_str)
   {
     arg1 = strtok(NULL, strtok_delim);
     TEST_OS_AddThread(&TEST_OS, 128, 1);
+  }
+  else if(strcmp(cmd, "testmpu") == 0)
+  {
+    *protected_text = 1; // CRASH
   }
 }
