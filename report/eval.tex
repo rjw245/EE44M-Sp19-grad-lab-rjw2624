@@ -10,3 +10,15 @@
 \section{Demonstrating Heap Flexibility}
 % Characterize fragmentation when sixteen tasks requests varying amounts of heap memory.
 % Show that my solution better handles dynamic memory use.
+
+\section{Measuring Context Switch Overhead}
+
+\begin{table}[]
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Config}                                                                        & \textbf{Context Switch Time} \\ \hline
+No Memory Protection                                                                   & 2 microseconds               \\ \hline
+\begin{tabular}[c]{@{}l@{}}Memory Protection with\\ Lite Reconfiguration\end{tabular}  & 7.4 microseconds             \\ \hline
+\begin{tabular}[c]{@{}l@{}}Memory Protection with\\ Heavy Reconfiguration\end{tabular} & 9.23 microseconds            \\ \hline
+\end{tabular}
+\end{table}

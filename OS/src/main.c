@@ -221,7 +221,6 @@ int _16task_main(void)
 int idle_main(void)
 {
   OS_Init();
-  //OS_AddThread(root_task, 32, 0);
   OS_Launch(TIME_1MS);
   while (1)
     ;
@@ -252,5 +251,5 @@ int Load_Process_Main(void)
 
 int main(void)
 {
-  _16task_main();
+  idle_main();
 }

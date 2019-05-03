@@ -33,7 +33,7 @@ Importantly, this implementation does not protect task code if the task is compi
 
 Task memory will be protected automatically upon task creation and heap allocation.
 
-As a proof of concept, my implementation can protect memory of up to thirty-two different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
+As a proof of concept, my implementation can protect memory of up to twenty-nine different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
 
 \section{MPU Functionality}
 
@@ -146,6 +146,10 @@ MPU_ConfigureSubregions(accessible_subregions);
 \end{lstlisting}
 
 The MPU regions themselves do not need to be reprogrammed at each context switch. These are programmed once at initialization. Only the subregion masks for each region need to be reprogrammed during the context switch. This keeps the context switch fairly light.
+
+\section{Maximum Number of Tasks}
+
+The 16KB heap contains a total of thirty-two subregions. The maximum number of tasks that can be allocated is twenty-nine, as the OS will consume three subregions allocating TCBs and the rest of the subregions are allocated to the tasks.
 
 \section{Final MPU Region Configuration}
 

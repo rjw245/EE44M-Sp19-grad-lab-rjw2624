@@ -51,6 +51,7 @@ static void insert_tcb(tcb_t *new_tcb);
 static void remove_tcb(tcb_t *tcb);
 static void unprotect_all_mem(void);
 
+#define PF1 (*((volatile unsigned long *)0x40025008))
 static void PortF_Init(void)
 {
   SYSCTL_RCGCGPIO_R |= 0x20; // activate port F
@@ -90,15 +91,14 @@ static void choose_next_with_prio(void)
 
 static void ContextSwitch(bool save_ctx)
 {
+  PF1 = 0x0;
   save_ctx_global = save_ctx;
   
-    __dsb(0xF);
-    __isb(0xF);
     MemProtect_DisableMPU();
     __dsb(0xF);
     __isb(0xF);
   NVIC_INT_CTRL_R |= NVIC_INT_CTRL_PEND_SV;
-  Profiler_Event(EVENT_FGTH_START, cur_tcb->task_name);
+//   Profiler_Event(EVENT_FGTH_START, cur_tcb->task_name);
 }
 
 unsigned int numTasks = 0;
@@ -106,9 +106,10 @@ static void IdleTask(void)
 {
   while (1)
   {
+    PF1 = 0x2;
     // Do maintenance
-    NVIC_ST_CURRENT_R = 0;
-    ContextSwitch(true);
+    // NVIC_ST_CURRENT_R = 0;
+    // ContextSwitch(true);
   }
 }
 
@@ -129,6 +130,7 @@ static uint64_t get_system_time(void)
 
 void SysTick_Handler(void)
 {
+  PF1 = 0x0;
   ContextSwitch(true);
 #if PRIORITY_SCHED
   // Need to make sure we wrap to list head
@@ -153,6 +155,7 @@ void OS_Init(void)
   PLL_Init(Bus80MHz);
   UART_Init();
   Heap_Init();
+
   PortF_Init();
 
   // Activate PendSV interrupt with lowest priority
@@ -405,18 +408,6 @@ static void unprotect_all_mem(void)
   MemProtect_SelectRegion(0);
   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_URW);
   MemProtect_EnableRegion();
-
-  // First 8 stacks
-  // MemProtect_SelectRegion(6);
-  // MemProtect_CfgRegion(&stack_pool[0], 12, AP_PNA_UNA);
-  // MemProtect_CfgSubregions(0); // Prot all subregions
-  // MemProtect_EnableRegion();
-
-  // Last 8 stacks
-  // MemProtect_SelectRegion(7);
-  // MemProtect_CfgRegion(&stack_pool[8], 12, AP_PNA_UNA);
-  // MemProtect_CfgSubregions(0); // Prot all subregions
-  // MemProtect_EnableRegion();
 }
 
 int __OS_AddThread(void (*task)(void),
@@ -467,14 +458,10 @@ int __OS_AddThread(void (*task)(void),
   {
     // Didn't find stack space
     
-    __dsb(0xF);
-    __isb(0xF);
     MemProtect_DisableMPU();
     __dsb(0xF);
     __isb(0xF);
     Heap_Free(tcb);
-    __dsb(0xF);
-    __isb(0xF);
     MemProtect_EnableMPU();
     __dsb(0xF);
     __isb(0xF);
@@ -490,8 +477,6 @@ int __OS_AddThread(void (*task)(void),
   tcb->sp = stack + (stackDWords - 1) * 2 - 1;
 
   
-  __dsb(0xF);
-  __isb(0xF);
   MemProtect_DisableMPU();
   __dsb(0xF);
   __isb(0xF);
@@ -511,8 +496,6 @@ int __OS_AddThread(void (*task)(void),
   *(--tcb->sp) = 0x06060606;                                                          // R6
   *(--tcb->sp) = 0x05050505;                                                          // R5
   *(--tcb->sp) = 0x04040404;                                                          // R4
-  __dsb(0xF);
-  __isb(0xF);
   MemProtect_EnableMPU();
   __dsb(0xF);
   __isb(0xF);
@@ -744,8 +727,6 @@ void OS_Kill(void)
   // Disable MPU to allow OS to touch task's stack
   // TODO enable privileged/unprivileged mode to make this unnecessary
   
-  __dsb(0xF);
-  __isb(0xF);
   unsigned long mpu_stat = MemProtect_StartCritical();
   __dsb(0xF);
   __isb(0xF);
@@ -756,8 +737,6 @@ void OS_Kill(void)
   NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
   ContextSwitch(false);  
   EndCritical(sr);
-  __dsb(0xF);
-  __isb(0xF);
   MemProtect_EndCritical(mpu_stat);
   __dsb(0xF);
   __isb(0xF);
@@ -892,8 +871,6 @@ void OS_Launch(unsigned long theTimeSlice)
   NVIC_EN3_R |= 1 << 0;        // Enable wtimer1A interrupt
   NVIC_EN3_R |= 1 << 1;        // Enable wtimerB interrupt
 
-  __dsb(0xF);
-  __isb(0xF);
   MemProtect_EnableMPU();
   __dsb(0xF);
   __isb(0xF);

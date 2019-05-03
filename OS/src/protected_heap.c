@@ -104,6 +104,17 @@ static void free_subregions(int32_t *start, int32_t blockWords)
   }
 }
 
+static inline void setup_mpu_regions(void)
+{
+  for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+  {
+    MemProtect_SelectRegion(i);
+    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PRW_URW);
+    MemProtect_CfgSubregions(0); // Prot all subregions
+    MemProtect_EnableRegion();
+  }
+}
+
 int32_t Heap_Init(void)
 {
   for (int i = 0; i < lengthof(__heap_subrgn_table); i++)
@@ -117,13 +128,7 @@ int32_t Heap_Init(void)
   *blockStart = -(int32_t)(HEAP_SIZE_WORDS - 2);
   *blockEnd = -(int32_t)(HEAP_SIZE_WORDS - 2);
 
-  for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
-  {
-    MemProtect_SelectRegion(i);
-    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PNA_UNA);
-    MemProtect_CfgSubregions(0); // Prot all subregions
-    MemProtect_EnableRegion();
-  }
+  setup_mpu_regions();
 
   return HEAP_OK;
 }
@@ -131,7 +136,7 @@ int32_t Heap_Init(void)
 extern heap_owner_t OS_heap_ownership;
 void __UnveilTaskHeap(tcb_t *tcb)
 {
-  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk;
+  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk | OS_heap_ownership.heap_prot_msk;
   if(tcb->parent_process)
   {
     heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;
@@ -143,7 +148,7 @@ void __UnveilTaskHeap(tcb_t *tcb)
     // TODO if the task is in a loaded process, it probably SHOULD NOT have
     // access to OS memory in the heap, and should only interface with the 
     // OS through the SVC call interface.
-    MemProtect_CfgSubregions(((heap_prot_msk | OS_heap_ownership.heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
+    MemProtect_CfgSubregions((heap_prot_msk >> ((i - 4) * 8)) & 0xFF);
     MemProtect_EnableRegion();
   }
 }
