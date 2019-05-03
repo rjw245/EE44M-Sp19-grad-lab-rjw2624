@@ -6,19 +6,16 @@ I plan to change my current strategy in the following ways:
 
 \begin{itemize}
     
- \item Allocate task stacks in the heap. Effectively all protected process mem will be in heap.
- \item Enlarge the heap and allocate more MPU regions to it so it can be further subdivided.
+ \item Allocate task stacks in the heap. Effectively all protected process mem will be in heap. DONE
+ \item Enlarge the heap and allocate more MPU regions to it so it can be further subdivided. DONE
+ \item Support isolating process memory DONE
     \begin{itemize}
-        \item Supports more processes, increased flexibility.
+        \item Support complete OS SVC interface DONE
+        \item Isolate code and data at the process level DONE
+        \item Isolate stacks at the thread level DONE
     \end{itemize}
- \item Support isolating process memory
-    \begin{itemize}
-        \item Support complete OS SVC interface
-        \item Isolate code and data at the process level
-        \item Isolate stacks at the thread level
-    \end{itemize}
- \item Be less permissive. Change catch-all region 0 to "No Access"
- \item Protect OS code and data
+ \item \todo{Be less permissive. Change catch-all region 0 to "No Access"}
+ \item \todo{Protect OS code and data TODO}
 
 \end{itemize}
 
