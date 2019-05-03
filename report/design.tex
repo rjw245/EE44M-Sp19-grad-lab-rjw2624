@@ -22,15 +22,15 @@ I plan to change my current strategy in the following ways:
 
 \section{Requirements}
 
-For this project, I will guarantee mutual isolation of tasks' stack and heap memory. Stack-allocated variables in one task shall not be readable nor writable by any other task. Similarly, memory allocated to a task on the heap will not be readable nor writable by any other task (until is freed and reallocated). My design will also aim to add minimal overhead to the OS. The MPU hardware should not be massively reconfigured at every context switch.
+For this project, I will guarantee mutual isolation and protection of tasks' stack and heap memory. Stack-allocated variables in one task shall not be readable nor writable by any other task. Similarly, memory allocated to a task on the heap will not be readable nor writable by any other task. My design will also aim to add minimal overhead to the OS. The MPU hardware should not be massively reconfigured at every context switch.
 
-This implementation supports process loading from disk (introduced in lab 5 of EE380L). Code and data of a loaded process will belong to the process control block and will be accessible to all child tasks. However, the stacks of each task in the process will remain mutually isolated. Also, any heap memory allocated to a task will be accessible only to it -- not to any other task in the system.
+This implementation supports loading processes from disk into RAM (introduced in lab 5 of EE380L). Code and data of a loaded process will belong to the process control block and will be accessible to all child tasks. However, the stacks of each task in the process will remain inaccessible to one another. Also, any heap memory allocated to a process task will be accessible only to it -- not to any other task in the system.
 
-Importantly, this implementation does not protect task code if the task is compiled with the OS (i.e. not loaded as a process from disk). Tasks compiled into the OS executable are able to execute any functions that they can be linked against. However, as previously mentioned, code and data of loaded processes \textit{are} protected.
+Importantly, this implementation does not protect task code if the task is compiled with the OS (i.e. not loaded as a process from disk). Tasks compiled into the OS executable are able to execute any functions that they can be linked against.
 
 Task memory will be protected automatically upon task creation and heap allocation.
 
-As a proof of concept, my implementation can protect memory of up to twenty-nine different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only sixteen can be protected, more than that may run in the system at any given time.
+As a proof of concept, my implementation can protect memory of up to twenty-nine different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only so many can be protected, more than that may run in the system at any given time.
 
 \section{MPU Functionality}
 
@@ -146,11 +146,11 @@ The MPU regions themselves do not need to be reprogrammed at each context switch
 
 \section{Maximum Number of Tasks}
 
-The 16KB heap contains a total of thirty-two subregions. The maximum number of tasks that can be allocated is twenty-nine, as the OS will consume three subregions allocating TCBs and the rest of the subregions are allocated to the tasks.
+The 16KB heap contains a total of thirty-two subregions. The maximum number of tasks that can be allocated is twenty-nine, as the OS will consume three subregions allocating TCBs and the rest of the subregions are allocated for task stacks.
 
 \section{Final MPU Region Configuration}
 
-Given the design described, MPU regions are configured as in Figure \ref{table:mpu_cfg}
+Given the design described, MPU regions are configured as in Figure \ref{table:mpu_cfg}. Region 0 (lowest priority) is configured to span the entire memory space and is fully permissive. Regions 4 through 7 are configured as consecutive regions together spanning the heap and are fully unpermissive -- no accesses are allowed either in privileged or unprivileged mode. To allow a task to access a block in the heap, I disable the subregions it touches in MPU regions 4, 5, 6, and/or 7 so that instead region 0 will be used to evaluate and approve the access. For all other disallowed memory, the associated subregions will still be enabled in regions 4 through 7, and so access to it will be denied.
 
 \input{mpu_cfg}
 

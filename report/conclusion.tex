@@ -3,6 +3,14 @@
 
 \section{Summary}
 
+In this project, I have demonstrated a low-overhead implementation of memory protection that is capable of protecting tasks' stack and heap memory in a real-time operating system.
+
 \section{Future Work}
 
-As mentioned previously, my solution limits the number of tasks in the system to a maximum of sixteen. This is because the MPU uses two regions to span the stack pool, which yields sixteen subregions in which to store independent stacks. We have some 
+\subsection{Addressing the Task Limit}
+
+As mentioned previously, my solution limits the number of tasks in the system to a maximum of twenty-nine. This is because the MPU uses four regions to span the heap, which yields thirty-two subregions in which to store task stacks, three of which are consumed by the OS.
+
+\subsection{Supporting Shared Memory}
+
+Most operating systems must support some form of inter-process communication. Currently, two processes loaded from disk have no way to communicate with one another. One potential solution is to provide an API to the heap to allocate memory into a new subregion or subregions which will be accessible by two or more processes. Each process would specify the shared memory by an agreed upon key, say a string, in order to be granted access to it. The API would respond with a pointer to the start of the region which the processes can now use to communicate. The heap's subregion table would need to be modified to support mapping multiple \texttt{heap\_owner\_t} structs to each subregion.
