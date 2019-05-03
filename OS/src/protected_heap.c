@@ -109,7 +109,7 @@ static inline void setup_mpu_regions(void)
   for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
   {
     MemProtect_SelectRegion(i);
-    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PRW_URW);
+    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PNA_UNA);
     MemProtect_CfgSubregions(0); // Prot all subregions
     MemProtect_EnableRegion();
   }
