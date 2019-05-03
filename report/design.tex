@@ -61,6 +61,37 @@ Figure \ref{fig:heap_prot} shows an example heap where three tasks have each bee
 
 To protect tasks' stack memory, I simply allocate stack memory on the heap to the relevant task. This approach is more flexible than a stack pool, where stacks of a certain maximum size must be statically allocated, which can lead to wasted memory.
 
+\section{Fragmentation}
+
+As discussed previously, this design exhibits some amount of internal and external fragmentation.
+Here we will discuss the net effect of fragmentation and ways of addressing it.
+
+\subsection{Internal Fragmentation}
+
+The design exhibits internal fragmentation when a task requests more memory than can fit in the remaining free space in a subregion it already owns. The heap manager will go allocate another subregion to the task, or worse, will fail to allocate memory, leaving the hole in the first subregion to go to waste.
+
+This is particularly noticeable in systems that spawn many threads. The OS itself is allocated memory on the heap as needed for TCBs. This memory is protected just like any other heap memory, which means the OS is allocated MPU subregions. Immediately after allocating space for the TCB, space is allocated for the task stack. This means that the OS's MPU subregion will be followed by a task's MPU subregion, since the heap manager allocates subregions sequentially. This means that as the OS fills up its subregion, it is likely to experience internal fragmentation. See Figure \ref{fig:internal_frag} for an illustration of the problem.
+
+\begin{figure}[hbtp]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/OS_int_frag.png}
+	\caption{Internal fragmentation as experienced by the OS during TCB allocation. OS subregions are not consecutive, meaning that internal fragmentation can occur in many places.}
+	\label{fig:internal_frag}
+\end{figure}
+
+This can be solved by pre-allocating a pool of TCBs for the OS to pull from at initialization. By allocating all TCBs at once, the programmer will force all OS subregions to be adjacent. This will reduce internal fragmentation since allocated blocks are allowed to span the boundaries between adjacent subregions as long as both belong to the same entity. This requires knowledge of the target application -- specifically, how many tasks it will require.
+
+\subsection{External Fragmentation}
+
+The design exhibits external fragmentation when a task requests more memory than can fit in the free space made up of one or more \textit{free} MPU subregions. This will occur when tasks free all of the memory they own in a given subregion, and the subregion becomes free while its neighboring subregions are still occupied. See Figure \ref{fig:external_frag} for an illustration of the problem.
+
+\begin{figure}[hbtp]
+	\centering
+	\includegraphics[width=0.7\linewidth]{figs/ext_frag.png}
+	\caption{External fragmentation. Though the total amount of free space is larger than the requested block, it cannot fit since there is no \textit{contiguous} region of free space large enough.}
+	\label{fig:external_frag}
+\end{figure}
+
 \section{Changes to TCB, PCB, and Context Switch}
 
 The TCB and PCB are expanded to include a struct of type \texttt{heap\_owner\_t} used by the heap manager to manage MPU subregions. The TCB now also contains a pointer to the base of its stack, which used to free the task stack upon killing the task. These changes are italicized in Listings \ref{lst:pcb} and \ref{lst:tcb}. The contents of the \texttt{heap\_owner\_t} struct are shown in Listing \ref{lst:heap_owner_t}.

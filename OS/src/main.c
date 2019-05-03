@@ -91,27 +91,7 @@ int twotask_main(void)
   return 0;
 }
 
-#define MakeTask(num) void Task##num(void) {\
-  int stack_var = OS_Id();\
-  while(1);\
-}
 
-MakeTask(0)
-MakeTask(1)
-MakeTask(2)
-MakeTask(3)
-MakeTask(4)
-MakeTask(5)
-MakeTask(6)
-MakeTask(7)
-MakeTask(8)
-MakeTask(9)
-MakeTask(10)
-MakeTask(11)
-MakeTask(12)
-MakeTask(13)
-MakeTask(14)
-MakeTask(15)
 
 void short_task(void)
 {
@@ -160,42 +140,78 @@ int self_starter_main(void)
   return 0;
 }
 
+#define MakeTask(num) void Task##num(void) {\
+  int stack_var = OS_Id();\
+  while(1);\
+}
+
+MakeTask(0)
+MakeTask(1)
+MakeTask(2)
+MakeTask(3)
+MakeTask(4)
+MakeTask(5)
+MakeTask(6)
+MakeTask(7)
+MakeTask(8)
+MakeTask(9)
+MakeTask(10)
+MakeTask(11)
+MakeTask(12)
+MakeTask(13)
+MakeTask(14)
+MakeTask(15)
+MakeTask(16)
+MakeTask(17)
+MakeTask(18)
+MakeTask(19)
+MakeTask(20)
+MakeTask(21)
+MakeTask(22)
+MakeTask(23)
+MakeTask(24)
+MakeTask(25)
+MakeTask(26)
+MakeTask(27)
+MakeTask(28)
+MakeTask(29)
+MakeTask(30)
+
 int _16task_main(void)
 {
   OS_Init();
-  heap_stats_t heap_stats = Heap_Stats();
   OS_AddThread(Task0, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task1, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task2, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task3, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task4, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task5, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task6, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task7, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task8, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task9, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task10, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task11, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task12, 32, 0);
   OS_AddThread(Task13, 32, 0);
-  heap_stats = Heap_Stats();
   OS_AddThread(Task14, 32, 0);
-  heap_stats = Heap_Stats();
-
-  // Task 15 actually can't be scheduled, it's the 17th task after the idle task
   OS_AddThread(Task15, 32, 0);
+  OS_AddThread(Task16, 32, 0);
+  OS_AddThread(Task17, 32, 0);
+  OS_AddThread(Task18, 32, 0);
+  OS_AddThread(Task19, 32, 0);
+  OS_AddThread(Task20, 32, 0);
+  OS_AddThread(Task21, 32, 0);
+  OS_AddThread(Task22, 32, 0);
+  OS_AddThread(Task23, 32, 0);
+  OS_AddThread(Task24, 32, 0);
+  OS_AddThread(Task25, 32, 0);
+  OS_AddThread(Task26, 32, 0);
+  OS_AddThread(Task27, 32, 0);
+  OS_AddThread(Task28, 32, 0);
+  OS_AddThread(Task29, 32, 0);
+  OS_AddThread(Task30, 32, 0);
+  // IdleTask is task 31, ie the 32nd task
   OS_Launch(TIME_1MS);
   while (1)
     ;
@@ -236,5 +252,5 @@ int Load_Process_Main(void)
 
 int main(void)
 {
-  Load_Process_Main();
+  _16task_main();
 }

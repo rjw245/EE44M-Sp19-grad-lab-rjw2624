@@ -192,7 +192,7 @@ void OS_Init(void)
   //timeMeasureInit();
 
   Profiler_Init();
-  OS_AddThread(IdleTask, 64, 255);
+  OS_AddThread(IdleTask, 32, 255);
 }
 
 void OS_InitSemaphore(Sema4Type *semaPt, long value)
@@ -518,11 +518,8 @@ int __OS_AddThread(void (*task)(void),
   __isb(0xF);
 
   tcb->priority = priority;
-  tcb->period = 0; // 0 = aperiodic
   tcb->wake_time = 0;
   tcb->next = 0;
-  tcb->magic = TCB_MAGIC; // Write magic to mark valid
-  tcb->task = task;
   tcb->task_name = task_name;
   tcb->parent_process = parent_process;
   static int next_id = 1; // ID 0 reserved for OS

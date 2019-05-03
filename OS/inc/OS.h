@@ -45,10 +45,6 @@ typedef struct _tcb_s
   uint32_t wake_time;
   unsigned long id;
   uint8_t priority;
-  uint32_t period; // 0 = aperiodic
-  //! magic field must contain TCB_MAGIC for TCB to be valid
-  unsigned long magic;
-  void (*task)(void);
   char * task_name;
   pcb_t *parent_process;
   long *stack_base;
