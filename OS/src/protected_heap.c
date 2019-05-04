@@ -138,20 +138,24 @@ int32_t Heap_Init(void)
   return HEAP_OK;
 }
 
-extern heap_owner_t OS_heap_ownership;
+// extern heap_owner_t OS_heap_ownership;
 void __UnveilTaskHeap(tcb_t *tcb)
 {
-  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk/* | OS_heap_ownership.heap_prot_msk*/;
+  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk;
   if(tcb->parent_process)
   {
     heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;
     // Tasks in process must not have access to OS code.
     MemProtect_SelectRegion(0);
+    // MemProtect_DisableRegion();
     MemProtect_CfgRegionAccess(AP_PRW_UNA);
+    // MemProtect_EnableRegion();
   } else {
     // Tasks not in process must be compiled with OS, and so must have access to OS code.
     MemProtect_SelectRegion(0);
+    // MemProtect_DisableRegion();
     MemProtect_CfgRegionAccess(AP_PRW_URW);
+    // MemProtect_EnableRegion();
   }
   for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
   {
