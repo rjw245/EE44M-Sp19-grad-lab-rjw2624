@@ -298,7 +298,12 @@ NMI_Handler     PROC
 HardFault_Handler\
                 PROC
                 EXPORT  HardFault_Handler         [WEAK]
-                B       .
+                ; B       .
+                ; Skip bad instruction
+                LDR R0, [SP,#24]
+                ADD R0, R0, #2
+                STR R0, [SP,#24]
+                BX LR
                 ENDP
 
 MemManage_Handler\
