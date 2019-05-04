@@ -114,7 +114,7 @@ static inline void setup_mpu_regions(void)
   for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
   {
     MemProtect_SelectRegion(i);
-    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PRW_UNA);
+    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PRW_URW);
     MemProtect_CfgSubregions(0xFF); // Prot all subregions
     MemProtect_EnableRegion();
   }
@@ -150,22 +150,31 @@ void __UnveilTaskHeap(tcb_t *tcb)
     // MemProtect_DisableRegion();
     MemProtect_CfgRegionAccess(AP_PRW_UNA);
     // MemProtect_EnableRegion();
+    for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+    {
+        MemProtect_SelectRegion(i);
+        // TODO if the task is in a loaded process, it probably SHOULD NOT have
+        // access to OS memory in the heap, and should only interface with the 
+        // OS through the SVC call interface.
+        MemProtect_CfgRegionAccess(AP_PRW_URW);
+        MemProtect_CfgSubregions(((~heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
+        MemProtect_EnableRegion();
+    }
   } else {
     // Tasks not in process must be compiled with OS, and so must have access to OS code.
     MemProtect_SelectRegion(0);
     // MemProtect_DisableRegion();
     MemProtect_CfgRegionAccess(AP_PRW_URW);
     // MemProtect_EnableRegion();
-  }
-  for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
-  {
-    MemProtect_SelectRegion(i);
-    MemProtect_DisableRegion();
-    // TODO if the task is in a loaded process, it probably SHOULD NOT have
-    // access to OS memory in the heap, and should only interface with the 
-    // OS through the SVC call interface.
-    MemProtect_CfgSubregions((heap_prot_msk >> ((i - 4) * 8)) & 0xFF);
-    MemProtect_EnableRegion();
+    for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+    {
+        MemProtect_SelectRegion(i);
+        // TODO if the task is in a loaded process, it probably SHOULD NOT have
+        // access to OS memory in the heap, and should only interface with the 
+        // OS through the SVC call interface.
+        MemProtect_CfgRegionAccess(AP_PRW_UNA);
+        MemProtect_CfgSubregions((heap_prot_msk >> ((i - 4) * 8)) & 0xFF);
+    }
   }
 }
 
