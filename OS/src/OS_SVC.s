@@ -15,6 +15,9 @@
         EXPORT  OS_SVC_bWait
         EXPORT  OS_SVC_Signal
         EXPORT  OS_SVC_bSignal
+        EXPORT  OS_SVC_Heap_Malloc
+        EXPORT  OS_SVC_Heap_Free
+
 
 			
 OS_SVC_Id
@@ -34,6 +37,11 @@ OS_SVC_Time
 	BX		LR
 
 OS_SVC_AddThread
+    ; Verify pointer is accessible
+    PUSH {R0}
+    LDR R0, [R0]
+    POP {R0}
+
 	SVC		#4
 	BX		LR
 
@@ -42,19 +50,52 @@ OS_SVC_Suspend
 	BX		LR
 
 OS_SVC_Wait
+    ; Verify pointer is accessible
+    PUSH {R0}
+    LDR R0, [R0]
+    POP {R0}
+
 	SVC		#6
 	BX		LR
 
 OS_SVC_bWait
+    ; Verify pointer is accessible
+    PUSH {R0}
+    LDR R0, [R0]
+    POP {R0}
+
 	SVC		#7
 	BX		LR
 
 OS_SVC_Signal
+    ; Verify pointer is accessible
+    PUSH {R0}
+    LDR R0, [R0]
+    POP {R0}
+
 	SVC		#8
 	BX		LR
 
 OS_SVC_bSignal
+    ; Verify pointer is accessible
+    PUSH {R0}
+    LDR R0, [R0]
+    POP {R0}
+
 	SVC		#9
+	BX		LR
+
+OS_SVC_Heap_Malloc
+	SVC		#10
+	BX		LR
+
+OS_SVC_Heap_Free
+    ; Verify pointer is accessible
+    PUSH {R0}
+    LDR R0, [R0]
+    POP {R0}
+
+	SVC		#11
 	BX		LR
 
 

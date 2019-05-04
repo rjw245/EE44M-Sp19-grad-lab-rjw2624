@@ -1075,6 +1075,22 @@ int C_SVC_handler(unsigned int number, unsigned int *reg)
   case 5:
     OS_Suspend();
     return reg[0];
+  case 6:
+    OS_Wait((Sema4Type *)reg[0]);
+    return reg[0];
+  case 7:
+    OS_bWait((Sema4Type *)reg[0]);
+    return reg[0];
+  case 8:
+    OS_Signal((Sema4Type *)reg[0]);
+    return reg[0];
+  case 9:
+    OS_bSignal((Sema4Type *)reg[0]);
+    return reg[0];
+  case 10:
+    return (int)Heap_Malloc(reg[0]);
+  case 11:
+    return Heap_Free((void*)reg[0]);
   }
   return 0;
 }

@@ -109,7 +109,7 @@ static inline void setup_mpu_regions(void)
   for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
   {
     MemProtect_SelectRegion(i);
-    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PNA_UNA);
+    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PRW_UNA);
     MemProtect_CfgSubregions(0); // Prot all subregions
     MemProtect_EnableRegion();
   }
@@ -136,7 +136,7 @@ int32_t Heap_Init(void)
 extern heap_owner_t OS_heap_ownership;
 void __UnveilTaskHeap(tcb_t *tcb)
 {
-  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk | OS_heap_ownership.heap_prot_msk;
+  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk/* | OS_heap_ownership.heap_prot_msk*/;
   if(tcb->parent_process)
   {
     heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;

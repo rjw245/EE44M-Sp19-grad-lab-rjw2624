@@ -84,6 +84,8 @@ int32_t Heap_Init(void);
  */
 #define Heap_Malloc(desiredBytes) __Heap_Malloc(desiredBytes, &cur_tcb->h_o)
 
+void * OS_SVC_Heap_Malloc(int32_t desiredBytes);
+
 
 void* __Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner);
 
@@ -143,6 +145,8 @@ int32_t __Heap_ChangeOwner(void *pointer, heap_owner_t *new_owner);
  * unallocate memory that has already been unallocated;
  */
 int32_t Heap_Free(void* pointer);
+
+int32_t OS_SVC_Heap_Free(void* pointer);
 
 
 /**

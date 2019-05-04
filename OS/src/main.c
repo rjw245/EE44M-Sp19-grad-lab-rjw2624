@@ -50,14 +50,14 @@ void TaskA(void)
   int y = 1;
   x = x + y;
   y = x + y;
-  illegal = (int *)Heap_Malloc(2000);
-  Heap_Free(illegal);
-  illegal = (int *)Heap_Malloc(128);
+  illegal = (int *)OS_SVC_Heap_Malloc(2000);
+  OS_SVC_Heap_Free(illegal);
+  illegal = (int *)OS_SVC_Heap_Malloc(128);
   *illegal = 123;
-  OS_bSignal(&a_malloc);
-  OS_bWait(&b_malloc);
-  illegal2 = (int *)Heap_Malloc(128);
-  OS_bSignal(&a_malloc2);
+  OS_SVC_bSignal(&a_malloc);
+  OS_SVC_bWait(&b_malloc);
+  illegal2 = (int *)OS_SVC_Heap_Malloc(128);
+  OS_SVC_bSignal(&a_malloc2);
   while (1)
     ;
 }
@@ -67,12 +67,12 @@ void TaskB(void)
   int z = 1;
   z = z << 2 | z;
 
-  OS_bWait(&a_malloc);
-  dummy = (int*)Heap_Malloc(128);
-  OS_bSignal(&b_malloc);
-  OS_bWait(&a_malloc2);
-	Heap_Free(cur_tcb);
-	Heap_Free(illegal);
+  OS_SVC_bWait(&a_malloc);
+  dummy = (int*)OS_SVC_Heap_Malloc(128);
+  OS_SVC_bSignal(&b_malloc);
+  OS_SVC_bWait(&a_malloc2);
+	OS_SVC_Heap_Free(cur_tcb);
+	OS_SVC_Heap_Free(illegal);
   z = *illegal;
   while(1);
 }
@@ -251,5 +251,5 @@ int Load_Process_Main(void)
 
 int main(void)
 {
-  idle_main();
+  return twotask_main();
 }
