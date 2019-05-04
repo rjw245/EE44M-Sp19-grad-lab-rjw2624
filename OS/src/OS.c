@@ -415,10 +415,10 @@ static void setup_base_regions(void)
 
   // Peripherals are allowed to all
   MemProtect_SelectRegion(2);
-  MemProtect_CfgRegion((void *)0x40000000, 0x20-1, AP_PRW_URW);
+  MemProtect_CfgRegion((void *)0x40000000, 0x20-2, AP_PRW_URW);
   MemProtect_EnableRegion();
   MemProtect_SelectRegion(3);
-  MemProtect_CfgRegion((void *)0xE0000000, 0x20-1, AP_PRW_URW);
+  MemProtect_CfgRegion((void *)0xE0000000, 0x20-2, AP_PRW_URW);
   MemProtect_EnableRegion();
   
 }
