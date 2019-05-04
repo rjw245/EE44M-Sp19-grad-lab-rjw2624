@@ -49,7 +49,7 @@ void push_semaq(tcb_t *node, tcb_t **semahead);
 uint32_t peek_priority(tcb_t *head);
 static void insert_tcb(tcb_t *new_tcb);
 static void remove_tcb(tcb_t *tcb);
-static void unprotect_all_mem(void);
+static void setup_base_regions(void);
 
 #define PF1 (*((volatile unsigned long *)0x40025008))
 static void PortF_Init(void)
@@ -150,7 +150,7 @@ heap_owner_t OS_heap_ownership;
 void OS_Init(void)
 {
   //FIRST_DisableInterrupts();
-  unprotect_all_mem();
+  setup_base_regions();
   PLL_Init(Bus80MHz);
   UART_Init();
   Heap_Init();
@@ -401,12 +401,26 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
 
 #define MAX_STACK_DWORDS (256)
 
-static void unprotect_all_mem(void)
+static void setup_base_regions(void)
 {
-  // Whole addr space
+  // Whole addr space, priv/unpriv r/w
   MemProtect_SelectRegion(0);
   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_URW);
   MemProtect_EnableRegion();
+
+  // Whole addr space, priv r/w, unpriv none
+  MemProtect_SelectRegion(1);
+  MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_UNA);
+  MemProtect_EnableRegion();
+
+  // Peripherals are allowed to all
+  MemProtect_SelectRegion(2);
+  MemProtect_CfgRegion((void *)0x40000000, 0x20-1, AP_PRW_URW);
+  MemProtect_EnableRegion();
+  MemProtect_SelectRegion(3);
+  MemProtect_CfgRegion((void *)0xE0000000, 0x20-1, AP_PRW_URW);
+  MemProtect_EnableRegion();
+  
 }
 
 int __OS_AddThread(void (*task)(void),
@@ -481,7 +495,7 @@ int __OS_AddThread(void (*task)(void),
   __isb(0xF);
   *(--tcb->sp) = 0x01000000L;                                                         // xPSR, with Thumb state enabled
   *(--tcb->sp) = (long)task;                                                          // PC
-  *(--tcb->sp) = (long)TaskReturn;                                                    // LR
+  *(--tcb->sp) = (long)task;                                                          // LR
   *(--tcb->sp) = 0x12121212;                                                          // R12
   *(--tcb->sp) = 0x03030303;                                                          // R3
   *(--tcb->sp) = 0x02020202;                                                          // R2
@@ -1093,6 +1107,10 @@ int C_SVC_handler(unsigned int number, unsigned int *reg)
     return (int)Heap_Malloc(reg[0]);
   case 11:
     return Heap_Free((void*)reg[0]);
+  case 12:
+    // Arguments after R3 appear in reg[9] and beyond, since these are passed on the stack
+    // and NOT actually in registers
+    return OS_AddProcess((void*)reg[0], (void*)reg[1], (void*)reg[2], reg[3], reg[9]);
   }
   return 0;
 }

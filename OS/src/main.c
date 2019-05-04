@@ -231,7 +231,6 @@ int idle_main(void)
 static FATFS g_sFatFs;
 void init_fs_task(void)
 {
-  f_mount(&g_sFatFs, "", 0);
 }
 
 extern void disk_timerproc (void);
@@ -241,7 +240,9 @@ int Load_Process_Main(void)
   ST7735_InitR(INITR_REDTAB);
   ST7735_FillScreen(ST7735_WHITE);
   OS_AddPeriodicThread(disk_timerproc, TIME_1MS, 5);
-  OS_AddThread(&init_fs_task, 128, 0); 
+  disk_init_interrupts();
+  f_mount(&g_sFatFs, "", 0);
+//   OS_AddThread(&init_fs_task, 128, 0); 
   OS_AddThread(interpreter_task, 128, 2);
   OS_Launch(TIME_1MS);
   while (1)
@@ -251,5 +252,5 @@ int Load_Process_Main(void)
 
 int main(void)
 {
-  return twotask_main();
+  return Load_Process_Main();
 }

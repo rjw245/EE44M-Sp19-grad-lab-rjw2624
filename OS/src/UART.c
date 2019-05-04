@@ -127,28 +127,28 @@ void static copySoftwareToHardware(void)
 // spin if RxFifo is empty
 char UART_InChar(void)
 {
-  OS_Wait(&uartIn_sema);
+  OS_SVC_Wait(&uartIn_sema);
   char letter;
   while (RxFifo_Get(&letter) == FIFOFAIL)
   {
-    OS_Sleep(100);
+    OS_SVC_Sleep(100);
   };
-  OS_Signal(&uartIn_sema);
+  OS_SVC_Signal(&uartIn_sema);
   return (letter);
 }
 // output ASCII character to UART
 // spin if TxFifo is full
 void UART_OutChar(char data)
 {
-  OS_Wait(&uartOut_sema);
+  OS_SVC_Wait(&uartOut_sema);
   while (TxFifo_Put(data) == FIFOFAIL)
   {
-    OS_Sleep(10);
+    OS_SVC_Sleep(10);
   };
   UART0_IM_R &= ~UART_IM_TXIM; // disable TX FIFO interrupt
   copySoftwareToHardware();
   UART0_IM_R |= UART_IM_TXIM; // enable TX FIFO interrupt
-  OS_Signal(&uartOut_sema);
+  OS_SVC_Signal(&uartOut_sema);
 }
 
 char *direct = 0;

@@ -140,6 +140,13 @@ void __UnveilTaskHeap(tcb_t *tcb)
   if(tcb->parent_process)
   {
     heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;
+    // Tasks in process must not have access to OS code.
+    MemProtect_SelectRegion(1);
+    MemProtect_EnableRegion();
+  } else {
+    // Tasks not in process must be compiled with OS, and so must have access to OS code.
+    MemProtect_SelectRegion(1);
+    MemProtect_DisableRegion();
   }
   for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
   {

@@ -17,9 +17,9 @@
         EXPORT  OS_SVC_bSignal
         EXPORT  OS_SVC_Heap_Malloc
         EXPORT  OS_SVC_Heap_Free
+        EXPORT  OS_SVC_AddProcess
 
 
-			
 OS_SVC_Id
 	SVC		#0
 	BX		LR
@@ -96,6 +96,17 @@ OS_SVC_Heap_Free
     POP {R0}
 
 	SVC		#11
+	BX		LR
+
+OS_SVC_AddProcess
+    ; Verify pointers are accessible
+    PUSH {R0,R1,R2}
+    LDR R0, [R0]
+    LDR R1, [R1]
+    LDR R2, [R2]
+    POP {R0,R1,R2}
+
+	SVC		#12
 	BX		LR
 
 
