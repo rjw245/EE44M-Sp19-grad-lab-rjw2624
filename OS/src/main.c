@@ -252,5 +252,5 @@ int Load_Process_Main(void)
 
 int main(void)
 {
-  return Load_Process_Main();
+  return idle_main();
 }
