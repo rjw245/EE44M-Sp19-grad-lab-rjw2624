@@ -217,7 +217,7 @@ void OS_Wait(Sema4Type *semaPt)
 #if PRIORITY_SCHED
     choose_next_with_prio();
 #endif
-    OS_SVC_Suspend();
+    OS_Suspend();
   }
   EndCritical(sr);
 #else
@@ -248,7 +248,7 @@ void OS_Signal(Sema4Type *semaPt)
 #if PRIORITY_SCHED
     if (need_ctx_switch)
     {
-      OS_SVC_Suspend();
+      OS_Suspend();
     }
 #endif
   }
@@ -277,7 +277,7 @@ void OS_bWait(Sema4Type *semaPt)
 #if PRIORITY_SCHED
     choose_next_with_prio();
 #endif
-    OS_SVC_Suspend();
+    OS_Suspend();
   }
   EndCritical(sr);
 #else
@@ -311,7 +311,7 @@ void OS_bSignal(Sema4Type *semaPt)
 #if PRIORITY_SCHED
     if (need_ctx_switch)
     {
-      OS_SVC_Suspend();
+      OS_Suspend();
     }
 #endif
   }

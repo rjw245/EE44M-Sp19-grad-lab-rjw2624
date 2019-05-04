@@ -11,6 +11,11 @@
 		EXPORT	OS_SVC_Time
 		EXPORT	OS_SVC_AddThread
         EXPORT  OS_SVC_Suspend
+        EXPORT  OS_SVC_Wait
+        EXPORT  OS_SVC_bWait
+        EXPORT  OS_SVC_Signal
+        EXPORT  OS_SVC_bSignal
+
 			
 OS_SVC_Id
 	SVC		#0
@@ -34,6 +39,22 @@ OS_SVC_AddThread
 
 OS_SVC_Suspend
 	SVC		#5
+	BX		LR
+
+OS_SVC_Wait
+	SVC		#6
+	BX		LR
+
+OS_SVC_bWait
+	SVC		#7
+	BX		LR
+
+OS_SVC_Signal
+	SVC		#8
+	BX		LR
+
+OS_SVC_bSignal
+	SVC		#9
 	BX		LR
 
 

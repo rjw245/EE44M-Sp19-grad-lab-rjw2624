@@ -37,26 +37,8 @@ static void exec_elf_task(void)
   if (exec_elf(elf_path, &env) != 0) {
     UART_OutString("Failed to launch File.\r\n");
   }
-  OS_bSignal(&exec_elf_sema);
-  OS_Kill();
-}
-
-void TEST_OS(void)
-{
-  
-  int k = TEST_OS_Id();
-  char adc_string[64];
-    sprintf(adc_string,"%d\n",k);
-  
-  for(int i =0;i<10;i++)
-  {
-    UART_OutString(". ");
-    TEST_OS_Sleep(1000);
-  }
-  UART_OutString(adc_string);
-  sprintf(adc_string,"%ld\n",TEST_OS_Time());
-  TEST_OS_Kill();
-  
+  OS_SVC_bSignal(&exec_elf_sema);
+  OS_SVC_Kill();
 }
 
 void interpreter_task(void)
@@ -70,7 +52,7 @@ void interpreter_task(void)
     UART_OutString("\r\n");
     interpreter_cmd(uart_in_buf);
     memset(uart_in_buf, 0, sizeof(uart_in_buf));
-    OS_Sleep(100);
+    OS_SVC_Sleep(100);
   }
 }
 
@@ -119,7 +101,7 @@ void interpreter_cmd(char *cmd_str)
   else if (strcmp(cmd, "time") == 0)
   {
     char time[64];
-    sprintf(time, "Time: %llu ms\r\n", OS_Time() / TIME_1MS);
+    sprintf(time, "Time: %llu ms\r\n", OS_SVC_Time() / TIME_1MS);
     UART_OutString(time);
   }
   else if (strcmp(cmd, "log") == 0)
@@ -226,21 +208,16 @@ void interpreter_cmd(char *cmd_str)
 	{
 		long sr = StartCritical();
 		for(int i = 0;i<10000000;i++)
-			OS_Time();
+			OS_SVC_Time();
 		EndCritical(sr);
 		UART_OutString("Increase critical.\r\n");
 	}
   else if(strcmp(cmd, "load") == 0)
   {
     arg1 = strtok(NULL, strtok_delim);
-    OS_bWait(&exec_elf_sema);
+    OS_SVC_bWait(&exec_elf_sema);
     strncpy(elf_path, arg1, sizeof(elf_path));
-    OS_AddThread(exec_elf_task, 256, 0);
-  }
-  else if(strcmp(cmd, "test") == 0)
-  {
-    arg1 = strtok(NULL, strtok_delim);
-    TEST_OS_AddThread(&TEST_OS, 128, 1);
+    OS_SVC_AddThread(exec_elf_task, 256, 0);
   }
   else if(strcmp(cmd, "testmpu") == 0)
   {

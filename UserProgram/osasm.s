@@ -35,6 +35,25 @@ OS_AddThread
 	SVC		#4
 	BX		LR
 
+OS_Suspend
+	SVC		#5
+	BX		LR
+
+OS_Wait
+	SVC		#6
+	BX		LR
+
+OS_bWait
+	SVC		#7
+	BX		LR
+
+OS_Signal
+	SVC		#8
+	BX		LR
+
+OS_bSignal
+	SVC		#9
+	BX		LR
 
     ALIGN
     END

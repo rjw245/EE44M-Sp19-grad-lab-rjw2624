@@ -27,36 +27,7 @@
     EXTERN __UnveilTaskHeap
   EXTERN C_SVC_handler
 
-   
-  EXPORT	TEST_OS_Id
-  EXPORT TEST_OS_Sleep
-  EXPORT	TEST_OS_Kill
-  EXPORT	TEST_OS_Time
-  EXPORT	TEST_OS_AddThread
   EXPORT setR9
-    
-TEST_OS_Id
-	SVC		#0
-	BX		LR
-
-TEST_OS_Kill
-	SVC		#1
-	BX		LR
-
-TEST_OS_Sleep
-	SVC		#2
-	BX		LR
-
-TEST_OS_Time
-	SVC		#3
-	BX		LR
-
-TEST_OS_AddThread
-	SVC		#4
-	BX		LR
-
-
-
 
 
 PendSV_Handler
