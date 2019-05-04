@@ -109,8 +109,6 @@ static void IdleTask(void)
     PF1 = 0x2;
     // Do maintenance
     OS_SVC_Suspend();
-    // NVIC_ST_CURRENT_R = 0;
-    // ContextSwitch(true);
   }
 }
 
@@ -216,11 +214,10 @@ void OS_Wait(Sema4Type *semaPt)
     remove_tcb(cur_tcb);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
-    NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
 #if PRIORITY_SCHED
     choose_next_with_prio();
 #endif
-    ContextSwitch(true);
+    OS_SVC_Suspend();
   }
   EndCritical(sr);
 #else
@@ -232,7 +229,7 @@ void OS_Wait(Sema4Type *semaPt)
   // or setting it with strex failed
   while (!(oldval > 0) || __strex(oldval - 1, &(semaPt->Value)) != 0)
   {
-    // OS_Suspend();
+    // OS_SVC_Suspend();
     oldval = __ldrex(&(semaPt->Value));
   }
 #endif
@@ -251,7 +248,7 @@ void OS_Signal(Sema4Type *semaPt)
 #if PRIORITY_SCHED
     if (need_ctx_switch)
     {
-      ContextSwitch(true);
+      OS_SVC_Suspend();
     }
 #endif
   }
@@ -276,12 +273,11 @@ void OS_bWait(Sema4Type *semaPt)
     remove_tcb(cur_tcb);
     // remove from active TCB
     push_semaq(cur_tcb, &semaPt->head);
-    NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
 
 #if PRIORITY_SCHED
     choose_next_with_prio();
 #endif
-    ContextSwitch(true);
+    OS_SVC_Suspend();
   }
   EndCritical(sr);
 #else
@@ -315,7 +311,7 @@ void OS_bSignal(Sema4Type *semaPt)
 #if PRIORITY_SCHED
     if (need_ctx_switch)
     {
-      ContextSwitch(true);
+      OS_SVC_Suspend();
     }
 #endif
   }
@@ -697,13 +693,12 @@ void OS_Sleep(unsigned long sleepTime)
   remove_tcb(cur_tcb);
   // remove from active TCB //
   pushq(cur_tcb);
-  NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
 #if PRIORITY_SCHED
   // Need to make sure we wrap to list head
   // if we reach the end of the set of highest prio tasks
   choose_next_with_prio();
 #endif
-  ContextSwitch(true);
+  OS_Suspend();
   EndCritical(sr);
 }
 
@@ -736,7 +731,7 @@ void OS_Kill(void)
 
   numTasks--;
   NVIC_ST_CURRENT_R = 0; // Make sure next thread gets full time slice
-  ContextSwitch(false);  
+  ContextSwitch(false); 
   EndCritical(sr);
   MemProtect_EndCritical(mpu_stat);
   __dsb(0xF);
@@ -745,6 +740,7 @@ void OS_Kill(void)
 
 void OS_Suspend(void)
 {
+  NVIC_ST_CURRENT_R = 0;
   ContextSwitch(true);
 }
 
@@ -947,7 +943,6 @@ void pushq(tcb_t *node)
     }
     TIMER3_TAV_R = node->wake_time;
     TIMER3_TAILR_R = node->wake_time;
-    // NVIC_UNPEND1_R = 1 << (35 - 32); // if before this statement end tick could end, then remove.
   }
   else
   {

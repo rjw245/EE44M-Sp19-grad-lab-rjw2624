@@ -251,5 +251,5 @@ int Load_Process_Main(void)
 
 int main(void)
 {
-  _16task_main();
+  idle_main();
 }

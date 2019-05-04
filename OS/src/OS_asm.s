@@ -91,6 +91,10 @@ Load_Ctx
     STR R1, [R0]        ; Enable MPU
 	DSB #0xF
 
+    MRS R1, CONTROL
+    ORR R1, R1, #1
+    MSR CONTROL, R1
+
     CPSIE IF ; Enable interrupts
     BX LR
     
