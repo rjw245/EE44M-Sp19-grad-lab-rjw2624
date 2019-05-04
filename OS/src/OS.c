@@ -108,6 +108,7 @@ static void IdleTask(void)
   {
     PF1 = 0x2;
     // Do maintenance
+    OS_SVC_Suspend();
     // NVIC_ST_CURRENT_R = 0;
     // ContextSwitch(true);
   }
@@ -142,7 +143,7 @@ void SysTick_Handler(void)
 static void TaskReturn(void)
 {
   // Kill this task
-  OS_Kill();
+  OS_SVC_Kill();
   //while (1);
 }
 
@@ -293,7 +294,7 @@ void OS_bWait(Sema4Type *semaPt)
   // or setting it with strex failed
   while (!(oldval > 0) || __strex(oldval & 0, &(semaPt->Value)) != 0)
   {
-    OS_Suspend();
+    OS_SVC_Suspend();
     oldval = __ldrex(&(semaPt->Value));
   }
 #endif
@@ -1076,6 +1077,9 @@ int C_SVC_handler(unsigned int number, unsigned int *reg)
     return OS_Time();
   case 4:
     return OS_AddThread((void *)reg[0], reg[1], reg[2]);
+  case 5:
+    OS_Suspend();
+    return reg[0];
   }
   return 0;
 }
