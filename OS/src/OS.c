@@ -161,6 +161,8 @@ void OS_Init(void)
   NVIC_SYS_PRI3_R |= (7 << 21);
   // Activate Systick interrupt with 2nd lowest priority
   NVIC_SYS_PRI3_R |= ((uint32_t)6 << 29);
+  // Enable separate memory management fault
+  NVIC_SYS_HND_CTRL_R |= NVIC_SYS_HND_CTRL_MEM;
   SYSCTL_RCGCTIMER_R |= 1 << 3;                  // activate timer3
   volatile uint32_t __delay = SYSCTL_RCGCGPIO_R; // allow time for clock to stabilize
 
