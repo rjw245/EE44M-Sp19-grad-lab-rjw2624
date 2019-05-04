@@ -40,6 +40,12 @@ static inline void MemProtect_EnableMPU(void)
   NVIC_MPU_CTRL_R |= 1;
 }
 
+static inline void MemProtect_CfgRegionAccess(unsigned int access)
+{
+  NVIC_MPU_ATTR_R = (NVIC_MPU_ATTR_R & 0xF0FFFFFF) | (access << 24);
+}
+
+
 /**
  * @brief Disable the memory protection unit.
  */

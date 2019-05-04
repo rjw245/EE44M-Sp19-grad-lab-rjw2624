@@ -106,6 +106,11 @@ static void free_subregions(int32_t *start, int32_t blockWords)
 
 static inline void setup_mpu_regions(void)
 {
+  // Whole addr space, priv r/w, unpriv none
+//   MemProtect_SelectRegion(3);
+//   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_UNA);
+//   MemProtect_EnableRegion();
+
   for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
   {
     MemProtect_SelectRegion(i);
@@ -141,12 +146,12 @@ void __UnveilTaskHeap(tcb_t *tcb)
   {
     heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;
     // Tasks in process must not have access to OS code.
-    MemProtect_SelectRegion(1);
-    MemProtect_EnableRegion();
+    MemProtect_SelectRegion(0);
+    MemProtect_CfgRegionAccess(AP_PRW_UNA);
   } else {
     // Tasks not in process must be compiled with OS, and so must have access to OS code.
-    MemProtect_SelectRegion(1);
-    MemProtect_DisableRegion();
+    MemProtect_SelectRegion(0);
+    MemProtect_CfgRegionAccess(AP_PRW_URW);
   }
   for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
   {

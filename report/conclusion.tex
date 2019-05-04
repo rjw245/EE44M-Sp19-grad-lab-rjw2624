@@ -14,3 +14,7 @@ As mentioned previously, my solution limits the number of tasks in the system to
 \subsection{Supporting Shared Memory}
 
 Most operating systems must support some form of inter-process communication. Currently, two processes loaded from disk have no way to communicate with one another. One potential solution is to provide an API to the heap to allocate memory into a new subregion or subregions which will be accessible by two or more processes. Each process would specify the shared memory by an agreed upon key, say a string, in order to be granted access to it. The API would respond with a pointer to the start of the region which the processes can now use to communicate. The heap's subregion table would need to be modified to support mapping multiple \texttt{heap\_owner\_t} structs to each subregion.
+
+\subsection{Supporting Dynamic Linking}
+
+In lab 5, the OS supported dynamic linking, a process by which the OS replaces placeholder function calls in the loaded process with the actual address of the function provided by the OS. After introducing protection of OS memory, this becomes slightly harder to support, but certainly possible. It just becomes necessary to isolate all OS library code into a separate region of RAM which is configured as accessible to unprivileged code in the MPU. This was deemed out of scope for this project but could easily be implemented on top of my design.

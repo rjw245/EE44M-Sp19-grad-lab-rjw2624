@@ -408,16 +408,11 @@ static void setup_base_regions(void)
   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_URW);
   MemProtect_EnableRegion();
 
-  // Whole addr space, priv r/w, unpriv none
-  MemProtect_SelectRegion(1);
-  MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_UNA);
-  MemProtect_EnableRegion();
-
   // Peripherals are allowed to all
-  MemProtect_SelectRegion(2);
+  MemProtect_SelectRegion(1);
   MemProtect_CfgRegion((void *)0x40000000, 0x20-2, AP_PRW_URW);
   MemProtect_EnableRegion();
-  MemProtect_SelectRegion(3);
+  MemProtect_SelectRegion(2);
   MemProtect_CfgRegion((void *)0xE0000000, 0x20-2, AP_PRW_URW);
   MemProtect_EnableRegion();
   
