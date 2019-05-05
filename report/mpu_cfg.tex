@@ -17,12 +17,14 @@
     7                 & \&Heap + 12KB                                       & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 3                                                                                                  \\ \hline
     \end{tabular}
     \begin{tablenotes}
-        \item[1] None if task belongs to a loaded process. R/W if task compiled with OS.
-        \item[2] R/W if task belongs to a loaded process. None if task compiled with OS.
+        \item[1] None if current task belongs to a loaded process. R/W if task compiled with OS.
+        \item[2] R/W if current task belongs to a loaded process. None if task compiled with OS.
    \end{tablenotes}
 \end{threeparttable}
 \end{minipage}
-    \caption{MPU Region Configutation.}
+    \caption{MPU Region Configutation. Some aspects of the configuration
+    may change at runtime depending on the current task. See above footnotes
+    for more information.}
     \label{table:mpu_cfg}
 \end{table}
 
