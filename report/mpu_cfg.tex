@@ -1,23 +1,20 @@
-% Please add the following required packages to your document preamble:
-% \usepackage{multirow}
-\todo{Update with newest regions}
 
-\begin{table}[htbp]
+\begin{table}[H]
     \begin{minipage}{10cm}
 \begin{threeparttable}[t]
     \centering
     \begin{tabular}{|l|l|l|l|l|l|}
     \hline
-    \multirow{2}{*}{} & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{Base}}} & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{Size}}} & \multicolumn{2}{c|}{\textbf{Access}}                                                  & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{Notes}}}                             \\ \cline{4-5}
-                      & \multicolumn{1}{c|}{}                               & \multicolumn{1}{c|}{}                               & \multicolumn{1}{c|}{\textbf{Unprivileged}} & \multicolumn{1}{c|}{\textbf{Privileged}} & \multicolumn{1}{c|}{}                                                            \\ \hline
-    0                 & 0x00000000                                          & 4GB                                                 & Variable\tnote{1}                          & R/W                                      & \begin{tabular}[c]{@{}l@{}}Applies to disabled\\ subregions of heap\end{tabular} \\ \hline
-    1                 & 0x40000000                                          & 1GB                                                 & R/W                                        & R/W                                      & \begin{tabular}[c]{@{}l@{}}Allow all\\ peripheral access\end{tabular}            \\ \hline
-    2                 & 0xE0000000                                          & 1GB                                                 & R/W                                        & R/W                                      & \begin{tabular}[c]{@{}l@{}}Allow all\\ peripheral access\end{tabular}            \\ \hline
-    3                 &                                                     &                                                     &                                            &                                          &                                                                                  \\ \hline
-    5                 & \&Heap + 4KB                                        & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 1                                                                    \\ \hline
-    4                 & \&Heap                                              & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 0                                                                    \\ \hline
-    6                 & \&Heap + 8KB                                        & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 2                                                                    \\ \hline
-    7                 & \&Heap + 12KB                                       & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 3                                                                    \\ \hline
+    \multirow{2}{*}{} & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{Base}}} & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{Size}}} & \multicolumn{2}{c|}{\textbf{Access}}                                                  & \multicolumn{1}{c|}{\multirow{2}{*}{\textbf{Notes}}}                                                           \\ \cline{4-5}
+                      & \multicolumn{1}{c|}{}                               & \multicolumn{1}{c|}{}                               & \multicolumn{1}{c|}{\textbf{Unprivileged}} & \multicolumn{1}{c|}{\textbf{Privileged}} & \multicolumn{1}{c|}{}                                                                                          \\ \hline
+    0                 & 0x00000000                                          & 4GB                                                 & Variable\tnote{1}                          & R/W                                      & \begin{tabular}[c]{@{}l@{}}Spans address space. \\Applies to disabled\\ subregions of heap\end{tabular} \\ \hline
+    1                 & 0x40000000                                          & 1GB                                                 & R/W                                        & R/W                                      & \begin{tabular}[c]{@{}l@{}}Allow all\\ peripheral access\end{tabular}                                          \\ \hline
+    2                 & 0xE0000000                                          & 1GB                                                 & R/W                                        & R/W                                      & \begin{tabular}[c]{@{}l@{}}Allow all\\ peripheral access\end{tabular}                                          \\ \hline
+    3                 &                                                     &                                                     &                                            &                                          &                                                                                                                \\ \hline
+    4                 & \&Heap                                              & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 0                                                                                                  \\ \hline
+    5                 & \&Heap + 4KB                                        & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 1                                                                                                  \\ \hline
+    6                 & \&Heap + 8KB                                        & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 2                                                                                                  \\ \hline
+    7                 & \&Heap + 12KB                                       & 4KB                                                 & Variable\tnote{2}                          & R/W                                      & Heap region 3                                                                                                  \\ \hline
     \end{tabular}
     \begin{tablenotes}
         \item[1] None if task belongs to a loaded process. R/W if task compiled with OS.
