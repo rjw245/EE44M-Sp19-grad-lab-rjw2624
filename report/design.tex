@@ -12,17 +12,21 @@ Task memory will be protected automatically upon task creation and heap allocati
 
 As a proof of concept, my implementation can protect memory of up to twenty-nine different tasks. It cannot scale indefinitely. This is in part due to limitations of the MPU, which imposes a limit on the number of regions that can be individually configured. In a system that must support more tasks, the implementation could be changed to make protecting task memory optional, so that while only so many can be protected, more than that may run in the system at any given time.
 
+\section{Target Platform}
+
+My solution is implemented on an ARM Cortex-M4F-based microcontroller: the TM4C123GH6PM. This is the board used throughout our EE380L course. I will be implementing my solution within the OS my partner and I built for this course. The OS contains a priority-based scheduler, supports synchronization primitives such as semaphores, and provides a simpler command prompt over the UART interface to interact with the system. Importantly, the OS does not provide any virtualization of memory since there is no Memory Management Unit (MMU) present in the system. The system does, however, provide a Memory Protection Unit (MPU) which can be used to protect memory despite the lack of virtualization.
+
 \section{MPU Functionality}
 
-The MPU is a hardware unit used to protect regions of memory. It supports up to eight configurable memory regions. Each region is configured with a base address, size, and permissions for both privileged and unprivileged access. The region's base address must be aligned to the size of the region. Each region is further divided into eight equally-sized subregions which can be individually enabled or disabled. My design will leverage subregions heavily to maximize the number of tasks that can be mutually isolated.
+The MPU is a hardware unit used to protect regions of memory. The MPU of the TM4C123GH6PM supports up to eight configurable memory regions. Each region is configured with a base address, size, and permissions for both privileged and unprivileged access. The region's base address must be aligned to the size of the region. Each region is further divided into eight equally-sized subregions which can be individually enabled or disabled. My design will leverage subregions heavily to maximize the number of tasks that can be mutually isolated.
 
-The MPU implements relative priority between regions. Regions are indexed 0 to 7 where a higher index indicates priority over lower indices. For a given memory access, the MPU region with the highest index containing the relevant address will be used to authorize the access.
+The MPU implements relative priority between regions. Regions are indexed 0 to 7 where a higher index indicates priority over lower indices. For a given memory access, the MPU region with the highest index containing the relevant address will be used to authorize the access. If a subregion is disabled, the access will instead be evaluated by the next lowest priority region that overlaps and is enabled. If the MPU is turned on and a memory access maps to none of its regions, the access is denied.
 
 \section{Heap Protection}
 
-The heap is implemented as a simple Knuth heap, based upon the implementation from lab 5, with some changes to accomodate the MPU. Any memory allocated to a task on the heap is guaranteed to be isolated from other tasks. This is achieved by grouping memory allocations together into MPU subregions by the owner task. When tasks are allocated memory, the heap manager associates the task's ID with all MPU subregions touched by the allocated block. The task now ``owns'' those subregions, and no other task will be allocated memory in those subregions. In this way, the heap manager guarantees that every subregion will contain blocks belonging to at most one task. When the last allocated block in a given subregion is freed, the owner task relinquishes ownership of the subregion, and the heap manager is free to allocate memory in that subregion to another task. At this point, protecting the heap is as simple as prohibiting access to heap subregions that the running task doesn't ``own''.
+The heap is implemented as a simple Knuth heap, based upon the implementation from lab 5, with some changes to accomodate the MPU. Any memory allocated to a task on the heap is guaranteed to be isolated from other tasks. This is achieved by grouping memory allocations together into MPU subregions by the owner task. When tasks are allocated memory, the heap manager associates the task with all MPU subregions touched by the allocated block. The task now ``owns'' those subregions, and no other task will be allocated memory in those subregions. In this way, the heap manager guarantees that every subregion will contain blocks belonging to at most one task. When the last allocated block in a given subregion is freed, the owner task relinquishes ownership of the subregion, and the heap manager is free to allocate memory in that subregion to another task. At this point, protecting the heap is as simple as prohibiting access to heap subregions that the running task doesn't ``own''.
 
-A naive solution would be to statically partition the heap into equal-size pieces and allocate one to each task in the system. However, the approach I have chosen ought to scale better to systems where tasks may vary in their demand for heap memory. For example, if only half of all tasks use the heap, then any blocks statically allocated to the other tasks would go unused -- a huge waste. In the case where there are thirty-two tasks in the system (the maximum) and all of them demand heap memory, my solution will allocate each a subregion and converge to the simpler approach.
+A naive solution would be to statically partition the heap into equal-size pieces and allocate one to each task in the system. However, the approach I have chosen ought to scale better to systems where tasks may vary in their demand for heap memory. For example, if only half of all tasks use the heap, then any blocks statically allocated to the other tasks would go unused -- a huge waste. In the case where the number of tasks in the system is maximized and all demand heap memory, my solution will allocate each a subregion and converge to the simpler approach.
 
 \begin{figure}[hbtp]
 	\centering
@@ -34,9 +38,17 @@ A naive solution would be to statically partition the heap into equal-size piece
 
 Figure \ref{fig:heap_prot} shows an example heap where three tasks have each been allocated memory. Each subregion will contain memory for at most one task. It's possible for a task's memory to span multiple subregions, as in subregions 1 and 2. This design is susceptible to some amount of internal and external fragmentation, though less than the naive solution I described earlier. You can see internal fragmentation at the end of subregion 0. Only small allocations can fit in the remaining free space of subregion 0, and they must be allocated to Task A to be put there in the first place (since Task A has claimed that subregion). As for external fragmentation, suppose Task C were to request 256 Bytes from the heap manager -- this is larger than one subregion. For that reason, the allocation \textit{could not} fit in the empty subregion 5. It would instead be placed in subregions 7 and 8, leaving subregion 5 to go to waste until a small enough block could be allocated there.
 
+\begin{figure}[hbtp]
+	\centering
+	\includegraphics[width=\linewidth]{figs/heap_over_time.png}
+	\caption{Visibility of heap subregions to the OS and each task. Tasks are only able to access subregions where memory allocated to them resides. The rest is off-limits.}
+	\label{fig:heap_over_time}
+\end{figure}
+% https://www.draw.io/#G1K-jvmSFl7cc_w53rWbj7vP-SnMSNnW15
+
 \section{Stack Protection}
 
-To protect tasks' stack memory, I simply allocate stack memory on the heap to the relevant task. This approach is more flexible than a stack pool, where stacks of a certain maximum size must be statically allocated, which can lead to wasted memory.
+To protect tasks' stack memory, I simply allocate stack memory on the heap and tell the heap manager that it belongs to the relevant task. This approach is more flexible than a stack pool, where stacks of a certain maximum size must be statically allocated, which can lead to wasted memory.
 
 \section{Fragmentation}
 
@@ -56,7 +68,7 @@ This is particularly noticeable in systems that spawn many threads. The OS itsel
 	\label{fig:internal_frag}
 \end{figure}
 
-This can be solved by pre-allocating a pool of TCBs for the OS to pull from at initialization. By allocating all TCBs at once, the programmer will force all OS subregions to be adjacent. This will reduce internal fragmentation since allocated blocks are allowed to span the boundaries between adjacent subregions as long as both belong to the same entity. This requires knowledge of the target application -- specifically, how many tasks it will require.
+This can be solved by pre-allocating a pool of TCBs for the OS to pull from at initialization. By allocating all TCBs at once, the programmer will force all OS subregions to be adjacent. This will reduce internal fragmentation since allocated blocks are allowed to span the boundaries between adjacent subregions as long as both belong to the same entity. This requires knowledge of the target application and how many tasks it will require.
 
 \subsection{External Fragmentation}
 
@@ -68,6 +80,10 @@ The design exhibits external fragmentation when a task requests more memory than
 	\caption{External fragmentation. Though the total amount of free space is larger than the requested block, it cannot fit since there is no \textit{contiguous} region of free space large enough.}
 	\label{fig:external_frag}
 \end{figure}
+
+\section{Process Loading}
+
+When a process is loaded from disk, the OS stores its code and data on the heap -- we can leverage heap protection to protect these. A process can have multiple tasks which all ought to have access to the process's code and data. However, heap memory allocated to a process task ought not to be accessible by other tasks in the same process; nor should task stacks. This suggests that tasks should be granted access to MPU subregions of the heap that belong to their parent process, and that any memory allocated specifically to the task should be placed in a subregion accessible only to it. My solution thus must be able to allocate memory to both tasks and processes, and be able to look up memory allocated to a task's parent process in order to grant a task access to it.
 
 \section{Changes to TCB, PCB, and Context Switch}
 
@@ -108,7 +124,7 @@ typedef struct _heap_owner_s
 
 The \texttt{heap\_owner\_t} struct is a handle used by the heap manager to identify tasks and processes in the system whose memory ought to be mutually isolated. The \texttt{id} field uniquely identifies the memory's owner, whether that be a task or a process. The heap manager will allow blocks with the same owner ID to be grouped together in the same subregion; blocks with different owner IDs must be placed in different subregions. The \texttt{heap\_prot\_msk} field is a mask indicating which heap subregions this task or process has memory in and therefore ought to be allowed to access.
 
-During a context switch, the OS configures the MPU to allow access only to heap subregions associated with the next running task. This is indicated by the \texttt{heap\_prot\_msk} field in the \texttt{heap\_owner\_t} struct of the TCB \textit{and} PCB (if applicable) associated with the next task. All other subregions (either associated with other tasks or unused) are protected. The pseudo-code in Listing \ref{lst:subregions} illustrates this procedure.
+During a context switch, the OS configures the MPU to allow access only to heap subregions associated with the next running task. This is indicated by the \texttt{heap\_prot\_msk} field in the \texttt{heap\_owner\_t} struct of the TCB \textit{and} parent PCB (if applicable) associated with the next task. All other subregions (either associated with other tasks or unused) are protected. The pseudo-code in Listing \ref{lst:subregions} illustrates this procedure.
 
 \begin{lstlisting}[language=c, caption={Pseudo-code demonstrating how subregions are made accessible based on the TCB \textit{and} PCB.}, captionpos=b, label={lst:subregions}, float]
 u32 accessible_subregions = tcb->h_o.heap_prot_msk;
