@@ -34,9 +34,22 @@
 #ifndef HEAP_H
 #define HEAP_H
 
+typedef struct _heap_owner_s
+{
+  unsigned long id;
+  uint32_t heap_prot_msk;
+} heap_owner_t;
+
+static inline unsigned long heap_owner_init(heap_owner_t* this)
+{
+  static unsigned long heap_owner_id = 1;
+  this->id = heap_owner_id++;
+  this->heap_prot_msk = 0;
+}
+
 // feel free to change HEAP_SIZE_BYTES to however
 // big you want the heap to be
-#define HEAP_SIZE_BYTES (2048)
+#define HEAP_SIZE_BYTES (16384)
 #define HEAP_SIZE_WORDS (HEAP_SIZE_BYTES / sizeof(int32_t))
 
 #define HEAP_OK 0
@@ -69,7 +82,12 @@ int32_t Heap_Init(void);
  * @return void* pointing to the allocated memory or will return NULL
  * if there isn't sufficient space to satisfy allocation request
  */
-void* Heap_Malloc(int32_t desiredBytes);
+#define Heap_Malloc(desiredBytes) __Heap_Malloc(desiredBytes, &cur_tcb->h_o)
+
+void * OS_SVC_Heap_Malloc(int32_t desiredBytes);
+
+
+void* __Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner);
 
 
 /**
@@ -101,6 +119,22 @@ void* Heap_Realloc(void* oldBlock, int32_t desiredBytes);
 
 
 /**
+ * @brief Change ownership of block to the given task.
+ * This is only meant to be used by the OS for task management
+ * in processes.
+ * 
+ * @param pointer Pointer to the start of the block in the heap.
+ * @param new_owner Task that will own the block after this call exits successfully.
+ * @return int32_t HEAP_OK if everything is ok;
+ * HEAP_ERROR_POINTER_OUT_OF_RANGE if pointer points outside the heap;
+ * HEAP_ERROR_CORRUPTED_HEAP if heap has been corrupted or trying to
+ * unallocate memory that has already been unallocated;
+ */
+int32_t __Heap_ChangeOwner(void *pointer, heap_owner_t *new_owner);
+
+
+
+/**
  * @brief return a block to the heap
  *
  * @param pointer the pointer to memory to unallocate
@@ -111,6 +145,8 @@ void* Heap_Realloc(void* oldBlock, int32_t desiredBytes);
  * unallocate memory that has already been unallocated;
  */
 int32_t Heap_Free(void* pointer);
+
+int32_t OS_SVC_Heap_Free(void* pointer);
 
 
 /**

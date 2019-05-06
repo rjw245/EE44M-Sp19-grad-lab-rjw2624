@@ -22,33 +22,29 @@ static uint16_t sample_buffer[10];
 static const char strtok_delim[] = "\t ";
 long sr = 0;
 
-
-
-
 static const ELFSymbol_t exports[] = { { "ST7735_Message", (void*) &ST7735_Message } };
 static const ELFEnv_t env = { exports, 1 };
 
-void TEST_OS(void)
+static Sema4Type exec_elf_sema;
+static char elf_path[32];
+static void exec_elf_task(void)
 {
-  
-  int k = TEST_OS_Id();
-  char adc_string[64];
-    sprintf(adc_string,"%d\n",k);
-  
-  for(int i =0;i<10;i++)
-  {
-    UART_OutString(". ");
-    TEST_OS_Sleep(1000);
+  // It is important to load the ELF in a separate task. This way,
+  // code and data loaded in RAM will be stored in their own subregion.
+  // From there, it is easy to transfer ownership to the parent process,
+  // since the code and data are not mixed in with other heap blocks
+  // within their subregion(s).
+  if (exec_elf(elf_path, &env) != 0) {
+    UART_OutString("Failed to launch File.\r\n");
   }
-  UART_OutString(adc_string);
-  sprintf(adc_string,"%ld\n",TEST_OS_Time());
-  TEST_OS_Kill();
-  
+  OS_SVC_bSignal(&exec_elf_sema);
+  OS_SVC_Kill();
 }
 
 void interpreter_task(void)
 {
   static char uart_in_buf[1024];
+  OS_InitSemaphore(&exec_elf_sema, 1);
   while (1)
   {
     UART_OutString("> ");
@@ -56,7 +52,7 @@ void interpreter_task(void)
     UART_OutString("\r\n");
     interpreter_cmd(uart_in_buf);
     memset(uart_in_buf, 0, sizeof(uart_in_buf));
-    OS_Sleep(100);
+    OS_SVC_Sleep(100);
   }
 }
 
@@ -72,6 +68,8 @@ static void print_event(const event_t *event)
           event->name, event->timestamp, event_types[event->type]);
   UART_OutString(event_str);
 }
+
+extern int32_t * protected_text;
 
 void interpreter_cmd(char *cmd_str)
 {
@@ -103,7 +101,7 @@ void interpreter_cmd(char *cmd_str)
   else if (strcmp(cmd, "time") == 0)
   {
     char time[64];
-    sprintf(time, "Time: %llu ms\r\n", OS_Time() / TIME_1MS);
+    sprintf(time, "Time: %llu ms\r\n", OS_SVC_Time() / TIME_1MS);
     UART_OutString(time);
   }
   else if (strcmp(cmd, "log") == 0)
@@ -210,23 +208,19 @@ void interpreter_cmd(char *cmd_str)
 	{
 		long sr = StartCritical();
 		for(int i = 0;i<10000000;i++)
-			OS_Time();
+			OS_SVC_Time();
 		EndCritical(sr);
 		UART_OutString("Increase critical.\r\n");
 	}
   else if(strcmp(cmd, "load") == 0)
   {
     arg1 = strtok(NULL, strtok_delim);
-    if (exec_elf(arg1, &env) != 0) { 
-      UART_OutString("Failed to launch File.\r\n");
-    }
-    if (exec_elf(arg1, &env) != 0) { 
-      UART_OutString("Failed to launch File.\r\n");
-    }
+    OS_SVC_bWait(&exec_elf_sema);
+    strncpy(elf_path, arg1, sizeof(elf_path));
+    OS_SVC_AddThread(exec_elf_task, 256, 0);
   }
-  else if(strcmp(cmd, "test") == 0)
+  else if(strcmp(cmd, "testmpu") == 0)
   {
-    arg1 = strtok(NULL, strtok_delim);
-    TEST_OS_AddThread(&TEST_OS, 128, 1);
+    *protected_text = 1; // CRASH
   }
 }

@@ -39,7 +39,7 @@
 #define HEAP_END (HEAP_START + HEAP_SIZE_WORDS)
 
 //The actual heap is just a big array.
-static int32_t Heap[HEAP_SIZE_WORDS];
+int32_t Heap[HEAP_SIZE_WORDS];
 
 static int32_t inHeapRange(int32_t* address);
 static int32_t blockUsed(int32_t* block);

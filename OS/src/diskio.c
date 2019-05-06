@@ -21,7 +21,7 @@
 
 #define SDC_CS_PB0 1
 #define SDC_CS_PD7 0
-extern Sema4Type LCDFree;
+extern Sema4Type spi_sema;
 
 // SDC CS is PD7 or PB0 , TFT CS is PA3
 // to change CS to another GPIO, change SDC_CS and CS_Init
@@ -49,9 +49,9 @@ extern Sema4Type LCDFree;
 // CS   - PA3 TFT_CS, active low to enable TFT
 // *CS  - PD7/PB0 SDC_CS, active low to enable SDC
 // MISO - PA4 MISO SPI data from SDC to microcontroller
-// SDA  – (NC) I2C data for ADXL345 accelerometer
-// SCL  – (NC) I2C clock for ADXL345 accelerometer
-// SDO  – (NC) I2C alternate address for ADXL345 accelerometer
+// SDA  ï¿½ (NC) I2C data for ADXL345 accelerometer
+// SCL  ï¿½ (NC) I2C clock for ADXL345 accelerometer
+// SDO  ï¿½ (NC) I2C alternate address for ADXL345 accelerometer
 // Backlight + - Light, backlight connected to +3.3 V
 
 #define TFT_CS           (*((volatile uint32_t *)0x40004020))
@@ -422,6 +422,7 @@ static BYTE send_cmd(BYTE cmd, DWORD arg){
 // Inputs:  Physical drive number, which must be 0
 // Outputs: status (see DSTATUS)
 DSTATUS disk_initialize(BYTE drv){
+  OS_InitSemaphore(&spi_sema, 1);  
 
   BYTE n, cmd, ty, ocr[4];
 
@@ -494,7 +495,7 @@ DSTATUS disk_status(BYTE drv){
 DRESULT disk_read(BYTE drv, BYTE *buff, DWORD sector, UINT count){
   if (drv || !count) return RES_PARERR;    /* Check parameter */
   if (Stat & STA_NOINIT) return RES_NOTRDY;  /* Check if drive is ready */
-	OS_bWait(&LCDFree);
+	OS_bWait(&spi_sema);
   if (!(CardType & CT_BLOCK)) sector *= 512;  /* LBA ot BA conversion (byte addressing cards) */
 
   if (count == 1) {  /* Single sector read */
@@ -512,7 +513,7 @@ DRESULT disk_read(BYTE drv, BYTE *buff, DWORD sector, UINT count){
     }
   }
   deselect();
-  OS_bSignal(&LCDFree);
+  OS_bSignal(&spi_sema);
   return count ? RES_ERROR : RES_OK;  /* Return result */
 }
 
@@ -532,7 +533,7 @@ DRESULT disk_write(BYTE drv, const BYTE *buff, DWORD sector, UINT count){
   if (drv || !count) return RES_PARERR;    /* Check parameter */
   if (Stat & STA_NOINIT) return RES_NOTRDY;  /* Check drive status */
   if (Stat & STA_PROTECT) return RES_WRPRT;  /* Check write protect */
-  OS_bWait(&LCDFree);
+  OS_bWait(&spi_sema);
 
   if (!(CardType & CT_BLOCK)) sector *= 512;  /* LBA ==> BA conversion (byte addressing cards) */
 
@@ -553,7 +554,7 @@ DRESULT disk_write(BYTE drv, const BYTE *buff, DWORD sector, UINT count){
     }
   }
   deselect();
-  OS_bSignal(&LCDFree);
+  OS_bSignal(&spi_sema);
 
   return count ? RES_ERROR : RES_OK;  /* Return result */
 }
@@ -576,7 +577,7 @@ DRESULT disk_ioctl(BYTE drv, BYTE cmd, void *buff){
 
   if (drv) return RES_PARERR;          /* Check parameter */
   if (Stat & STA_NOINIT) return RES_NOTRDY;  /* Check if drive is ready */
-  OS_bWait(&LCDFree);
+  OS_bWait(&spi_sema);
 
   res = RES_ERROR;
 
@@ -638,7 +639,7 @@ DRESULT disk_ioctl(BYTE drv, BYTE cmd, void *buff){
   }
 
   deselect();
-  OS_bSignal(&LCDFree);
+  OS_bSignal(&spi_sema);
 
   return res;
 }
@@ -675,6 +676,12 @@ void disk_timerproc (void)
   Stat = s;
 }
 
+void disk_init_interrupts(void)
+{
+  NVIC_PRI23_R = (NVIC_PRI23_R&0xFFFFFF00)|0x00000040; // 8) priority 2
+  NVIC_EN2_R = 0x10000000;         // 9) enable interrupt 92 in NVIC
+}
+
 
 void Timer5_Init(void){
   SYSCTL_RCGCTIMER_R |= 0x20;
@@ -686,10 +693,10 @@ void Timer5_Init(void){
   TIMER5_TAPR_R = 0;               // 5) bus clock resolution
   TIMER5_ICR_R = 0x00000001;       // 6) clear timer5A timeout flag
   TIMER5_IMR_R = 0x00000001;       // 7) arm timeout interrupt
-  NVIC_PRI23_R = (NVIC_PRI23_R&0xFFFFFF00)|0x00000040; // 8) priority 2
+//   NVIC_PRI23_R = (NVIC_PRI23_R&0xFFFFFF00)|0x00000040; // 8) priority 2
 // interrupts enabled in the main program after all devices initialized
 // vector number 108, interrupt number 92
-  NVIC_EN2_R = 0x10000000;         // 9) enable interrupt 92 in NVIC
+//   NVIC_EN2_R = 0x10000000;         // 9) enable interrupt 92 in NVIC
   TIMER5_CTL_R = 0x00000001;       // 10) enable timer5A
 }
 // Executed every 1 ms

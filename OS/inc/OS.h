@@ -20,8 +20,7 @@
 #define OS_H
 
 #include <stdint.h>
-
-#define MAX_TASKS (16)
+#include "heap.h"
 
 // edit these depending on your clock
 #define TIME_1MS 80000
@@ -36,6 +35,7 @@ typedef struct _pcb_s
   unsigned long num_threads;
   void *text;
   void *data;
+  heap_owner_t h_o;
 } pcb_t;
 
 typedef struct _tcb_s
@@ -45,14 +45,10 @@ typedef struct _tcb_s
   uint32_t wake_time;
   unsigned long id;
   uint8_t priority;
-  uint32_t period; // 0 = aperiodic
-  //! magic field must contain TCB_MAGIC for TCB to be valid
-  unsigned long magic;
-  void (*task)(void);
   char * task_name;
   pcb_t *parent_process;
-  unsigned int stack_prot_msk;
-  unsigned int heap_prot_msk;
+  long *stack_base;
+  heap_owner_t h_o;
 } tcb_t;
 
 
@@ -137,13 +133,16 @@ extern tcb_t *cur_tcb;
                                                                #task,\
                                                                cur_tcb ? cur_tcb->parent_process : 0)
 
-
+int OS_SVC_AddThread(void(*task)(void), 
+   unsigned long stackSize, unsigned long priority);
 
 /**
  * returns the thread ID for the currently running thread
  * @return Thread ID, number greater than zero 
  */
 unsigned long OS_Id(void);
+
+unsigned long OS_SVC_Id(void);
 
 
 int OS_AddPeriodicThread_priv(void (*task)(void),
@@ -211,10 +210,14 @@ int OS_AddSW2Task(void (*task)(void), unsigned long priority);
  */
 void OS_Sleep(unsigned long sleepTime);
 
+void OS_SVC_Sleep(unsigned long sleepTime);
+
 /**
  * kill the currently running thread, release its TCB and stack
  */
 void OS_Kill(void);
+
+void OS_SVC_Kill(void);
 
 /**
  * suspend execution of currently running thread.
@@ -223,6 +226,8 @@ void OS_Kill(void);
  * Same function as OS_Sleep(0).
  */
 void OS_Suspend(void);
+
+void OS_SVC_Suspend(void);
 
 /**
  * Initialize the Fifo to be empty.
@@ -291,6 +296,8 @@ unsigned long OS_MailBox_Recv(void);
  * @return time in 12.5ns units, 0 to 4294967295
  */
 unsigned long long OS_Time(void);
+
+unsigned long long OS_SVC_Time(void);
 
 /**
  * Calculates difference between two times.

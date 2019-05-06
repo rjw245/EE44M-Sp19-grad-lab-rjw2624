@@ -21,10 +21,11 @@ void thread(void)
 	
 	id = OS_Id();
 	PF3 ^= 0x08;
-	Display_Message(0,line++, "Thread: ", id);
+	// Display_Message(0,line++, "Thread: ", id);
 	OS_Sleep(2000);
-	Display_Message(0,line++, "Thread dying ", id);
+	// Display_Message(0,line++, "Thread dying ", id);
 	PF3 ^= 0x08;
+  *((int*)0x20000000) = 1; // Try to write to arbitrary SRAM.
 	OS_Kill();
 }
 
@@ -34,12 +35,12 @@ int main(void)
 	unsigned long time;
 	id = OS_Id();
 	PF2 ^= 0x04;
-	Display_Message(0,line++, "Hello world: ", id);
+	// Display_Message(0,line++, "Hello world: ", id);
 	OS_AddThread(thread, 128, 1);
   time = OS_Time();
 	OS_Sleep(1000);
 	time = (((OS_TimeDifference(time, OS_Time()))/1000ul)*125ul)/10000ul;
-	Display_Message(0,line++, "Sleep time: ", time);
+	// Display_Message(0,line++, "Sleep time: ", time);
 	PF2 ^= 0x04;
 	OS_Kill();
 }

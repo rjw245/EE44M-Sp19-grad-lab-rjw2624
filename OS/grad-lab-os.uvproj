@@ -535,6 +535,11 @@
               <FileType>1</FileType>
               <FilePath>.\src\protected_heap.c</FilePath>
             </File>
+            <File>
+              <FileName>OS_SVC.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\src\OS_SVC.s</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -32,6 +32,8 @@
 #include "interpreter.h"
 #include "memprotect.h"
 #include "heap.h"
+#include "ff.h"
+#include "diskio.h"
 #include <string.h>
 
 Sema4Type a_malloc;
@@ -48,14 +50,14 @@ void TaskA(void)
   int y = 1;
   x = x + y;
   y = x + y;
-  illegal = (int *)Heap_Malloc(2000);
-  Heap_Free(illegal);
-  illegal = (int *)Heap_Malloc(128);
+  illegal = (int *)OS_SVC_Heap_Malloc(2000);
+  OS_SVC_Heap_Free(illegal);
+  illegal = (int *)OS_SVC_Heap_Malloc(128);
   *illegal = 123;
-  OS_bSignal(&a_malloc);
-  OS_bWait(&b_malloc);
-  illegal2 = (int *)Heap_Malloc(128);
-  OS_bSignal(&a_malloc2);
+  OS_SVC_bSignal(&a_malloc);
+  OS_SVC_bWait(&b_malloc);
+  illegal2 = (int *)OS_SVC_Heap_Malloc(128);
+  OS_SVC_bSignal(&a_malloc2);
   while (1)
     ;
 }
@@ -65,10 +67,12 @@ void TaskB(void)
   int z = 1;
   z = z << 2 | z;
 
-  OS_bWait(&a_malloc);
-  dummy = (int*)Heap_Malloc(128);
-  OS_bSignal(&b_malloc);
-  OS_bWait(&a_malloc2);
+  OS_SVC_bWait(&a_malloc);
+  dummy = (int*)OS_SVC_Heap_Malloc(128);
+  OS_SVC_bSignal(&b_malloc);
+  OS_SVC_bWait(&a_malloc2);
+	OS_SVC_Heap_Free(cur_tcb);
+	OS_SVC_Heap_Free(illegal);
   z = *illegal;
   while(1);
 }
@@ -87,9 +91,57 @@ int twotask_main(void)
   return 0;
 }
 
+
+
+void short_task(void)
+{
+  heap_stats_t heap_stats = Heap_Stats();
+	for(int i=0; i<10000; i++);
+	OS_Kill();
+}
+
+void root_task(void)
+{
+	for(int i=0; i< 20; i++)
+	{
+		OS_AddThread(short_task, 32, 0);
+	}
+	while(1)
+	{
+	}
+}
+
+int short_task_main(void)
+{
+  OS_Init();
+  OS_AddThread(root_task, 32, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
+void self_starter(void)
+{
+  OS_AddThread(self_starter, 64, 0);
+  OS_AddThread(self_starter, 64, 0);
+  heap_stats_t heap_stats = Heap_Stats();
+	OS_Kill();
+  heap_stats = Heap_Stats();
+}
+
+int self_starter_main(void)
+{
+  OS_Init();
+  OS_AddThread(self_starter, 64, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
 #define MakeTask(num) void Task##num(void) {\
-  int *alloc = Heap_Malloc(sizeof(int));\
-  *alloc = num;\
+  int stack_var = OS_SVC_Id();\
   while(1);\
 }
 
@@ -109,35 +161,117 @@ MakeTask(12)
 MakeTask(13)
 MakeTask(14)
 MakeTask(15)
+MakeTask(16)
+MakeTask(17)
+MakeTask(18)
+MakeTask(19)
+MakeTask(20)
+MakeTask(21)
+MakeTask(22)
+MakeTask(23)
+MakeTask(24)
+MakeTask(25)
+MakeTask(26)
+MakeTask(27)
+MakeTask(28)
+MakeTask(29)
+MakeTask(30)
 
 int _16task_main(void)
 {
   OS_Init();
-  OS_AddThread(Task0, 64, 0);
-  OS_AddThread(Task1, 64, 0);
-  OS_AddThread(Task2, 64, 0);
-  OS_AddThread(Task3, 64, 0);
-  OS_AddThread(Task4, 64, 0);
-  OS_AddThread(Task5, 64, 0);
-  OS_AddThread(Task6, 64, 0);
-  OS_AddThread(Task7, 64, 0);
-  OS_AddThread(Task8, 64, 0);
-  OS_AddThread(Task9, 64, 0);
-  OS_AddThread(Task10, 64, 0);
-  OS_AddThread(Task11, 64, 0);
-  OS_AddThread(Task12, 64, 0);
-  OS_AddThread(Task13, 64, 0);
-  OS_AddThread(Task14, 64, 0);
-
-  // Task 15 actually can't be scheduled, it's the 17th task after the idle task
-  OS_AddThread(Task15, 64, 0);
+  OS_AddThread(Task0, 32, 0);
+  OS_AddThread(Task1, 32, 0);
+  OS_AddThread(Task2, 32, 0);
+  OS_AddThread(Task3, 32, 0);
+  OS_AddThread(Task4, 32, 0);
+  OS_AddThread(Task5, 32, 0);
+  OS_AddThread(Task6, 32, 0);
+  OS_AddThread(Task7, 32, 0);
+  OS_AddThread(Task8, 32, 0);
+  OS_AddThread(Task9, 32, 0);
+  OS_AddThread(Task10, 32, 0);
+  OS_AddThread(Task11, 32, 0);
+  OS_AddThread(Task12, 32, 0);
+  OS_AddThread(Task13, 32, 0);
+  OS_AddThread(Task14, 32, 0);
+  OS_AddThread(Task15, 32, 0);
+  OS_AddThread(Task16, 32, 0);
+  OS_AddThread(Task17, 32, 0);
+  OS_AddThread(Task18, 32, 0);
+  OS_AddThread(Task19, 32, 0);
+  OS_AddThread(Task20, 32, 0);
+  OS_AddThread(Task21, 32, 0);
+  OS_AddThread(Task22, 32, 0);
+  OS_AddThread(Task23, 32, 0);
+  OS_AddThread(Task24, 32, 0);
+  OS_AddThread(Task25, 32, 0);
+  OS_AddThread(Task26, 32, 0);
+  OS_AddThread(Task27, 32, 0);
+  OS_AddThread(Task28, 32, 0);
+  OS_AddThread(Task29, 32, 0);
+  OS_AddThread(Task30, 32, 0);
+  // IdleTask is task 31, ie the 32nd task
   OS_Launch(TIME_1MS);
   while (1)
     ;
   return 0;
 }
 
+int idle_main(void)
+{
+  OS_Init();
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
+
+static FATFS g_sFatFs;
+void init_fs_task(void)
+{
+}
+
+extern void disk_timerproc (void);
+int Load_Process_Main(void)
+{
+  OS_Init();
+  ST7735_InitR(INITR_REDTAB);
+  ST7735_FillScreen(ST7735_WHITE);
+  OS_AddPeriodicThread(disk_timerproc, TIME_1MS, 5);
+  disk_init_interrupts();
+  f_mount(&g_sFatFs, "", 0);
+//   OS_AddThread(&init_fs_task, 128, 0); 
+  OS_AddThread(interpreter_task, 128, 2);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+}
+
+#define MAX_ALLOC 14836
+
+void greedy_task(void)
+{
+    uint8_t *x = (uint8_t*)OS_SVC_Heap_Malloc(MAX_ALLOC);
+    x[0] = 1;
+    x[MAX_ALLOC-1] = 1;
+    while(1);
+}
+
+int greedy_task_main(void)
+{
+  OS_Init();
+  OS_AddThread(greedy_task, 32, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+    
+}
+
 int main(void)
 {
-  _16task_main();
+  return _16task_main();
 }

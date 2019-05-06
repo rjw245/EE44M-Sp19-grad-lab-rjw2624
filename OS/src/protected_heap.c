@@ -9,11 +9,13 @@
 #define HEAP_START (Heap)
 #define HEAP_END (HEAP_START + HEAP_SIZE_WORDS)
 
-#define SUBREGION_SIZE_BYTES (HEAP_SIZE_BYTES / MAX_TASKS)
+#define NUM_MPU_REGIONS (4)
+#define NUM_SUBREGIONS (NUM_MPU_REGIONS * 8)
+#define SUBREGION_SIZE_BYTES (HEAP_SIZE_BYTES / NUM_SUBREGIONS)
 #define SUBREGION_SIZE_WORDS (SUBREGION_SIZE_BYTES / sizeof(int32_t))
 
 //The actual heap is just a big array.
-static __align(SUBREGION_SIZE_BYTES * 8) int32_t Heap[HEAP_SIZE_WORDS];
+__align(SUBREGION_SIZE_BYTES * 8) int32_t Heap[HEAP_SIZE_WORDS];
 
 static int32_t inHeapRange(int32_t *address);
 static int32_t blockUsed(int32_t *block);
@@ -32,23 +34,23 @@ static void mergeBlockWithBelow(int32_t *upperBlockStart);
 
 typedef struct
 {
-  tcb_t *owner;
+  heap_owner_t *owner;
   int task_id;
   unsigned int num_allocs;
 } subrgn_meta_t;
 
 // Heap has as many individually-protected subregions as the maximum
 // number of tasks in the system
-subrgn_meta_t __heap_subrgn_table[MAX_TASKS];
+subrgn_meta_t __heap_subrgn_table[NUM_SUBREGIONS];
 
-static bool check_subregions_free(int32_t *start, int32_t desiredWords, tcb_t *requesting_tcb)
+static bool check_subregions_free(int32_t *start, int32_t desiredWords, heap_owner_t *requester)
 {
   int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
   int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
   for (int i = subrgn_start; i <= subrgn_end; i++)
   {
-    if ((__heap_subrgn_table[i].task_id != requesting_tcb->id) && (__heap_subrgn_table[i].task_id != -1))
+    if ((__heap_subrgn_table[i].task_id != requester->id) && (__heap_subrgn_table[i].task_id != -1))
     {
       return false;
     }
@@ -56,26 +58,32 @@ static bool check_subregions_free(int32_t *start, int32_t desiredWords, tcb_t *r
   return true;
 }
 
-static void alloc_subregions(int32_t *start, int32_t desiredWords, tcb_t *requesting_tcb)
+static void alloc_subregions(int32_t *start, int32_t desiredWords, heap_owner_t *requester)
 {
   int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
   int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
   for (int i = subrgn_start; i <= subrgn_end; i++)
   {
-    __heap_subrgn_table[i].owner = requesting_tcb;
-    __heap_subrgn_table[i].task_id = requesting_tcb->id;
-    requesting_tcb->heap_prot_msk |= 1 << i;
+    __heap_subrgn_table[i].owner = requester;
+    __heap_subrgn_table[i].task_id = requester->id;
+    requester->heap_prot_msk |= 1 << i;
     __heap_subrgn_table[i].num_allocs++;
   }
 }
 
-static void partition_subregion_freespace(int32_t* last_subrgn_block)
+static void partition_subregion_freespace(int32_t *last_subrgn_block)
 {
-    int32_t *free_start = nextBlockHeader(last_subrgn_block);
+  int32_t *free_start = nextBlockHeader(last_subrgn_block);
+  int free_len = blockRoom(free_start);
+  int free_start_subrgn = (free_start - HEAP_START) / SUBREGION_SIZE_WORDS;
+  int free_end_subrgn = (free_start + free_len + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+  if (free_start_subrgn != free_end_subrgn)
+  {
     int32_t subrgn_free_words = SUBREGION_SIZE_WORDS - ((free_start - HEAP_START) % SUBREGION_SIZE_WORDS);
-    splitAndMarkBlockUsed(free_start, subrgn_free_words-2);
+    splitAndMarkBlockUsed(free_start, subrgn_free_words - 2);
     markBlockUnused(free_start);
+  }
 }
 
 static void free_subregions(int32_t *start, int32_t blockWords)
@@ -96,9 +104,25 @@ static void free_subregions(int32_t *start, int32_t blockWords)
   }
 }
 
+static inline void setup_mpu_regions(void)
+{
+  // Whole addr space, priv r/w, unpriv none
+//   MemProtect_SelectRegion(3);
+//   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_UNA);
+//   MemProtect_EnableRegion();
+
+  for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+  {
+    MemProtect_SelectRegion(i);
+    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PRW_URW);
+    MemProtect_CfgSubregions(0xFF); // Prot all subregions
+    MemProtect_EnableRegion();
+  }
+}
+
 int32_t Heap_Init(void)
 {
-  for (int i = 0; i < MAX_TASKS; i++)
+  for (int i = 0; i < lengthof(__heap_subrgn_table); i++)
   {
     __heap_subrgn_table[i].owner = NULL;
     __heap_subrgn_table[i].num_allocs = 0;
@@ -109,68 +133,105 @@ int32_t Heap_Init(void)
   *blockStart = -(int32_t)(HEAP_SIZE_WORDS - 2);
   *blockEnd = -(int32_t)(HEAP_SIZE_WORDS - 2);
 
-  // First 8 heap subregions
-  MemProtect_SelectRegion(4);
-  MemProtect_CfgRegion(Heap, 10, AP_PNA_UNA);
-  MemProtect_CfgSubregions(0); // Prot all subregions
-  MemProtect_EnableRegion();
-
-  // Last 8 heap subregions
-  MemProtect_SelectRegion(5);
-  MemProtect_CfgRegion(Heap + (HEAP_SIZE_WORDS / 2), 10, AP_PNA_UNA);
-  MemProtect_CfgSubregions(0); // Prot all subregions
-  MemProtect_EnableRegion();
+  setup_mpu_regions();
 
   return HEAP_OK;
 }
 
+// extern heap_owner_t OS_heap_ownership;
 void __UnveilTaskHeap(tcb_t *tcb)
 {
-  MemProtect_SelectRegion(4);
-  MemProtect_DisableRegion();
-  MemProtect_CfgSubregions(tcb->heap_prot_msk & 0xFF);
-  MemProtect_EnableRegion();
-
-  MemProtect_SelectRegion(5);
-  MemProtect_DisableRegion();
-  MemProtect_CfgSubregions((tcb->heap_prot_msk >> 8) & 0xFF);
-  MemProtect_EnableRegion();
+  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk;
+  if(tcb->parent_process)
+  {
+    heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;
+    // Tasks in process must not have access to OS code.
+    MemProtect_SelectRegion(0);
+    // MemProtect_DisableRegion();
+    MemProtect_CfgRegionAccess(AP_PRW_UNA);
+    // MemProtect_EnableRegion();
+    for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+    {
+        MemProtect_SelectRegion(i);
+        // TODO if the task is in a loaded process, it probably SHOULD NOT have
+        // access to OS memory in the heap, and should only interface with the 
+        // OS through the SVC call interface.
+        MemProtect_CfgRegionAccess(AP_PRW_URW);
+        MemProtect_CfgSubregions(((~heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
+        MemProtect_EnableRegion();
+    }
+  } else {
+    // Tasks not in process must be compiled with OS, and so must have access to OS code.
+    MemProtect_SelectRegion(0);
+    // MemProtect_DisableRegion();
+    MemProtect_CfgRegionAccess(AP_PRW_URW);
+    // MemProtect_EnableRegion();
+    for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+    {
+        MemProtect_SelectRegion(i);
+        // TODO if the task is in a loaded process, it probably SHOULD NOT have
+        // access to OS memory in the heap, and should only interface with the 
+        // OS through the SVC call interface.
+        MemProtect_CfgRegionAccess(AP_PRW_UNA);
+        MemProtect_CfgSubregions((heap_prot_msk >> ((i - 4) * 8)) & 0xFF);
+    }
+  }
 }
 
-void *Heap_Malloc(int32_t desiredBytes)
+void *__Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner)
 {
-  MemProtect_DisableMPU();
+  __dsb(0xF);
+  __isb(0xF);
+  unsigned long mpu_stat = MemProtect_StartCritical();
+  __dsb(0xF);
+  __isb(0xF);
 
   int32_t desiredWords = (desiredBytes + sizeof(int32_t) - 1) / sizeof(int32_t);
   int32_t *blockStart = HEAP_START; // implements first fit
   if (desiredWords <= 0)
   {
+    __dsb(0xF);
+    __isb(0xF);
     MemProtect_EnableMPU();
+    __dsb(0xF);
+    __isb(0xF);
     return 0; //NULL
   }
   while (inHeapRange(blockStart))
   {
     // one pass through the heap
     // choose first block that is big enough
-    if (check_subregions_free(blockStart, desiredWords, cur_tcb)) // Check if cur_tcb can use this subregion
+    if (check_subregions_free(blockStart, desiredWords, owner)) // Check if owner can use this subregion
     {
       if (blockUnused(blockStart) && desiredWords <= blockRoom(blockStart))
       {
         if (splitAndMarkBlockUsed(blockStart, desiredWords))
         {
+          __dsb(0xF);
+          __isb(0xF);
           MemProtect_EnableMPU();
+          __dsb(0xF);
+          __isb(0xF);
           return 0; //NULL
         }
-        alloc_subregions(blockStart, desiredWords, cur_tcb);
-        __UnveilTaskHeap(cur_tcb); // Update allowed subregions
+        alloc_subregions(blockStart, desiredWords, owner);
+        __UnveilTaskHeap(cur_tcb); // Update allowed subregions for cur task
         partition_subregion_freespace(blockStart);
+        __dsb(0xF);
+        __isb(0xF);
         MemProtect_EnableMPU();
+        __dsb(0xF);
+        __isb(0xF);
         return blockStart + 1;
       }
     }
     blockStart = nextBlockHeader(blockStart);
   }
-  MemProtect_EnableMPU();
+  __dsb(0xF);
+  __isb(0xF);
+  MemProtect_EndCritical(mpu_stat);
+  __dsb(0xF);
+  __isb(0xF);
   return 0; //NULL
 }
 
@@ -244,10 +305,23 @@ void *Heap_Realloc(void *oldBlock, int32_t desiredBytes)
   return newBlockPtr;
 }
 
+int32_t __Heap_ChangeOwner(void *pointer, heap_owner_t *new_owner)
+{
+  int32_t *blockStart;
+  int32_t blockWords;
+
+  blockStart = ((int32_t *)pointer) - 1;
+  blockWords = blockRoom(blockStart);
+  long sr = StartCritical();
+  free_subregions(pointer, blockWords);
+  alloc_subregions(pointer, blockWords, new_owner);
+  __UnveilTaskHeap(cur_tcb); // Update allowed subregions
+  EndCritical(sr);
+  return HEAP_OK;
+}
+
 int32_t Heap_Free(void *pointer)
 {
-  MemProtect_DisableMPU();
-
   int32_t *blockStart;
   int32_t *blockEnd;
   int32_t *nextBlockStart;
@@ -259,25 +333,27 @@ int32_t Heap_Free(void *pointer)
   //-----Begin error checking-------
   if (!inHeapRange(blockStart))
   {
-    MemProtect_EnableMPU();
     return HEAP_ERROR_POINTER_OUT_OF_RANGE;
   }
   if (blockUnused(blockStart))
   {
-    MemProtect_EnableMPU();
     return HEAP_ERROR_CORRUPTED_HEAP;
   }
   blockEnd = blockTrailer(blockStart);
   if (!inHeapRange(blockEnd) || blockUnused(blockEnd))
   {
-    MemProtect_EnableMPU();
     return HEAP_ERROR_CORRUPTED_HEAP;
   }
   //-----End error checking-------
 
+  __dsb(0xF);
+  __isb(0xF);
+  unsigned long mpu_stat = MemProtect_StartCritical();
+  __dsb(0xF);
+  __isb(0xF);
+
   if (markBlockUnused(blockStart))
   {
-    MemProtect_EnableMPU();
     return HEAP_ERROR_CORRUPTED_HEAP;
   }
   free_subregions(blockStart, blockWords);
@@ -301,7 +377,11 @@ int32_t Heap_Free(void *pointer)
     mergeBlockWithBelow(blockStart);
   }
   __UnveilTaskHeap(cur_tcb); // Update allowed subregions
-  MemProtect_EnableMPU();
+  __dsb(0xF);
+  __isb(0xF);
+  MemProtect_EndCritical(mpu_stat);
+  __dsb(0xF);
+  __isb(0xF);
   return HEAP_OK;
 }
 
@@ -360,6 +440,12 @@ heap_stats_t Heap_Stats(void)
 
   //just go through each block to get stats on heap usage
   blockStart = HEAP_START;
+
+  __dsb(0xF);
+  __isb(0xF);
+  unsigned long mpu_stat = MemProtect_StartCritical();
+  __dsb(0xF);
+  __isb(0xF);
   while (inHeapRange(blockStart))
   {
     if (blockUsed(blockStart))
@@ -374,6 +460,11 @@ heap_stats_t Heap_Stats(void)
     }
     blockStart = nextBlockHeader(blockStart);
   }
+  __dsb(0xF);
+  __isb(0xF);
+  MemProtect_EndCritical(mpu_stat);
+  __dsb(0xF);
+  __isb(0xF);
   stats.wordsOverhead = HEAP_SIZE_WORDS - stats.wordsAllocated - stats.wordsAvailable;
   return stats;
 }

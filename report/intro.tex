@@ -3,6 +3,7 @@
 
 \section{Background}
 
-Windows 9x releases did not have complete memory protection, as 
-
 \section{Motivation}
+
+% https://www.freertos.org/xTaskCreateRestricted.html
+FreeRTOS supports the use of an MPU to protect memory per-task. However, their implementation re-configures entire regions of the MPU. This must be done every context switch which steals time away from tasks doing productive work. Of course, some time penalty must be paid in the context switch for the additional functionality that the MPU provides. But, one would like to reduce the penalty of using the MPU to a minimum.

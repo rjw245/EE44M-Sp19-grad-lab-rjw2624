@@ -304,7 +304,15 @@ HardFault_Handler\
 MemManage_Handler\
                 PROC
                 EXPORT  MemManage_Handler         [WEAK]
-                B       .
+                ; Light red LED (PF1)
+                LDR R0, =0x40025008
+                MOV R1, #2
+                STR R1, [R0]
+                ; Skip bad instruction
+                LDR R0, [SP,#24]
+                ADD R0, R0, #2
+                STR R0, [SP,#24]
+                BX LR
                 ENDP
 BusFault_Handler\
                 PROC

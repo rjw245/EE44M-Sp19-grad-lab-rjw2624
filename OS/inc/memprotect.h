@@ -21,6 +21,11 @@
 #define AP_PRO_UNA (5) //!< Privileged read-only, unprivileged no access
 #define AP_PRO_URO (6) //!< Privileged read-only, unprivileged read-only
 
+static inline void MemProtect_IgnorePrivSW(void)
+{
+    NVIC_MPU_CTRL_R |= 4;
+}
+
 /**
  * @brief Select a region to configure.
  * 
@@ -40,12 +45,30 @@ static inline void MemProtect_EnableMPU(void)
   NVIC_MPU_CTRL_R |= 1;
 }
 
+static inline void MemProtect_CfgRegionAccess(unsigned int access)
+{
+  NVIC_MPU_ATTR_R = (NVIC_MPU_ATTR_R & 0xF0FFFFFF) | (access << 24);
+}
+
+
 /**
  * @brief Disable the memory protection unit.
  */
 static inline void MemProtect_DisableMPU(void)
 {
   NVIC_MPU_CTRL_R &= ~1;
+}
+
+static inline unsigned long MemProtect_StartCritical(void)
+{
+  unsigned long tmp = NVIC_MPU_CTRL_R & 1;
+  NVIC_MPU_CTRL_R &= ~1;
+  return tmp;
+}
+
+static inline void MemProtect_EndCritical(unsigned long mpu_status)
+{
+  NVIC_MPU_CTRL_R |= (mpu_status & 1);
 }
 
 /**
@@ -76,9 +99,17 @@ static inline void MemProtect_DisableRegion(void)
  * @param access One of the access permissions constants, defined above.
  * @return int -1 on failure, 0 on success.
  */
-int MemProtect_CfgRegion(void *base,
-                         uint8_t size_log2,
-                         unsigned int access);
+static inline int MemProtect_CfgRegion(void *base, uint8_t size_log2, unsigned int access)
+{
+  if (size_log2 > 0x20 || size_log2 < 5)
+    return -1;
+
+  NVIC_MPU_BASE_R = ((uint32_t)base) & 0xFFFFFFE0;
+  NVIC_MPU_ATTR_R = ((size_log2 - 1) << 1) | (access << 24) | (1 << 18) | (1 << 17);
+  NVIC_MPU_BASE_R |= (1 << 4);
+  return 0;
+}
+
 
 /**
  * @brief Enable/disable subregions of a region.

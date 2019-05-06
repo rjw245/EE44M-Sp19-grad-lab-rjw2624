@@ -27,45 +27,11 @@
     EXTERN __UnveilTaskHeap
   EXTERN C_SVC_handler
 
-   
-  EXPORT	TEST_OS_Id
-  EXPORT TEST_OS_Sleep
-  EXPORT	TEST_OS_Kill
-  EXPORT	TEST_OS_Time
-  EXPORT	TEST_OS_AddThread
   EXPORT setR9
-    
-TEST_OS_Id
-	SVC		#0
-	BX		LR
-
-TEST_OS_Kill
-	SVC		#1
-	BX		LR
-
-TEST_OS_Sleep
-	SVC		#2
-	BX		LR
-
-TEST_OS_Time
-	SVC		#3
-	BX		LR
-
-TEST_OS_AddThread
-	SVC		#4
-	BX		LR
-
-
-
 
 
 PendSV_Handler
 	CPSID IF ; Disable interrupts
-
-;	PUSH {R0-R3,R14}
-;	BL disableTimeget
-;	POP {R0-R3,R14}
-
     LDR R0, =cur_tcb ; R0 <- &cur_tcb
     LDR R1, [R0]     ; R1 <- cur_tcb
     ; Check if we should save context
@@ -77,38 +43,28 @@ Save_Ctx
     ; Update SP to next task
     STR SP, [R1]    ; cur_tcb->sp = SP
 Choose_Next_Task
-;    LDR R3, =ticks_since_boot
-;    LDR R3, [R3]
     LDR R6, =next_tcb ; R6 <- &next_tcb
-
     LDR R2, [R6]     ; R2 <- next_tcb
     STR R2, [R0]    ; cur_tcb <- next_tcb	
     LDR R5, [R2,#4] ; R5 <- cur_tcb->next
     STR R5, [R6]    ; next_tcb = cur_tcb->next
-
-;    LDR R2, [R0,#8] ; R2 <- cur_tcb->wake_time
-;    SUBS R3, R2, R3 ; R3 <- wake_time - ticks_since_boot
-;    BGT Choose_Next_Task
 Load_Ctx
     LDR R0, =cur_tcb ; R0 <- &cur_tcb
     LDR R0, [R0]     ; R0 <- cur_tcb
-    PUSH {R0,LR}
-    BL __UnveilTaskStack
-    POP {R0,LR}
     PUSH {R0,LR}
     BL __UnveilTaskHeap
     POP {R0,LR}
     LDR SP, [R0]    ; SP <- cur_tcb->sp
     POP {R4-R11}
-
-;    PUSH {R0-R3,R14}
-;    BL enableTimeget
-;    POP {R0-R3,R14}
-
     LDR R0, =0xE000ED94 ; Load MPU CTL reg
     LDR R1, [R0]
     ORR R1, #1
     STR R1, [R0]        ; Enable MPU
+	DSB #0xF
+
+    MRS R1, CONTROL
+    ORR R1, R1, #1
+    MSR CONTROL, R1
 
     CPSIE IF ; Enable interrupts
     BX LR

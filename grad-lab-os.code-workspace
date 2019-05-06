@@ -24,7 +24,9 @@
           "string.h": "c",
           "heap.h": "c",
           "os.h": "c",
-          "loader_config.h": "c"
+          "loader_config.h": "c",
+          "diskio.h": "c",
+          "ff.h": "c"
         },
         "editor.tabSize": 2,
         "editor.insertSpaces": true,
