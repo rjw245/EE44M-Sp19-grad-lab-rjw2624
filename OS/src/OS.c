@@ -52,18 +52,19 @@ static void remove_tcb(tcb_t *tcb);
 static void setup_base_regions(void);
 
 #define PF1 (*((volatile unsigned long *)0x40025008))
+// #define PF5 (*((volatile uint32_t *)0x40025080))
+
 static void PortF_Init(void)
 {
   SYSCTL_RCGCGPIO_R |= 0x20; // activate port F
   while ((SYSCTL_PRGPIO_R & 0x20) == 0)
   {
   };
-  GPIO_PORTF_DIR_R |= 0x0F;    // make PF3-0 output heartbeats
-  GPIO_PORTF_AFSEL_R &= ~0x0F; // disable alt funct on PF3-0
-  GPIO_PORTF_DEN_R |= 0x0F;    // enable digital I/O on PF3-0
-  GPIO_PORTF_PCTL_R = ~0x0000FFFF;
-  GPIO_PORTF_AMSEL_R &= ~0x0F;
-  ; // disable analog functionality on PF
+  GPIO_PORTF_DIR_R |= 0x2F;    // make PF5,3-0 output heartbeats
+  GPIO_PORTF_AFSEL_R &= ~0x2F; // disable alt funct on PF5,3-0
+  GPIO_PORTF_DEN_R |= 0x2F;    // enable digital I/O on PF5,3-0
+  GPIO_PORTF_PCTL_R = ~0x00F0FFFF;
+  GPIO_PORTF_AMSEL_R &= ~0x2F; // disable analog functionality on PF
 }
 
 #if PRIORITY_SCHED
@@ -91,7 +92,7 @@ static void choose_next_with_prio(void)
 
 static void ContextSwitch(bool save_ctx)
 {
-  PF1 = 0x0;
+//   PF5 = 0x0;
   save_ctx_global = save_ctx;
   
     MemProtect_DisableMPU();
@@ -106,7 +107,7 @@ static void IdleTask(void)
 {
   while (1)
   {
-    PF1 = 0x2;
+    // PF5 = 1<<5;
     // Do maintenance
     OS_SVC_Suspend();
   }
@@ -129,7 +130,7 @@ static uint64_t get_system_time(void)
 
 void SysTick_Handler(void)
 {
-  PF1 = 0x0;
+//   PF5 = 0x0;
   ContextSwitch(true);
 #if PRIORITY_SCHED
   // Need to make sure we wrap to list head
@@ -403,6 +404,9 @@ static void insert_tcb(tcb_t *new_tcb) // priority insert
 
 static void setup_base_regions(void)
 {
+  // Privileged software (OS) can access by default if no region maps to address
+  MemProtect_IgnorePrivSW();
+
   // Whole addr space, priv/unpriv r/w
   MemProtect_SelectRegion(0);
   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_URW);
@@ -1058,7 +1062,6 @@ int OS_AddProcess(void (*entry)(void), void *text, void *data, unsigned long sta
   __Heap_ChangeOwner(text, &new_process->h_o);
   new_process->data = data;
   new_process->text = text;
-  protected_text = text; // For testing memory protection. TODO delete later
   if (__OS_AddThread(entry, stackDWords, priority, "Process main", new_process) == 0)
   {
     return -1;

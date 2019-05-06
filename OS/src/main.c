@@ -250,7 +250,28 @@ int Load_Process_Main(void)
   return 0;
 }
 
+#define MAX_ALLOC 14836
+
+void greedy_task(void)
+{
+    uint8_t *x = (uint8_t*)OS_SVC_Heap_Malloc(MAX_ALLOC);
+    x[0] = 1;
+    x[MAX_ALLOC-1] = 1;
+    while(1);
+}
+
+int greedy_task_main(void)
+{
+  OS_Init();
+  OS_AddThread(greedy_task, 32, 0);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+    
+}
+
 int main(void)
 {
-  return idle_main();
+  return Load_Process_Main();
 }

@@ -3,13 +3,13 @@
 
 \section{Summary}
 
-In this project, I have demonstrated a low-overhead implementation of memory protection that is capable of protecting tasks' stack and heap memory in a real-time operating system.
+In this project, I have demonstrated a low-overhead implementation of memory protection that is capable of protecting heap memory, task stacks, and process code and data in a real-time operating system.
 
 \section{Future Work}
 
 \subsection{Addressing the Task Limit}
 
-As mentioned previously, my solution limits the number of tasks in the system to a maximum of twenty-nine. This is because the MPU uses four regions to span the heap, which yields thirty-two subregions in which to store task stacks, three of which are consumed by the OS.
+As mentioned previously, my solution limits the number of tasks in the system to a maximum of twenty-nine. This is because the MPU uses four regions to span the heap, which yields thirty-two subregions in which to store task stacks, three of which are consumed by the OS. One way to address this is to make memory protection optional. In this scenario, the programmer is left to explicitly configure certain task stacks, memory allocations, and processes as protected. They would use discretion, enabling protection judiciously only for critical memory regions.
 
 \subsection{Supporting Shared Memory}
 
@@ -17,4 +17,4 @@ Most operating systems must support some form of inter-process communication. Cu
 
 \subsection{Supporting Dynamic Linking}
 
-In lab 5, the OS supported dynamic linking, a process by which the OS replaces placeholder function calls in the loaded process with the actual address of the function provided by the OS. After introducing protection of OS memory, this becomes slightly harder to support, but certainly possible. It just becomes necessary to isolate all OS library code into a separate region of RAM which is configured as accessible to unprivileged code in the MPU. This was deemed out of scope for this project but could easily be implemented on top of my design.
+In lab 5, the OS supported dynamic linking, a process by which the OS replaces placeholder function calls in the loaded process with the actual address of the function. After introducing protection of OS memory, this becomes slightly harder to support, but certainly possible. It just becomes necessary to isolate all OS library code into a separate region of RAM which is configured as accessible to unprivileged code, including process tasks, in the MPU. This was deemed out of scope for this project but could easily be implemented on top of my design.

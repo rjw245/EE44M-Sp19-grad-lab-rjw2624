@@ -21,6 +21,11 @@
 #define AP_PRO_UNA (5) //!< Privileged read-only, unprivileged no access
 #define AP_PRO_URO (6) //!< Privileged read-only, unprivileged read-only
 
+static inline void MemProtect_IgnorePrivSW(void)
+{
+    NVIC_MPU_CTRL_R |= 4;
+}
+
 /**
  * @brief Select a region to configure.
  * 
