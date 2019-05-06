@@ -1,7 +1,7 @@
-EE445/380L Lab 6
+EE445/380L Grad lab
 ----------------
 
-Team: rjw2624\_jj37297\_xp572\_qd572
+by Riley Wood (rjw2624)
 
 [Full documentation of code](docs/latex/refman.pdf)
 
