@@ -141,7 +141,7 @@ int self_starter_main(void)
 }
 
 #define MakeTask(num) void Task##num(void) {\
-  int stack_var = OS_Id();\
+  int stack_var = OS_SVC_Id();\
   while(1);\
 }
 
@@ -273,5 +273,5 @@ int greedy_task_main(void)
 
 int main(void)
 {
-  return Load_Process_Main();
+  return _16task_main();
 }
