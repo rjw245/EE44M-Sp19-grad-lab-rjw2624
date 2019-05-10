@@ -63,7 +63,7 @@ This is particularly noticeable in systems that spawn many threads. The OS itsel
 
 \begin{figure}[hbtp]
 	\centering
-	\includegraphics[width=0.7\linewidth]{figs/OS_int_frag.png}
+	\includegraphics[width=0.5\linewidth]{figs/OS_int_frag.png}
 	\caption{Internal fragmentation as experienced by the OS during TCB allocation. OS subregions are not consecutive, meaning that internal fragmentation can occur in many places.}
 	\label{fig:internal_frag}
 \end{figure}
@@ -143,6 +143,10 @@ The MPU regions themselves do not need to be reprogrammed at each context switch
 \section{Maximum Number of Tasks}
 
 The 16KB heap contains a total of thirty-two subregions. The maximum number of tasks that can be allocated is twenty-nine, as the OS will consume three subregions allocating TCBs and the rest of the subregions are allocated for task stacks.
+
+\section{Process Loading Subtleties}
+
+A trick is played to give the process ownership of the code and data loaded from the ELF into RAM. Because these regions are stored in the heap \textit{before} the process's PCB is created, it is impossible to \texttt{malloc} space for the code and data and have it belong to the process from the get-go. Instead, I spawn a new task from the interpreter whose sole job is to load the ELF. Initially, the code and data will belong to this "ELF loader" task. Then, after the PCB has been created and just before the ELF loader dies, ownership of the subregions containing the code and data are \textit{transferred from the ELF loader task to the PCB}. Since the ELF loader was its own task, its heap memory is isolated from all other tasks, so we don't need to worry about the PCB inheriting anything that it shouldn't in those subregions.
 
 \section{Final MPU Region Configuration}
 

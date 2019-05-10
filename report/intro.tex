@@ -3,7 +3,17 @@
 
 \section{Background}
 
+Memory protection is provided in most computers by the Memory Management Unit or MMU. This hardware unit also enables virtualization of the address space. In more resource-constrained systems, the MMU is left out in favor of a Memory Protection Unit or MPU. While the MPU cannot virtualize the address space, it can at least enforce access policies around bounded regions of memory that the OS defines.
+
 \section{Motivation}
 
+
+Leveraging the MPU can strengthen the OS's guarantee of isolation between tasks, but its usage comes at a cost. The MPU is typically somewhat simple in terms of its programmability. For example, the MPU in the TM4C123G features only 8 separately configurable regions. In an application with many tasks, these regions cannot fully specify the memory access policy in a global manner. Rather, the MPU needs to be reprogrammed during each context switch to reflect the context the CPU is about to enter. The additional cycles spent doing this in the context switch can be costly and inevitably take away time from tasks doing useful work.
+
 % https://www.freertos.org/xTaskCreateRestricted.html
-FreeRTOS supports the use of an MPU to protect memory per-task. However, their implementation re-configures entire regions of the MPU. This must be done every context switch which steals time away from tasks doing productive work. Of course, some time penalty must be paid in the context switch for the additional functionality that the MPU provides. But, one would like to reduce the penalty of using the MPU to a minimum.
+As for a real-world example, FreeRTOS supports the use of an MPU to protect memory per-task\footnotemark. However, like I mentioned, their implementation reconfigures entire regions of the MPU. Again, this must be done every context switch which steals time away from tasks doing productive work.
+
+\footnotetext{https://www.freertos.org/FreeRTOS-MPU-memory-protection-unit.html}
+
+Some time penalty in the context switch when using the MPU is unavoidable. But, this does not mean steps cannot be taken to \textit{minimize} the time spent re-configuring the MPU. We will see that certain features of the MPU in the TM4C123G allow us to configure much of the MPU once and reconfigure a small subset of parameters in the context switch.
+

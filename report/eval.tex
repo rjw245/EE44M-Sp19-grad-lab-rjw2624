@@ -79,7 +79,7 @@ With more small modifications, we can make sure that freeing another task's memo
 
 \section{Demonstrating Heap Flexibility}
 
-In Section \ref{sec:stack_prot_eval} I showed that my solution supports up to twenty-nine tasks if each limits heap consumption to one subregion. However, my solution is flexible enough to allow greater consumption of the heap per-task. I will demonstrate the other extreme case where one task is able to allocate 14836 bytes at maximum on the heap (not including its stack memory).
+In Section \ref{sec:stack_prot_eval} I showed that my solution supports up to twenty-nine tasks if each limits heap consumption to one subregion. However, my solution is flexible enough to allow greater consumption of the heap per-task. In a system with an idle task, a lone user task in the system with a 256 byte stack is able to acquire as much as \textbf{15072 bytes of space} in the heap.
 
 \section{Measuring Context Switch Overhead}
 

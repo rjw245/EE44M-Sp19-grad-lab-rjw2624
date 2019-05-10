@@ -250,7 +250,7 @@ int Load_Process_Main(void)
   return 0;
 }
 
-#define MAX_ALLOC 14836
+#define MAX_ALLOC 15072
 
 void greedy_task(void)
 {
@@ -314,5 +314,5 @@ int test_span_subregions(void)
 }
 int main(void)
 {
-  return test_span_subregions();
+  return greedy_task_main();
 }
