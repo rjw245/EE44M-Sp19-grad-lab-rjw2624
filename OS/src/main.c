@@ -271,7 +271,48 @@ int greedy_task_main(void)
     
 }
 
+Sema4Type a_alloced;
+Sema4Type b_alloced;
+
+
+extern unsigned long numTasks;
+void span_subregions_task_c(void)
+{
+    volatile int *c_ptr = OS_SVC_Heap_Malloc(100);
+    while(numTasks > 3);
+    c_ptr = OS_SVC_Heap_Malloc(300);
+    while(1);
+}
+
+void span_subregions_task_b(void)
+{
+    // volatile int *b_ptr = OS_SVC_Heap_Malloc(100);
+    OS_SVC_Suspend();
+    OS_SVC_Kill();
+}
+
+void span_subregions_task_a(void)
+{
+    volatile int *a_ptr = OS_SVC_Heap_Malloc(100);
+    while(numTasks > 3);
+    // a_ptr = OS_SVC_Heap_Malloc(300);
+    while(1);
+}
+
+int test_span_subregions(void)
+{
+  OS_Init();
+  OS_InitSemaphore(&b_alloced, 0);
+  OS_AddThread(span_subregions_task_a, 32, 2);
+  OS_AddThread(span_subregions_task_b, 32, 2);
+  OS_AddThread(span_subregions_task_c, 32, 2);
+  OS_Launch(TIME_1MS);
+  while (1)
+    ;
+  return 0;
+    
+}
 int main(void)
 {
-  return _16task_main();
+  return test_span_subregions();
 }

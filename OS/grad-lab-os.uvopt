@@ -115,10 +115,6 @@
       <TargetDriverDllRegistry>
         <SetRegEntry>
           <Number>0</Number>
-          <Key>DLGUARM</Key>
-        </SetRegEntry>
-        <SetRegEntry>
-          <Number>0</Number>
           <Key>DLGTARM</Key>
           <Name>(1010=984,300,1394,847,0)(1007=1066,145,1243,410,0)(1008=-1,-1,-1,-1,0)(1009=1361,244,1595,782,1)(1012=755,363,1220,667,1)</Name>
         </SetRegEntry>

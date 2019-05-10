@@ -104,6 +104,22 @@ static void free_subregions(int32_t *start, int32_t blockWords)
     }
 }
 
+static int offset_into_free_respecting_subregions(int32_t *blockStart, int32_t desiredWords, heap_owner_t *requester)
+{
+    int alloc_offset = 0;
+    while(alloc_offset + desiredWords <= blockRoom(blockStart))
+    {
+        int32_t *start = blockStart + alloc_offset;
+        if(check_subregions_free(start, desiredWords, requester) && (alloc_offset != 1))
+        {
+            return alloc_offset;
+        } else {
+            alloc_offset += (SUBREGION_SIZE_WORDS - ((start - HEAP_START) % SUBREGION_SIZE_WORDS));
+        }
+    }
+    return -1;
+}
+
 static inline void setup_mpu_regions(void)
 {
     // Whole addr space, priv r/w, unpriv none
@@ -201,12 +217,18 @@ void *__Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner)
     }
     while (inHeapRange(blockStart))
     {
-        // one pass through the heap
-        // choose first block that is big enough
-        if (check_subregions_free(blockStart, desiredWords, owner)) // Check if owner can use this subregion
+        if (blockUnused(blockStart) && desiredWords <= blockRoom(blockStart))
         {
-            if (blockUnused(blockStart) && desiredWords <= blockRoom(blockStart))
+            int alloc_start = offset_into_free_respecting_subregions(blockStart, desiredWords, owner);
+            if(alloc_start >= 0)
             {
+                if(alloc_start > 0)
+                {
+                    splitAndMarkBlockUsed(blockStart, alloc_start);
+                    markBlockUnused(blockStart);
+                    blockStart = nextBlockHeader(blockStart);
+                }
+
                 if (splitAndMarkBlockUsed(blockStart, desiredWords))
                 {
                     __dsb(0xF);
@@ -218,7 +240,7 @@ void *__Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner)
                 }
                 alloc_subregions(blockStart, desiredWords, owner);
                 __UnveilTaskHeap(cur_tcb); // Update allowed subregions for cur task
-                partition_subregion_freespace(blockStart);
+                // partition_subregion_freespace(blockStart);
                 __dsb(0xF);
                 __isb(0xF);
                 MemProtect_EnableMPU();
