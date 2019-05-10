@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>EE445M/EE380L Lab 6 Documentation: inc/ADC.h File Reference</title>
+<title>EE445M/EE380L Grad Lab Documentation: inc/ADC.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">EE445M/EE380L Lab 6 Documentation
+   <div id="projectname">EE445M/EE380L Grad Lab Documentation
    </div>
   </td>
  </tr>
@@ -178,8 +178,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Returns the most recent sample collected by the channel configured in ADC_Init(...) </p>
-<p>If the channel has not finished collecting its first sample, this function returns 0xFFFF.</p>
-<p>If you call this rapidly, faster than the ADC samples, this function may repeat values (since it always returns the most recent).</p>
+<p>This function uses busy-wait for the ADC sampling to be done</p>
 <dl class="section return"><dt>Returns</dt><dd>uint16_t The conversion result </dd></dl>
 
 </div>

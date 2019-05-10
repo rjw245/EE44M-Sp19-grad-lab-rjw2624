@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['magic',['magic',['../struct__tcb__s.html#a1f71cc7a8b23ee420548662caced5301',1,'_tcb_s']]]
+  ['name',['name',['../structELFSymbol__t.html#ab6d4a23a497d4511b045d1208984eae4',1,'ELFSymbol_t']]]
 ];

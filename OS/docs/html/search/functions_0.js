@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['adc_5fcollect',['ADC_Collect',['../ADC_8h.html#a262f417393c62f81b4a37b3019b32095',1,'ADC.h']]],
-  ['adc_5fin',['ADC_In',['../ADC_8h.html#a25269c67b0ba9dd124734e05ffb38493',1,'ADC.h']]],
-  ['adc_5finit',['ADC_Init',['../ADC_8h.html#af9d370fc407dee15db32335255f6cf74',1,'ADC.h']]]
+  ['_5f_5fheap_5fchangeowner',['__Heap_ChangeOwner',['../heap_8h.html#a92c7ac360bf78ce4a7498a44b345c8c1',1,'heap.h']]]
 ];

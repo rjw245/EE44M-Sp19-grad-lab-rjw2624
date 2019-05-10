@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>EE445M/EE380L Lab 6 Documentation: inc/OS.h File Reference</title>
+<title>EE445M/EE380L Grad Lab Documentation: inc/OS.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">EE445M/EE380L Lab 6 Documentation
+   <div id="projectname">EE445M/EE380L Grad Lab Documentation
    </div>
   </td>
  </tr>
@@ -100,10 +100,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>Real Time Operating System for Labs 2 and 3 EE445M/EE380L.12.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="heap_8h_source.html">heap.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for OS.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="OS_8h__incl.png" border="0" usemap="#inc_2OS_8h" alt=""/></div>
+<map name="inc_2OS_8h" id="inc_2OS_8h">
+<area shape="rect" id="node3" href="heap_8h.html" title="Implements memory heap for dynamic memory allocation. Follows standard malloc/calloc/realloc/free int..." alt="" coords="95,80,157,107"/>
+</map>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -139,9 +143,6 @@ Macros</h2></td></tr>
 <tr class="memitem:aae4936d8a1bad649da44cacada40b157"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aae4936d8a1bad649da44cacada40b157"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TIME_250US</b>&#160;&#160;&#160;(TIME_1MS / 4)</td></tr>
 <tr class="separator:aae4936d8a1bad649da44cacada40b157"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5486258f1f34d3baeda92a74b63c27c3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5486258f1f34d3baeda92a74b63c27c3"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>TASK_STACK_SIZE</b>&#160;&#160;&#160;128</td></tr>
-<tr class="separator:a5486258f1f34d3baeda92a74b63c27c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0fb8aa2f0ea0a6494f1639dd97087013"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a0fb8aa2f0ea0a6494f1639dd97087013"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>TCB_MAGIC</b>&#160;&#160;&#160;(0x900d900d)</td></tr>
 <tr class="separator:a0fb8aa2f0ea0a6494f1639dd97087013"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -183,8 +184,14 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8
 <tr class="memitem:a3e5c42edf8d08a40ccdee09e200d84b6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3e5c42edf8d08a40ccdee09e200d84b6"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>__OS_AddThread</b> (void(*task)(void), unsigned long stackSize, unsigned long priority, char *task_name, <a class="el" href="struct__pcb__s.html">pcb_t</a> *parent_process)</td></tr>
 <tr class="separator:a3e5c42edf8d08a40ccdee09e200d84b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ada4dffc21eb52b004d3bdbfa4fa001"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5ada4dffc21eb52b004d3bdbfa4fa001"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_SVC_AddThread</b> (void(*task)(void), unsigned long stackSize, unsigned long priority)</td></tr>
+<tr class="separator:a5ada4dffc21eb52b004d3bdbfa4fa001"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc21b8aab03cbb1611186ca3ac9123d8"><td class="memItemLeft" align="right" valign="top">unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#adc21b8aab03cbb1611186ca3ac9123d8">OS_Id</a> (void)</td></tr>
 <tr class="separator:adc21b8aab03cbb1611186ca3ac9123d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45ee1a7efb9a8715e6e012d661ee23e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a45ee1a7efb9a8715e6e012d661ee23e9"></a>
+unsigned long&#160;</td><td class="memItemRight" valign="bottom"><b>OS_SVC_Id</b> (void)</td></tr>
+<tr class="separator:a45ee1a7efb9a8715e6e012d661ee23e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21ee017683a4a2b593d5497a27addac0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a21ee017683a4a2b593d5497a27addac0"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddPeriodicThread_priv</b> (void(*task)(void), unsigned long period, unsigned long priority, char *task_name)</td></tr>
 <tr class="separator:a21ee017683a4a2b593d5497a27addac0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -194,10 +201,19 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddPeriodicThread_p
 <tr class="separator:a508ed7f6202df8a9e500994ad4399784"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeeb2aca9e1a16738a5d82353b2d497ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#aeeb2aca9e1a16738a5d82353b2d497ac">OS_Sleep</a> (unsigned long sleepTime)</td></tr>
 <tr class="separator:aeeb2aca9e1a16738a5d82353b2d497ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63c0c2c5a2ee62b852b102d84138e090"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a63c0c2c5a2ee62b852b102d84138e090"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>OS_SVC_Sleep</b> (unsigned long sleepTime)</td></tr>
+<tr class="separator:a63c0c2c5a2ee62b852b102d84138e090"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e991f4f2576c5cfec04ef5f37aabea5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a8e991f4f2576c5cfec04ef5f37aabea5">OS_Kill</a> (void)</td></tr>
 <tr class="separator:a8e991f4f2576c5cfec04ef5f37aabea5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88f4da88fb76c8d916fb1f7150c57231"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a88f4da88fb76c8d916fb1f7150c57231"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>OS_SVC_Kill</b> (void)</td></tr>
+<tr class="separator:a88f4da88fb76c8d916fb1f7150c57231"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e71587568a2a48931a35615cad1b5db"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a4e71587568a2a48931a35615cad1b5db">OS_Suspend</a> (void)</td></tr>
 <tr class="separator:a4e71587568a2a48931a35615cad1b5db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10bb4fa6889dd532a4ec5f61a1cd0726"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a10bb4fa6889dd532a4ec5f61a1cd0726"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>OS_SVC_Suspend</b> (void)</td></tr>
+<tr class="separator:a10bb4fa6889dd532a4ec5f61a1cd0726"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a361ff1137f5dad8e0a74631be6fb12b6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a361ff1137f5dad8e0a74631be6fb12b6">OS_Fifo_Init</a> (unsigned long size)</td></tr>
 <tr class="separator:a361ff1137f5dad8e0a74631be6fb12b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf231073602c9328f6248f6272d63e7f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#adf231073602c9328f6248f6272d63e7f">OS_Fifo_Put</a> (unsigned long data)</td></tr>
@@ -214,6 +230,9 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>OS_AddPeriodicThread_p
 <tr class="separator:ace71083584f0f1e5e2f081f1e4a1394a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5798d7fa05a4c3a523efe1b5651c5318"><td class="memItemLeft" align="right" valign="top">unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#a5798d7fa05a4c3a523efe1b5651c5318">OS_Time</a> (void)</td></tr>
 <tr class="separator:a5798d7fa05a4c3a523efe1b5651c5318"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a379b84d99f5b3ba7d872153fafbe3335"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a379b84d99f5b3ba7d872153fafbe3335"></a>
+unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><b>OS_SVC_Time</b> (void)</td></tr>
+<tr class="separator:a379b84d99f5b3ba7d872153fafbe3335"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af4b27f93116607bd3986125cb1c9edcf"><td class="memItemLeft" align="right" valign="top">unsigned long long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#af4b27f93116607bd3986125cb1c9edcf">OS_TimeDifference</a> (unsigned long long start, unsigned long long stop)</td></tr>
 <tr class="separator:af4b27f93116607bd3986125cb1c9edcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace6ec4b7947542f7d7ff3104d8c759bd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="OS_8h.html#ace6ec4b7947542f7d7ff3104d8c759bd">OS_ClearMsTime</a> (void)</td></tr>

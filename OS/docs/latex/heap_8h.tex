@@ -9,18 +9,20 @@ This graph shows which files directly or indirectly include this file\+:\nopageb
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=178pt]{heap_8h__dep__incl}
+\includegraphics[width=272pt]{heap_8h__dep__incl}
 \end{center}
 \end{figure}
 \subsection*{Data Structures}
 \begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct__heap__owner__s}{\+\_\+heap\+\_\+owner\+\_\+s}
 \item 
 struct \hyperlink{structheap__stats}{heap\+\_\+stats}
 \end{DoxyCompactItemize}
 \subsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
-\#define {\bfseries H\+E\+A\+P\+\_\+\+S\+I\+Z\+E\+\_\+\+B\+Y\+T\+ES}~(2048)\hypertarget{heap_8h_af2910747af799b24cfaa2ab32861f592}{}\label{heap_8h_af2910747af799b24cfaa2ab32861f592}
+\#define {\bfseries H\+E\+A\+P\+\_\+\+S\+I\+Z\+E\+\_\+\+B\+Y\+T\+ES}~(16384)\hypertarget{heap_8h_af2910747af799b24cfaa2ab32861f592}{}\label{heap_8h_af2910747af799b24cfaa2ab32861f592}
 
 \item 
 \#define {\bfseries H\+E\+A\+P\+\_\+\+S\+I\+Z\+E\+\_\+\+W\+O\+R\+DS}~(H\+E\+A\+P\+\_\+\+S\+I\+Z\+E\+\_\+\+B\+Y\+T\+ES / sizeof(int32\+\_\+t))\hypertarget{heap_8h_a08198ef17b67d091f9eb38c544cb4680}{}\label{heap_8h_a08198ef17b67d091f9eb38c544cb4680}
@@ -34,9 +36,14 @@ struct \hyperlink{structheap__stats}{heap\+\_\+stats}
 \item 
 \#define {\bfseries H\+E\+A\+P\+\_\+\+E\+R\+R\+O\+R\+\_\+\+P\+O\+I\+N\+T\+E\+R\+\_\+\+O\+U\+T\+\_\+\+O\+F\+\_\+\+R\+A\+N\+GE}~2\hypertarget{heap_8h_a5400f746fb9c8efb71156c51f766b22e}{}\label{heap_8h_a5400f746fb9c8efb71156c51f766b22e}
 
-\end{DoxyCompactItemize}
+\item 
+\#define \hyperlink{heap_8h_a99c93bda9ddc931ef53738d1f4961d58}{Heap\+\_\+\+Malloc}(desired\+Bytes)~\+\_\+\+\_\+\+Heap\+\_\+\+Malloc(desired\+Bytes, \&cur\+\_\+tcb-\/$>$h\+\_\+o)
+\begin{DoxyCompactList}\small\item\em Allocate memory, data not initialized. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Typedefs}
 \begin{DoxyCompactItemize}
+\item 
+typedef struct \hyperlink{struct__heap__owner__s}{\+\_\+heap\+\_\+owner\+\_\+s} {\bfseries heap\+\_\+owner\+\_\+t}\hypertarget{heap_8h_a3df85fc1dfba9c3bdc8f325c84d70e3d}{}\label{heap_8h_a3df85fc1dfba9c3bdc8f325c84d70e3d}
+
 \item 
 typedef struct \hyperlink{structheap__stats}{heap\+\_\+stats} {\bfseries heap\+\_\+stats\+\_\+t}\hypertarget{heap_8h_a286400a036f6f2dc8a3ddca156720932}{}\label{heap_8h_a286400a036f6f2dc8a3ddca156720932}
 
@@ -46,14 +53,23 @@ typedef struct \hyperlink{structheap__stats}{heap\+\_\+stats} {\bfseries heap\+\
 \item 
 int32\+\_\+t \hyperlink{heap_8h_a927f9f9522b87a3ccaee6c68efbf2081}{Heap\+\_\+\+Init} (void)
 \begin{DoxyCompactList}\small\item\em Initialize the Heap notes\+: Initializes/resets the heap to a clean state where no memory is allocated. \end{DoxyCompactList}\item 
-void $\ast$ \hyperlink{heap_8h_a178556e87b1f3e4c72b419d2c02cd1d4}{Heap\+\_\+\+Malloc} (int32\+\_\+t desired\+Bytes)
-\begin{DoxyCompactList}\small\item\em Allocate memory, data not initialized. \end{DoxyCompactList}\item 
+void $\ast$ {\bfseries O\+S\+\_\+\+S\+V\+C\+\_\+\+Heap\+\_\+\+Malloc} (int32\+\_\+t desired\+Bytes)\hypertarget{heap_8h_a6866ead55d5e2091e5ac1e4c4b1f231f}{}\label{heap_8h_a6866ead55d5e2091e5ac1e4c4b1f231f}
+
+\item 
+void $\ast$ {\bfseries \+\_\+\+\_\+\+Heap\+\_\+\+Malloc} (int32\+\_\+t desired\+Bytes, \hyperlink{struct__heap__owner__s}{heap\+\_\+owner\+\_\+t} $\ast$owner)\hypertarget{heap_8h_a44f034fef9e00ee50b74a0cfd9f2dd22}{}\label{heap_8h_a44f034fef9e00ee50b74a0cfd9f2dd22}
+
+\item 
 void $\ast$ \hyperlink{heap_8h_a2844e924abca6846ed9407e57ed828ab}{Heap\+\_\+\+Calloc} (int32\+\_\+t desired\+Bytes)
 \begin{DoxyCompactList}\small\item\em Allocate memory, data are initialized to 0 notes\+: the allocated memory block will be zeroed out. \end{DoxyCompactList}\item 
 void $\ast$ \hyperlink{heap_8h_af02282279b1745e0e1485c5bc7d19098}{Heap\+\_\+\+Realloc} (void $\ast$old\+Block, int32\+\_\+t desired\+Bytes)
 \begin{DoxyCompactList}\small\item\em Reallocate buffer to a new size notes\+: the given block will be unallocated after its contents are copied to the new block. \end{DoxyCompactList}\item 
+int32\+\_\+t \hyperlink{heap_8h_a92c7ac360bf78ce4a7498a44b345c8c1}{\+\_\+\+\_\+\+Heap\+\_\+\+Change\+Owner} (void $\ast$pointer, \hyperlink{struct__heap__owner__s}{heap\+\_\+owner\+\_\+t} $\ast$new\+\_\+owner)
+\begin{DoxyCompactList}\small\item\em Change ownership of block to the given task. This is only meant to be used by the OS for task management in processes. \end{DoxyCompactList}\item 
 int32\+\_\+t \hyperlink{heap_8h_a0c2946e20398909f89ebf1bc344b9f60}{Heap\+\_\+\+Free} (void $\ast$pointer)
 \begin{DoxyCompactList}\small\item\em return a block to the heap \end{DoxyCompactList}\item 
+int32\+\_\+t {\bfseries O\+S\+\_\+\+S\+V\+C\+\_\+\+Heap\+\_\+\+Free} (void $\ast$pointer)\hypertarget{heap_8h_ae58fc24993d48bb6a1775b016d5b9e95}{}\label{heap_8h_ae58fc24993d48bb6a1775b016d5b9e95}
+
+\item 
 int32\+\_\+t \hyperlink{heap_8h_a5c8d75b021d5e6edab5c8e0164224e3e}{Heap\+\_\+\+Test} (void)
 \begin{DoxyCompactList}\small\item\em Test the heap. \end{DoxyCompactList}\item 
 \hyperlink{structheap__stats}{heap\+\_\+stats\+\_\+t} \hyperlink{heap_8h_a21054e474258ea882ed5765cabaa7c3b}{Heap\+\_\+\+Stats} (void)
@@ -71,7 +87,51 @@ Jacob Egner
 \end{DoxyDate}
 
 
+\subsection{Macro Definition Documentation}
+\index{heap.\+h@{heap.\+h}!Heap\+\_\+\+Malloc@{Heap\+\_\+\+Malloc}}
+\index{Heap\+\_\+\+Malloc@{Heap\+\_\+\+Malloc}!heap.\+h@{heap.\+h}}
+\subsubsection[{\texorpdfstring{Heap\+\_\+\+Malloc}{Heap_Malloc}}]{\setlength{\rightskip}{0pt plus 5cm}\#define Heap\+\_\+\+Malloc(
+\begin{DoxyParamCaption}
+\item[{}]{desired\+Bytes}
+\end{DoxyParamCaption}
+)~\+\_\+\+\_\+\+Heap\+\_\+\+Malloc(desired\+Bytes, \&cur\+\_\+tcb-\/$>$h\+\_\+o)}\hypertarget{heap_8h_a99c93bda9ddc931ef53738d1f4961d58}{}\label{heap_8h_a99c93bda9ddc931ef53738d1f4961d58}
+
+
+Allocate memory, data not initialized. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em desired\+Bytes} & desired number of bytes to allocate\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+void$\ast$ pointing to the allocated memory or will return N\+U\+LL if there isn\textquotesingle{}t sufficient space to satisfy allocation request 
+\end{DoxyReturn}
+
+
 \subsection{Function Documentation}
+\index{heap.\+h@{heap.\+h}!\+\_\+\+\_\+\+Heap\+\_\+\+Change\+Owner@{\+\_\+\+\_\+\+Heap\+\_\+\+Change\+Owner}}
+\index{\+\_\+\+\_\+\+Heap\+\_\+\+Change\+Owner@{\+\_\+\+\_\+\+Heap\+\_\+\+Change\+Owner}!heap.\+h@{heap.\+h}}
+\subsubsection[{\texorpdfstring{\+\_\+\+\_\+\+Heap\+\_\+\+Change\+Owner(void $\ast$pointer, heap\+\_\+owner\+\_\+t $\ast$new\+\_\+owner)}{__Heap_ChangeOwner(void *pointer, heap_owner_t *new_owner)}}]{\setlength{\rightskip}{0pt plus 5cm}int32\+\_\+t \+\_\+\+\_\+\+Heap\+\_\+\+Change\+Owner (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{pointer, }
+\item[{{\bf heap\+\_\+owner\+\_\+t} $\ast$}]{new\+\_\+owner}
+\end{DoxyParamCaption}
+)}\hypertarget{heap_8h_a92c7ac360bf78ce4a7498a44b345c8c1}{}\label{heap_8h_a92c7ac360bf78ce4a7498a44b345c8c1}
+
+
+Change ownership of block to the given task. This is only meant to be used by the OS for task management in processes. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em pointer} & Pointer to the start of the block in the heap. \\
+\hline
+{\em new\+\_\+owner} & Task that will own the block after this call exits successfully. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int32\+\_\+t H\+E\+A\+P\+\_\+\+OK if everything is ok; H\+E\+A\+P\+\_\+\+E\+R\+R\+O\+R\+\_\+\+P\+O\+I\+N\+T\+E\+R\+\_\+\+O\+U\+T\+\_\+\+O\+F\+\_\+\+R\+A\+N\+GE if pointer points outside the heap; H\+E\+A\+P\+\_\+\+E\+R\+R\+O\+R\+\_\+\+C\+O\+R\+R\+U\+P\+T\+E\+D\+\_\+\+H\+E\+AP if heap has been corrupted or trying to unallocate memory that has already been unallocated; 
+\end{DoxyReturn}
 \index{heap.\+h@{heap.\+h}!Heap\+\_\+\+Calloc@{Heap\+\_\+\+Calloc}}
 \index{Heap\+\_\+\+Calloc@{Heap\+\_\+\+Calloc}!heap.\+h@{heap.\+h}}
 \subsubsection[{\texorpdfstring{Heap\+\_\+\+Calloc(int32\+\_\+t desired\+Bytes)}{Heap_Calloc(int32_t desiredBytes)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ Heap\+\_\+\+Calloc (
@@ -123,25 +183,6 @@ Initialize the Heap notes\+: Initializes/resets the heap to a clean state where 
 
 \begin{DoxyReturn}{Returns}
 always H\+E\+A\+P\+\_\+\+OK 
-\end{DoxyReturn}
-\index{heap.\+h@{heap.\+h}!Heap\+\_\+\+Malloc@{Heap\+\_\+\+Malloc}}
-\index{Heap\+\_\+\+Malloc@{Heap\+\_\+\+Malloc}!heap.\+h@{heap.\+h}}
-\subsubsection[{\texorpdfstring{Heap\+\_\+\+Malloc(int32\+\_\+t desired\+Bytes)}{Heap_Malloc(int32_t desiredBytes)}}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ Heap\+\_\+\+Malloc (
-\begin{DoxyParamCaption}
-\item[{int32\+\_\+t}]{desired\+Bytes}
-\end{DoxyParamCaption}
-)}\hypertarget{heap_8h_a178556e87b1f3e4c72b419d2c02cd1d4}{}\label{heap_8h_a178556e87b1f3e4c72b419d2c02cd1d4}
-
-
-Allocate memory, data not initialized. 
-
-
-\begin{DoxyParams}{Parameters}
-{\em desired\+Bytes} & desired number of bytes to allocate\\
-\hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-void$\ast$ pointing to the allocated memory or will return N\+U\+LL if there isn\textquotesingle{}t sufficient space to satisfy allocation request 
 \end{DoxyReturn}
 \index{heap.\+h@{heap.\+h}!Heap\+\_\+\+Realloc@{Heap\+\_\+\+Realloc}}
 \index{Heap\+\_\+\+Realloc@{Heap\+\_\+\+Realloc}!heap.\+h@{heap.\+h}}

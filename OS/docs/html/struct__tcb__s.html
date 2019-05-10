@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.11"/>
-<title>EE445M/EE380L Lab 6 Documentation: _tcb_s Struct Reference</title>
+<title>EE445M/EE380L Grad Lab Documentation: _tcb_s Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -23,7 +23,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">EE445M/EE380L Lab 6 Documentation
+   <div id="projectname">EE445M/EE380L Grad Lab Documentation
    </div>
   </td>
  </tr>
@@ -94,7 +94,8 @@ Collaboration diagram for _tcb_s:</div>
 <div class="dyncontent">
 <div class="center"><img src="struct__tcb__s__coll__graph.png" border="0" usemap="#__tcb__s_coll__map" alt="Collaboration graph"/></div>
 <map name="__tcb__s_coll__map" id="__tcb__s_coll__map">
-<area shape="rect" id="node2" href="struct__pcb__s.html" title="_pcb_s" alt="" coords="5,5,69,32"/>
+<area shape="rect" id="node2" href="struct__pcb__s.html" title="_pcb_s" alt="" coords="81,95,145,121"/>
+<area shape="rect" id="node3" href="struct__heap__owner__s.html" title="_heap_owner_s" alt="" coords="5,5,119,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
@@ -115,22 +116,18 @@ unsigned long&#160;</td><td class="memItemRight" valign="bottom"><b>id</b></td><
 <tr class="memitem:a319151d52db9a3fb0b3c018bce9fcb4a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a319151d52db9a3fb0b3c018bce9fcb4a"></a>
 uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>priority</b></td></tr>
 <tr class="separator:a319151d52db9a3fb0b3c018bce9fcb4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a85c4e73f3d5ccebf43c628d9e1fc4e4f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a85c4e73f3d5ccebf43c628d9e1fc4e4f"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>period</b></td></tr>
-<tr class="separator:a85c4e73f3d5ccebf43c628d9e1fc4e4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1f71cc7a8b23ee420548662caced5301"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1f71cc7a8b23ee420548662caced5301"></a>
-unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct__tcb__s.html#a1f71cc7a8b23ee420548662caced5301">magic</a></td></tr>
-<tr class="memdesc:a1f71cc7a8b23ee420548662caced5301"><td class="mdescLeft">&#160;</td><td class="mdescRight">magic field must contain TCB_MAGIC for TCB to be valid <br /></td></tr>
-<tr class="separator:a1f71cc7a8b23ee420548662caced5301"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af815dde5661c4092abe9838fb28d9ed2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="af815dde5661c4092abe9838fb28d9ed2"></a>
-void(*&#160;</td><td class="memItemRight" valign="bottom"><b>task</b> )(void)</td></tr>
-<tr class="separator:af815dde5661c4092abe9838fb28d9ed2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66241e192445da72f98da4e2d1359d5a"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a66241e192445da72f98da4e2d1359d5a"></a>
 char *&#160;</td><td class="memItemRight" valign="bottom"><b>task_name</b></td></tr>
 <tr class="separator:a66241e192445da72f98da4e2d1359d5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a95f1ceb9227ec81f5fee8d419e38f6f5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a95f1ceb9227ec81f5fee8d419e38f6f5"></a>
 <a class="el" href="struct__pcb__s.html">pcb_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>parent_process</b></td></tr>
 <tr class="separator:a95f1ceb9227ec81f5fee8d419e38f6f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a974ef07841ffeb40d1557f239d48c42f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a974ef07841ffeb40d1557f239d48c42f"></a>
+long *&#160;</td><td class="memItemRight" valign="bottom"><b>stack_base</b></td></tr>
+<tr class="separator:a974ef07841ffeb40d1557f239d48c42f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ff5fee4d259b1e8770c961ae8badf6e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3ff5fee4d259b1e8770c961ae8badf6e"></a>
+<a class="el" href="struct__heap__owner__s.html">heap_owner_t</a>&#160;</td><td class="memItemRight" valign="bottom"><b>h_o</b></td></tr>
+<tr class="separator:a3ff5fee4d259b1e8770c961ae8badf6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>inc/<a class="el" href="OS_8h_source.html">OS.h</a></li>

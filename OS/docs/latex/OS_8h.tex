@@ -6,11 +6,12 @@ Real Time Operating System for Labs 2 and 3 E\+E445\+M/\+E\+E380\+L.\+12.
 
 
 {\ttfamily \#include $<$stdint.\+h$>$}\\*
+{\ttfamily \#include \char`\"{}heap.\+h\char`\"{}}\\*
 Include dependency graph for O\+S.\+h\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=135pt]{OS_8h__incl}
+\includegraphics[width=194pt]{OS_8h__incl}
 \end{center}
 \end{figure}
 This graph shows which files directly or indirectly include this file\+:\nopagebreak
@@ -42,9 +43,6 @@ struct \hyperlink{structSema4}{Sema4}
 
 \item 
 \#define {\bfseries T\+I\+M\+E\+\_\+250\+US}~(T\+I\+M\+E\+\_\+1\+MS / 4)\hypertarget{OS_8h_aae4936d8a1bad649da44cacada40b157}{}\label{OS_8h_aae4936d8a1bad649da44cacada40b157}
-
-\item 
-\#define {\bfseries T\+A\+S\+K\+\_\+\+S\+T\+A\+C\+K\+\_\+\+S\+I\+ZE}~128\hypertarget{OS_8h_a5486258f1f34d3baeda92a74b63c27c3}{}\label{OS_8h_a5486258f1f34d3baeda92a74b63c27c3}
 
 \item 
 \#define {\bfseries T\+C\+B\+\_\+\+M\+A\+G\+IC}~(0x900d900d)\hypertarget{OS_8h_a0fb8aa2f0ea0a6494f1639dd97087013}{}\label{OS_8h_a0fb8aa2f0ea0a6494f1639dd97087013}
@@ -87,7 +85,13 @@ void \hyperlink{OS_8h_a075cf7301361417f66be1d5c22e36b0f}{Jitter} (void)\hypertar
 int {\bfseries \+\_\+\+\_\+\+O\+S\+\_\+\+Add\+Thread} (void($\ast$task)(void), unsigned long stack\+Size, unsigned long priority, char $\ast$task\+\_\+name, \hyperlink{struct__pcb__s}{pcb\+\_\+t} $\ast$parent\+\_\+process)\hypertarget{OS_8h_a3e5c42edf8d08a40ccdee09e200d84b6}{}\label{OS_8h_a3e5c42edf8d08a40ccdee09e200d84b6}
 
 \item 
+int {\bfseries O\+S\+\_\+\+S\+V\+C\+\_\+\+Add\+Thread} (void($\ast$task)(void), unsigned long stack\+Size, unsigned long priority)\hypertarget{OS_8h_a5ada4dffc21eb52b004d3bdbfa4fa001}{}\label{OS_8h_a5ada4dffc21eb52b004d3bdbfa4fa001}
+
+\item 
 unsigned long \hyperlink{OS_8h_adc21b8aab03cbb1611186ca3ac9123d8}{O\+S\+\_\+\+Id} (void)
+\item 
+unsigned long {\bfseries O\+S\+\_\+\+S\+V\+C\+\_\+\+Id} (void)\hypertarget{OS_8h_a45ee1a7efb9a8715e6e012d661ee23e9}{}\label{OS_8h_a45ee1a7efb9a8715e6e012d661ee23e9}
+
 \item 
 int {\bfseries O\+S\+\_\+\+Add\+Periodic\+Thread\+\_\+priv} (void($\ast$task)(void), unsigned long period, unsigned long priority, char $\ast$task\+\_\+name)\hypertarget{OS_8h_a21ee017683a4a2b593d5497a27addac0}{}\label{OS_8h_a21ee017683a4a2b593d5497a27addac0}
 
@@ -98,9 +102,18 @@ int \hyperlink{OS_8h_a508ed7f6202df8a9e500994ad4399784}{O\+S\+\_\+\+Add\+S\+W2\+
 \item 
 void \hyperlink{OS_8h_aeeb2aca9e1a16738a5d82353b2d497ac}{O\+S\+\_\+\+Sleep} (unsigned long sleep\+Time)
 \item 
+void {\bfseries O\+S\+\_\+\+S\+V\+C\+\_\+\+Sleep} (unsigned long sleep\+Time)\hypertarget{OS_8h_a63c0c2c5a2ee62b852b102d84138e090}{}\label{OS_8h_a63c0c2c5a2ee62b852b102d84138e090}
+
+\item 
 void \hyperlink{OS_8h_a8e991f4f2576c5cfec04ef5f37aabea5}{O\+S\+\_\+\+Kill} (void)
 \item 
+void {\bfseries O\+S\+\_\+\+S\+V\+C\+\_\+\+Kill} (void)\hypertarget{OS_8h_a88f4da88fb76c8d916fb1f7150c57231}{}\label{OS_8h_a88f4da88fb76c8d916fb1f7150c57231}
+
+\item 
 void \hyperlink{OS_8h_a4e71587568a2a48931a35615cad1b5db}{O\+S\+\_\+\+Suspend} (void)
+\item 
+void {\bfseries O\+S\+\_\+\+S\+V\+C\+\_\+\+Suspend} (void)\hypertarget{OS_8h_a10bb4fa6889dd532a4ec5f61a1cd0726}{}\label{OS_8h_a10bb4fa6889dd532a4ec5f61a1cd0726}
+
 \item 
 void \hyperlink{OS_8h_a361ff1137f5dad8e0a74631be6fb12b6}{O\+S\+\_\+\+Fifo\+\_\+\+Init} (unsigned long size)
 \item 
@@ -117,6 +130,9 @@ void \hyperlink{OS_8h_ac4c3ebdb61c0c11195d6fcafeb0d4c99}{O\+S\+\_\+\+Mail\+Box\+
 unsigned long \hyperlink{OS_8h_ace71083584f0f1e5e2f081f1e4a1394a}{O\+S\+\_\+\+Mail\+Box\+\_\+\+Recv} (void)
 \item 
 unsigned long long \hyperlink{OS_8h_a5798d7fa05a4c3a523efe1b5651c5318}{O\+S\+\_\+\+Time} (void)
+\item 
+unsigned long long {\bfseries O\+S\+\_\+\+S\+V\+C\+\_\+\+Time} (void)\hypertarget{OS_8h_a379b84d99f5b3ba7d872153fafbe3335}{}\label{OS_8h_a379b84d99f5b3ba7d872153fafbe3335}
+
 \item 
 unsigned long long \hyperlink{OS_8h_af4b27f93116607bd3986125cb1c9edcf}{O\+S\+\_\+\+Time\+Difference} (unsigned long long start, unsigned long long stop)
 \item 

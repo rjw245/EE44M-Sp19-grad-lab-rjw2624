@@ -6,7 +6,7 @@ Collaboration diagram for \+\_\+tcb\+\_\+s\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=174pt]{struct__tcb__s__coll__graph}
+\includegraphics[width=214pt]{struct__tcb__s__coll__graph}
 \end{center}
 \end{figure}
 \subsection*{Data Fields}
@@ -27,19 +27,16 @@ unsigned long {\bfseries id}\hypertarget{struct__tcb__s_a48e677e5c96cf412d208548
 uint8\+\_\+t {\bfseries priority}\hypertarget{struct__tcb__s_a319151d52db9a3fb0b3c018bce9fcb4a}{}\label{struct__tcb__s_a319151d52db9a3fb0b3c018bce9fcb4a}
 
 \item 
-uint32\+\_\+t {\bfseries period}\hypertarget{struct__tcb__s_a85c4e73f3d5ccebf43c628d9e1fc4e4f}{}\label{struct__tcb__s_a85c4e73f3d5ccebf43c628d9e1fc4e4f}
-
-\item 
-unsigned long \hyperlink{struct__tcb__s_a1f71cc7a8b23ee420548662caced5301}{magic}\hypertarget{struct__tcb__s_a1f71cc7a8b23ee420548662caced5301}{}\label{struct__tcb__s_a1f71cc7a8b23ee420548662caced5301}
-
-\begin{DoxyCompactList}\small\item\em magic field must contain T\+C\+B\+\_\+\+M\+A\+G\+IC for T\+CB to be valid \end{DoxyCompactList}\item 
-void($\ast$ {\bfseries task} )(void)\hypertarget{struct__tcb__s_af815dde5661c4092abe9838fb28d9ed2}{}\label{struct__tcb__s_af815dde5661c4092abe9838fb28d9ed2}
-
-\item 
 char $\ast$ {\bfseries task\+\_\+name}\hypertarget{struct__tcb__s_a66241e192445da72f98da4e2d1359d5a}{}\label{struct__tcb__s_a66241e192445da72f98da4e2d1359d5a}
 
 \item 
 \hyperlink{struct__pcb__s}{pcb\+\_\+t} $\ast$ {\bfseries parent\+\_\+process}\hypertarget{struct__tcb__s_a95f1ceb9227ec81f5fee8d419e38f6f5}{}\label{struct__tcb__s_a95f1ceb9227ec81f5fee8d419e38f6f5}
+
+\item 
+long $\ast$ {\bfseries stack\+\_\+base}\hypertarget{struct__tcb__s_a974ef07841ffeb40d1557f239d48c42f}{}\label{struct__tcb__s_a974ef07841ffeb40d1557f239d48c42f}
+
+\item 
+\hyperlink{struct__heap__owner__s}{heap\+\_\+owner\+\_\+t} {\bfseries h\+\_\+o}\hypertarget{struct__tcb__s_a3ff5fee4d259b1e8770c961ae8badf6e}{}\label{struct__tcb__s_a3ff5fee4d259b1e8770c961ae8badf6e}
 
 \end{DoxyCompactItemize}
 
