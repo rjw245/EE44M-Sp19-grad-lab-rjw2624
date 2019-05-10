@@ -34,9 +34,9 @@ static void mergeBlockWithBelow(int32_t *upperBlockStart);
 
 typedef struct
 {
-  heap_owner_t *owner;
-  int task_id;
-  unsigned int num_allocs;
+    heap_owner_t *owner;
+    int task_id;
+    unsigned int num_allocs;
 } subrgn_meta_t;
 
 // Heap has as many individually-protected subregions as the maximum
@@ -45,344 +45,346 @@ subrgn_meta_t __heap_subrgn_table[NUM_SUBREGIONS];
 
 static bool check_subregions_free(int32_t *start, int32_t desiredWords, heap_owner_t *requester)
 {
-  int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
-  int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+    int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
+    int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
-  for (int i = subrgn_start; i <= subrgn_end; i++)
-  {
-    if ((__heap_subrgn_table[i].task_id != requester->id) && (__heap_subrgn_table[i].task_id != -1))
+    for (int i = subrgn_start; i <= subrgn_end; i++)
     {
-      return false;
+        if ((__heap_subrgn_table[i].task_id != requester->id) && (__heap_subrgn_table[i].task_id != -1))
+        {
+            return false;
+        }
     }
-  }
-  return true;
+    return true;
 }
 
 static void alloc_subregions(int32_t *start, int32_t desiredWords, heap_owner_t *requester)
 {
-  int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
-  int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+    int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
+    int subrgn_end = (start + desiredWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
-  for (int i = subrgn_start; i <= subrgn_end; i++)
-  {
-    __heap_subrgn_table[i].owner = requester;
-    __heap_subrgn_table[i].task_id = requester->id;
-    requester->heap_prot_msk |= 1 << i;
-    __heap_subrgn_table[i].num_allocs++;
-  }
+    for (int i = subrgn_start; i <= subrgn_end; i++)
+    {
+        __heap_subrgn_table[i].owner = requester;
+        __heap_subrgn_table[i].task_id = requester->id;
+        requester->heap_prot_msk |= 1 << i;
+        __heap_subrgn_table[i].num_allocs++;
+    }
 }
 
 static void partition_subregion_freespace(int32_t *last_subrgn_block)
 {
-  int32_t *free_start = nextBlockHeader(last_subrgn_block);
-  int free_len = blockRoom(free_start);
-  int free_start_subrgn = (free_start - HEAP_START) / SUBREGION_SIZE_WORDS;
-  int free_end_subrgn = (free_start + free_len + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
-  if (free_start_subrgn != free_end_subrgn)
-  {
-    int32_t subrgn_free_words = SUBREGION_SIZE_WORDS - ((free_start - HEAP_START) % SUBREGION_SIZE_WORDS);
-    splitAndMarkBlockUsed(free_start, subrgn_free_words - 2);
-    markBlockUnused(free_start);
-  }
+    int32_t *free_start = nextBlockHeader(last_subrgn_block);
+    int free_len = blockRoom(free_start);
+    int free_start_subrgn = (free_start - HEAP_START) / SUBREGION_SIZE_WORDS;
+    int free_end_subrgn = (free_start + free_len + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+    if (free_start_subrgn != free_end_subrgn)
+    {
+        int32_t subrgn_free_words = SUBREGION_SIZE_WORDS - ((free_start - HEAP_START) % SUBREGION_SIZE_WORDS);
+        splitAndMarkBlockUsed(free_start, subrgn_free_words - 2);
+        markBlockUnused(free_start);
+    }
 }
 
 static void free_subregions(int32_t *start, int32_t blockWords)
 {
-  int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
-  int subrgn_end = (start + blockWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
+    int subrgn_start = (start - HEAP_START) / SUBREGION_SIZE_WORDS;
+    int subrgn_end = (start + blockWords + 2 - HEAP_START) / SUBREGION_SIZE_WORDS;
 
-  for (int i = subrgn_start; i <= subrgn_end; i++)
-  {
-    __heap_subrgn_table[i].num_allocs--;
-    if (__heap_subrgn_table[i].num_allocs == 0)
+    for (int i = subrgn_start; i <= subrgn_end; i++)
     {
-      // Subregion can now be allocated to someone else
-      __heap_subrgn_table[i].owner->heap_prot_msk &= ~(1 << i);
-      __heap_subrgn_table[i].owner = NULL;
-      __heap_subrgn_table[i].task_id = -1;
+        __heap_subrgn_table[i].num_allocs--;
+        if (__heap_subrgn_table[i].num_allocs == 0)
+        {
+            // Subregion can now be allocated to someone else
+            __heap_subrgn_table[i].owner->heap_prot_msk &= ~(1 << i);
+            __heap_subrgn_table[i].owner = NULL;
+            __heap_subrgn_table[i].task_id = -1;
+        }
     }
-  }
 }
 
 static inline void setup_mpu_regions(void)
 {
-  // Whole addr space, priv r/w, unpriv none
-//   MemProtect_SelectRegion(3);
-//   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_UNA);
-//   MemProtect_EnableRegion();
+    // Whole addr space, priv r/w, unpriv none
+    //   MemProtect_SelectRegion(3);
+    //   MemProtect_CfgRegion((void *)0, 0x20, AP_PRW_UNA);
+    //   MemProtect_EnableRegion();
 
-  for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
-  {
-    MemProtect_SelectRegion(i);
-    MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PRW_URW);
-    MemProtect_CfgSubregions(0xFF); // Prot all subregions
-    MemProtect_EnableRegion();
-  }
+    for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+    {
+        MemProtect_SelectRegion(i);
+        MemProtect_CfgRegion(Heap + (i - 4) * (lengthof(Heap) / NUM_MPU_REGIONS), 12, AP_PRW_URW);
+        MemProtect_CfgSubregions(0xFF); // Prot all subregions
+        MemProtect_EnableRegion();
+    }
 }
 
 int32_t Heap_Init(void)
 {
-  for (int i = 0; i < lengthof(__heap_subrgn_table); i++)
-  {
-    __heap_subrgn_table[i].owner = NULL;
-    __heap_subrgn_table[i].num_allocs = 0;
-    __heap_subrgn_table[i].task_id = -1;
-  }
-  int32_t *blockStart = HEAP_START;
-  int32_t *blockEnd = (HEAP_START + HEAP_SIZE_WORDS - 1);
-  *blockStart = -(int32_t)(HEAP_SIZE_WORDS - 2);
-  *blockEnd = -(int32_t)(HEAP_SIZE_WORDS - 2);
+    for (int i = 0; i < lengthof(__heap_subrgn_table); i++)
+    {
+        __heap_subrgn_table[i].owner = NULL;
+        __heap_subrgn_table[i].num_allocs = 0;
+        __heap_subrgn_table[i].task_id = -1;
+    }
+    int32_t *blockStart = HEAP_START;
+    int32_t *blockEnd = (HEAP_START + HEAP_SIZE_WORDS - 1);
+    *blockStart = -(int32_t)(HEAP_SIZE_WORDS - 2);
+    *blockEnd = -(int32_t)(HEAP_SIZE_WORDS - 2);
 
-  setup_mpu_regions();
+    setup_mpu_regions();
 
-  return HEAP_OK;
+    return HEAP_OK;
 }
 
 // extern heap_owner_t OS_heap_ownership;
 void __UnveilTaskHeap(tcb_t *tcb)
 {
-  uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk;
-  if(tcb->parent_process)
-  {
-    heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;
-    // Tasks in process must not have access to OS code.
-    MemProtect_SelectRegion(0);
-    // MemProtect_DisableRegion();
-    MemProtect_CfgRegionAccess(AP_PRW_UNA);
-    // MemProtect_EnableRegion();
-    for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+    uint32_t heap_prot_msk = tcb->h_o.heap_prot_msk;
+    if (tcb->parent_process)
     {
-        MemProtect_SelectRegion(i);
-        // TODO if the task is in a loaded process, it probably SHOULD NOT have
-        // access to OS memory in the heap, and should only interface with the 
-        // OS through the SVC call interface.
-        MemProtect_CfgRegionAccess(AP_PRW_URW);
-        MemProtect_CfgSubregions(((~heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
-        MemProtect_EnableRegion();
-    }
-  } else {
-    // Tasks not in process must be compiled with OS, and so must have access to OS code.
-    MemProtect_SelectRegion(0);
-    // MemProtect_DisableRegion();
-    MemProtect_CfgRegionAccess(AP_PRW_URW);
-    // MemProtect_EnableRegion();
-    for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
-    {
-        MemProtect_SelectRegion(i);
-        // TODO if the task is in a loaded process, it probably SHOULD NOT have
-        // access to OS memory in the heap, and should only interface with the 
-        // OS through the SVC call interface.
+        heap_prot_msk |= tcb->parent_process->h_o.heap_prot_msk;
+        // Tasks in process must not have access to OS code.
+        MemProtect_SelectRegion(0);
+        // MemProtect_DisableRegion();
         MemProtect_CfgRegionAccess(AP_PRW_UNA);
-        MemProtect_CfgSubregions((heap_prot_msk >> ((i - 4) * 8)) & 0xFF);
+        // MemProtect_EnableRegion();
+        for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+        {
+            MemProtect_SelectRegion(i);
+            // TODO if the task is in a loaded process, it probably SHOULD NOT have
+            // access to OS memory in the heap, and should only interface with the
+            // OS through the SVC call interface.
+            MemProtect_CfgRegionAccess(AP_PRW_URW);
+            MemProtect_CfgSubregions(((~heap_prot_msk) >> ((i - 4) * 8)) & 0xFF);
+            MemProtect_EnableRegion();
+        }
     }
-  }
+    else
+    {
+        // Tasks not in process must be compiled with OS, and so must have access to OS code.
+        MemProtect_SelectRegion(0);
+        // MemProtect_DisableRegion();
+        MemProtect_CfgRegionAccess(AP_PRW_URW);
+        // MemProtect_EnableRegion();
+        for (int i = 4; i < 4 + NUM_MPU_REGIONS; i++)
+        {
+            MemProtect_SelectRegion(i);
+            // TODO if the task is in a loaded process, it probably SHOULD NOT have
+            // access to OS memory in the heap, and should only interface with the
+            // OS through the SVC call interface.
+            MemProtect_CfgRegionAccess(AP_PRW_UNA);
+            MemProtect_CfgSubregions((heap_prot_msk >> ((i - 4) * 8)) & 0xFF);
+        }
+    }
 }
 
 void *__Heap_Malloc(int32_t desiredBytes, heap_owner_t *owner)
 {
-  __dsb(0xF);
-  __isb(0xF);
-  unsigned long mpu_stat = MemProtect_StartCritical();
-  __dsb(0xF);
-  __isb(0xF);
+    __dsb(0xF);
+    __isb(0xF);
+    unsigned long mpu_stat = MemProtect_StartCritical();
+    __dsb(0xF);
+    __isb(0xF);
 
-  int32_t desiredWords = (desiredBytes + sizeof(int32_t) - 1) / sizeof(int32_t);
-  int32_t *blockStart = HEAP_START; // implements first fit
-  if (desiredWords <= 0)
-  {
-    __dsb(0xF);
-    __isb(0xF);
-    MemProtect_EnableMPU();
-    __dsb(0xF);
-    __isb(0xF);
-    return 0; //NULL
-  }
-  while (inHeapRange(blockStart))
-  {
-    // one pass through the heap
-    // choose first block that is big enough
-    if (check_subregions_free(blockStart, desiredWords, owner)) // Check if owner can use this subregion
+    int32_t desiredWords = (desiredBytes + sizeof(int32_t) - 1) / sizeof(int32_t);
+    int32_t *blockStart = HEAP_START; // implements first fit
+    if (desiredWords <= 0)
     {
-      if (blockUnused(blockStart) && desiredWords <= blockRoom(blockStart))
-      {
-        if (splitAndMarkBlockUsed(blockStart, desiredWords))
-        {
-          __dsb(0xF);
-          __isb(0xF);
-          MemProtect_EnableMPU();
-          __dsb(0xF);
-          __isb(0xF);
-          return 0; //NULL
-        }
-        alloc_subregions(blockStart, desiredWords, owner);
-        __UnveilTaskHeap(cur_tcb); // Update allowed subregions for cur task
-        partition_subregion_freespace(blockStart);
         __dsb(0xF);
         __isb(0xF);
         MemProtect_EnableMPU();
         __dsb(0xF);
         __isb(0xF);
-        return blockStart + 1;
-      }
+        return 0; //NULL
     }
-    blockStart = nextBlockHeader(blockStart);
-  }
-  __dsb(0xF);
-  __isb(0xF);
-  MemProtect_EndCritical(mpu_stat);
-  __dsb(0xF);
-  __isb(0xF);
-  return 0; //NULL
+    while (inHeapRange(blockStart))
+    {
+        // one pass through the heap
+        // choose first block that is big enough
+        if (check_subregions_free(blockStart, desiredWords, owner)) // Check if owner can use this subregion
+        {
+            if (blockUnused(blockStart) && desiredWords <= blockRoom(blockStart))
+            {
+                if (splitAndMarkBlockUsed(blockStart, desiredWords))
+                {
+                    __dsb(0xF);
+                    __isb(0xF);
+                    MemProtect_EnableMPU();
+                    __dsb(0xF);
+                    __isb(0xF);
+                    return 0; //NULL
+                }
+                alloc_subregions(blockStart, desiredWords, owner);
+                __UnveilTaskHeap(cur_tcb); // Update allowed subregions for cur task
+                partition_subregion_freespace(blockStart);
+                __dsb(0xF);
+                __isb(0xF);
+                MemProtect_EnableMPU();
+                __dsb(0xF);
+                __isb(0xF);
+                return blockStart + 1;
+            }
+        }
+        blockStart = nextBlockHeader(blockStart);
+    }
+    __dsb(0xF);
+    __isb(0xF);
+    MemProtect_EndCritical(mpu_stat);
+    __dsb(0xF);
+    __isb(0xF);
+    return 0; //NULL
 }
 
 void *Heap_Calloc(int32_t desiredBytes)
 {
-  int32_t *blockPtr;
-  int32_t wordsToClear;
-  int32_t i;
+    int32_t *blockPtr;
+    int32_t wordsToClear;
+    int32_t i;
 
-  //malloc a block
-  blockPtr = Heap_Malloc(desiredBytes);
-  //did malloc fail?
-  if (blockPtr == 0)
-  {
-    return 0; //NULL
-  }
-  wordsToClear = *(blockPtr - 1); //get room from header
-  //clear out block
-  for (i = 0; i < wordsToClear; i++)
-  {
-    blockPtr[i] = 0;
-  }
-  return blockPtr;
+    //malloc a block
+    blockPtr = Heap_Malloc(desiredBytes);
+    //did malloc fail?
+    if (blockPtr == 0)
+    {
+        return 0; //NULL
+    }
+    wordsToClear = *(blockPtr - 1); //get room from header
+    //clear out block
+    for (i = 0; i < wordsToClear; i++)
+    {
+        blockPtr[i] = 0;
+    }
+    return blockPtr;
 }
 
 void *Heap_Realloc(void *oldBlock, int32_t desiredBytes)
 {
-  int32_t *oldBlockPtr;
-  int32_t *oldBlockStart;
-  int32_t *newBlockPtr;
-  int32_t oldBlockRoom;
-  int32_t newBlockRoom;
-  int32_t wordsToCopy;
-  int32_t i;
+    int32_t *oldBlockPtr;
+    int32_t *oldBlockStart;
+    int32_t *newBlockPtr;
+    int32_t oldBlockRoom;
+    int32_t newBlockRoom;
+    int32_t wordsToCopy;
+    int32_t i;
 
-  oldBlockPtr = (int32_t *)oldBlock;
-  // error if...
-  // 1) oldBlockPtr doesn't point in the heap
-  // 2) oldBlockPtr points to an unused block
-  oldBlockStart = oldBlockPtr - 1;
-  if (!inHeapRange(oldBlockStart) || blockUnused(oldBlockStart))
-  {
-    return 0; // NULL
-  }
+    oldBlockPtr = (int32_t *)oldBlock;
+    // error if...
+    // 1) oldBlockPtr doesn't point in the heap
+    // 2) oldBlockPtr points to an unused block
+    oldBlockStart = oldBlockPtr - 1;
+    if (!inHeapRange(oldBlockStart) || blockUnused(oldBlockStart))
+    {
+        return 0; // NULL
+    }
 
-  newBlockPtr = Heap_Malloc(desiredBytes);
-  // did Malloc fail?
-  if (newBlockPtr == 0)
-  {
-    return 0; // NULL
-  }
+    newBlockPtr = Heap_Malloc(desiredBytes);
+    // did Malloc fail?
+    if (newBlockPtr == 0)
+    {
+        return 0; // NULL
+    }
 
-  oldBlockRoom = blockRoom(oldBlockStart);
-  newBlockRoom = blockRoom(newBlockPtr - 1);
-  if (oldBlockRoom < newBlockRoom)
-  {
-    wordsToCopy = oldBlockRoom;
-  }
-  else
-  {
-    wordsToCopy = newBlockRoom;
-  }
-  for (i = 0; i < wordsToCopy; i++)
-  {
-    newBlockPtr[i] = oldBlockPtr[i];
-  }
-  if (Heap_Free(oldBlockPtr))
-  {
-    return 0; // NULL Free failed
-  }
-  return newBlockPtr;
+    oldBlockRoom = blockRoom(oldBlockStart);
+    newBlockRoom = blockRoom(newBlockPtr - 1);
+    if (oldBlockRoom < newBlockRoom)
+    {
+        wordsToCopy = oldBlockRoom;
+    }
+    else
+    {
+        wordsToCopy = newBlockRoom;
+    }
+    for (i = 0; i < wordsToCopy; i++)
+    {
+        newBlockPtr[i] = oldBlockPtr[i];
+    }
+    if (Heap_Free(oldBlockPtr))
+    {
+        return 0; // NULL Free failed
+    }
+    return newBlockPtr;
 }
 
 int32_t __Heap_ChangeOwner(void *pointer, heap_owner_t *new_owner)
 {
-  int32_t *blockStart;
-  int32_t blockWords;
+    int32_t *blockStart;
+    int32_t blockWords;
 
-  blockStart = ((int32_t *)pointer) - 1;
-  blockWords = blockRoom(blockStart);
-  long sr = StartCritical();
-  free_subregions(pointer, blockWords);
-  alloc_subregions(pointer, blockWords, new_owner);
-  __UnveilTaskHeap(cur_tcb); // Update allowed subregions
-  EndCritical(sr);
-  return HEAP_OK;
+    blockStart = ((int32_t *)pointer) - 1;
+    blockWords = blockRoom(blockStart);
+    long sr = StartCritical();
+    free_subregions(pointer, blockWords);
+    alloc_subregions(pointer, blockWords, new_owner);
+    __UnveilTaskHeap(cur_tcb); // Update allowed subregions
+    EndCritical(sr);
+    return HEAP_OK;
 }
 
 int32_t Heap_Free(void *pointer)
 {
-  int32_t *blockStart;
-  int32_t *blockEnd;
-  int32_t *nextBlockStart;
-  int32_t blockWords;
+    int32_t *blockStart;
+    int32_t *blockEnd;
+    int32_t *nextBlockStart;
+    int32_t blockWords;
 
-  blockStart = ((int32_t *)pointer) - 1;
-  blockWords = blockRoom(blockStart);
+    blockStart = ((int32_t *)pointer) - 1;
+    blockWords = blockRoom(blockStart);
 
-  //-----Begin error checking-------
-  if (!inHeapRange(blockStart))
-  {
-    return HEAP_ERROR_POINTER_OUT_OF_RANGE;
-  }
-  if (blockUnused(blockStart))
-  {
-    return HEAP_ERROR_CORRUPTED_HEAP;
-  }
-  blockEnd = blockTrailer(blockStart);
-  if (!inHeapRange(blockEnd) || blockUnused(blockEnd))
-  {
-    return HEAP_ERROR_CORRUPTED_HEAP;
-  }
-  //-----End error checking-------
-
-  __dsb(0xF);
-  __isb(0xF);
-  unsigned long mpu_stat = MemProtect_StartCritical();
-  __dsb(0xF);
-  __isb(0xF);
-
-  if (markBlockUnused(blockStart))
-  {
-    return HEAP_ERROR_CORRUPTED_HEAP;
-  }
-  free_subregions(blockStart, blockWords);
-  // time to possibly merge with block above
-  // first, make sure there IS a block above us
-  if (blockStart > HEAP_START)
-  {
-    int32_t *previousBlockStart = previousBlockHeader(blockStart);
-    // second, make sure we only merge with an unused block
-    if (blockUnused(previousBlockStart))
+    //-----Begin error checking-------
+    if (!inHeapRange(blockStart))
     {
-      mergeBlockWithBelow(previousBlockStart);
-      blockStart = previousBlockStart; // start of block has moved
+        return HEAP_ERROR_POINTER_OUT_OF_RANGE;
     }
-  }
+    if (blockUnused(blockStart))
+    {
+        return HEAP_ERROR_CORRUPTED_HEAP;
+    }
+    blockEnd = blockTrailer(blockStart);
+    if (!inHeapRange(blockEnd) || blockUnused(blockEnd))
+    {
+        return HEAP_ERROR_CORRUPTED_HEAP;
+    }
+    //-----End error checking-------
 
-  // possibly merge with block below
-  nextBlockStart = nextBlockHeader(blockStart);
-  if (inHeapRange(nextBlockStart) && blockUnused(nextBlockStart))
-  {
-    mergeBlockWithBelow(blockStart);
-  }
-  __UnveilTaskHeap(cur_tcb); // Update allowed subregions
-  __dsb(0xF);
-  __isb(0xF);
-  MemProtect_EndCritical(mpu_stat);
-  __dsb(0xF);
-  __isb(0xF);
-  return HEAP_OK;
+    __dsb(0xF);
+    __isb(0xF);
+    unsigned long mpu_stat = MemProtect_StartCritical();
+    __dsb(0xF);
+    __isb(0xF);
+
+    if (markBlockUnused(blockStart))
+    {
+        return HEAP_ERROR_CORRUPTED_HEAP;
+    }
+    free_subregions(blockStart, blockWords);
+    // time to possibly merge with block above
+    // first, make sure there IS a block above us
+    if (blockStart > HEAP_START)
+    {
+        int32_t *previousBlockStart = previousBlockHeader(blockStart);
+        // second, make sure we only merge with an unused block
+        if (blockUnused(previousBlockStart))
+        {
+            mergeBlockWithBelow(previousBlockStart);
+            blockStart = previousBlockStart; // start of block has moved
+        }
+    }
+
+    // possibly merge with block below
+    nextBlockStart = nextBlockHeader(blockStart);
+    if (inHeapRange(nextBlockStart) && blockUnused(nextBlockStart))
+    {
+        mergeBlockWithBelow(blockStart);
+    }
+    __UnveilTaskHeap(cur_tcb); // Update allowed subregions
+    __dsb(0xF);
+    __isb(0xF);
+    MemProtect_EndCritical(mpu_stat);
+    __dsb(0xF);
+    __isb(0xF);
+    return HEAP_OK;
 }
 
 //******** Heap_Test ***************
@@ -391,37 +393,37 @@ int32_t Heap_Free(void *pointer)
 // output: validity of the heap - either HEAP_OK or HEAP_ERROR_HEAP_CORRUPTED
 int32_t Heap_Test(void)
 {
-  int32_t lastBlockWasUnused = 0;
-  int32_t *blockStart = HEAP_START;
-  while (inHeapRange(blockStart))
-  {
-    int32_t *blockEnd;
+    int32_t lastBlockWasUnused = 0;
+    int32_t *blockStart = HEAP_START;
+    while (inHeapRange(blockStart))
+    {
+        int32_t *blockEnd;
 
-    //shouldn't have any blocks holding zero words
-    if (*blockStart == 0)
-    {
-      return HEAP_ERROR_CORRUPTED_HEAP;
+        //shouldn't have any blocks holding zero words
+        if (*blockStart == 0)
+        {
+            return HEAP_ERROR_CORRUPTED_HEAP;
+        }
+        blockEnd = blockTrailer(blockStart);
+        //error if blockEnd is not in the heap or blockend disagrees with blockStart
+        if (!inHeapRange(blockEnd) || *blockStart != *blockEnd)
+        {
+            return HEAP_ERROR_CORRUPTED_HEAP;
+        }
+        //error if we have two adjacent unused blocks
+        if (lastBlockWasUnused && blockUnused(blockStart))
+        {
+            return HEAP_ERROR_CORRUPTED_HEAP;
+        }
+        lastBlockWasUnused = blockUnused(blockStart);
+        blockStart = blockEnd + 1;
     }
-    blockEnd = blockTrailer(blockStart);
-    //error if blockEnd is not in the heap or blockend disagrees with blockStart
-    if (!inHeapRange(blockEnd) || *blockStart != *blockEnd)
+    //traversing the heap should end exactly where the heap ends
+    if (blockStart != HEAP_END)
     {
-      return HEAP_ERROR_CORRUPTED_HEAP;
+        return HEAP_ERROR_CORRUPTED_HEAP;
     }
-    //error if we have two adjacent unused blocks
-    if (lastBlockWasUnused && blockUnused(blockStart))
-    {
-      return HEAP_ERROR_CORRUPTED_HEAP;
-    }
-    lastBlockWasUnused = blockUnused(blockStart);
-    blockStart = blockEnd + 1;
-  }
-  //traversing the heap should end exactly where the heap ends
-  if (blockStart != HEAP_END)
-  {
-    return HEAP_ERROR_CORRUPTED_HEAP;
-  }
-  return HEAP_OK;
+    return HEAP_OK;
 }
 
 //******** Heap_Stats ***************
@@ -430,43 +432,43 @@ int32_t Heap_Test(void)
 // output: a heap_stats_t that describes the current usage of the heap
 heap_stats_t Heap_Stats(void)
 {
-  int32_t *blockStart;
-  heap_stats_t stats;
+    int32_t *blockStart;
+    heap_stats_t stats;
 
-  stats.wordsAllocated = 0;
-  stats.wordsAvailable = 0;
-  stats.blocksUsed = 0;
-  stats.blocksUnused = 0;
+    stats.wordsAllocated = 0;
+    stats.wordsAvailable = 0;
+    stats.blocksUsed = 0;
+    stats.blocksUnused = 0;
 
-  //just go through each block to get stats on heap usage
-  blockStart = HEAP_START;
+    //just go through each block to get stats on heap usage
+    blockStart = HEAP_START;
 
-  __dsb(0xF);
-  __isb(0xF);
-  unsigned long mpu_stat = MemProtect_StartCritical();
-  __dsb(0xF);
-  __isb(0xF);
-  while (inHeapRange(blockStart))
-  {
-    if (blockUsed(blockStart))
+    __dsb(0xF);
+    __isb(0xF);
+    unsigned long mpu_stat = MemProtect_StartCritical();
+    __dsb(0xF);
+    __isb(0xF);
+    while (inHeapRange(blockStart))
     {
-      stats.wordsAllocated += blockRoom(blockStart);
-      stats.blocksUsed++;
+        if (blockUsed(blockStart))
+        {
+            stats.wordsAllocated += blockRoom(blockStart);
+            stats.blocksUsed++;
+        }
+        else
+        {
+            stats.wordsAvailable += blockRoom(blockStart);
+            stats.blocksUnused++;
+        }
+        blockStart = nextBlockHeader(blockStart);
     }
-    else
-    {
-      stats.wordsAvailable += blockRoom(blockStart);
-      stats.blocksUnused++;
-    }
-    blockStart = nextBlockHeader(blockStart);
-  }
-  __dsb(0xF);
-  __isb(0xF);
-  MemProtect_EndCritical(mpu_stat);
-  __dsb(0xF);
-  __isb(0xF);
-  stats.wordsOverhead = HEAP_SIZE_WORDS - stats.wordsAllocated - stats.wordsAvailable;
-  return stats;
+    __dsb(0xF);
+    __isb(0xF);
+    MemProtect_EndCritical(mpu_stat);
+    __dsb(0xF);
+    __isb(0xF);
+    stats.wordsOverhead = HEAP_SIZE_WORDS - stats.wordsAllocated - stats.wordsAvailable;
+    return stats;
 }
 
 // inHeapRange
@@ -474,7 +476,7 @@ heap_stats_t Heap_Stats(void)
 // output: whether or not the pointer points inside the heap
 static int32_t inHeapRange(int32_t *address)
 {
-  return address >= HEAP_START && address < HEAP_END;
+    return address >= HEAP_START && address < HEAP_END;
 }
 
 // blockUsed
@@ -482,7 +484,7 @@ static int32_t inHeapRange(int32_t *address)
 // output: whether or not the block is marked as used/allocated
 static int32_t blockUsed(int32_t *block)
 {
-  return *block > 0;
+    return *block > 0;
 }
 
 // blockUnused
@@ -490,7 +492,7 @@ static int32_t blockUsed(int32_t *block)
 // output: whether or not the block is marked as unused/unallocated
 static int32_t blockUnused(int32_t *block)
 {
-  return *block < 0;
+    return *block < 0;
 }
 
 // blockRoom
@@ -498,11 +500,11 @@ static int32_t blockUnused(int32_t *block)
 // output: how many words of data the block can hold
 static int32_t blockRoom(int32_t *block)
 {
-  if (*block > 0)
-  {
-    return *block;
-  }
-  return -*block;
+    if (*block > 0)
+    {
+        return *block;
+    }
+    return -*block;
 }
 
 // // blockSize
@@ -520,7 +522,7 @@ static int32_t blockRoom(int32_t *block)
 // output: pointer to the header of the same block
 static int32_t *blockHeader(int32_t *blockEnd)
 {
-  return blockEnd - blockRoom(blockEnd) - 1;
+    return blockEnd - blockRoom(blockEnd) - 1;
 }
 
 // blockTrailer
@@ -528,7 +530,7 @@ static int32_t *blockHeader(int32_t *blockEnd)
 // output: pointer to the trailer of the same block
 static int32_t *blockTrailer(int32_t *blockStart)
 {
-  return blockStart + blockRoom(blockStart) + 1;
+    return blockStart + blockRoom(blockStart) + 1;
 }
 
 // nextBlockHeader
@@ -538,7 +540,7 @@ static int32_t *blockTrailer(int32_t *blockStart)
 //   which is not a valid block; be careful
 static int32_t *nextBlockHeader(int32_t *blockStart)
 {
-  return blockTrailer(blockStart) + 1;
+    return blockTrailer(blockStart) + 1;
 }
 
 // previousBlockHeader
@@ -548,7 +550,7 @@ static int32_t *nextBlockHeader(int32_t *blockStart)
 //   will go crazy and return a proportionally crazy address!
 static int32_t *previousBlockHeader(int32_t *blockStart)
 {
-  return blockHeader(blockStart - 1);
+    return blockHeader(blockStart - 1);
 }
 
 // markBlockUsed
@@ -558,14 +560,14 @@ static int32_t *previousBlockHeader(int32_t *blockStart)
 //notes: marks the block as used/allocated
 static int32_t markBlockUsed(int32_t *blockStart)
 {
-  int32_t *blockEnd = blockTrailer(blockStart);
-  if (blockUsed(blockStart) || *blockStart != *blockEnd)
-  {
-    return HEAP_ERROR_CORRUPTED_HEAP;
-  }
-  *blockStart = -*blockStart;
-  *blockEnd = -*blockEnd;
-  return HEAP_OK;
+    int32_t *blockEnd = blockTrailer(blockStart);
+    if (blockUsed(blockStart) || *blockStart != *blockEnd)
+    {
+        return HEAP_ERROR_CORRUPTED_HEAP;
+    }
+    *blockStart = -*blockStart;
+    *blockEnd = -*blockEnd;
+    return HEAP_OK;
 }
 
 // markBlockUnused
@@ -575,14 +577,14 @@ static int32_t markBlockUsed(int32_t *blockStart)
 // notes: marks the block as unused/unallocated
 static int32_t markBlockUnused(int32_t *blockStart)
 {
-  int32_t *blockEnd = blockTrailer(blockStart);
-  if (blockUnused(blockStart) || *blockStart != *blockEnd)
-  {
-    return HEAP_ERROR_CORRUPTED_HEAP;
-  }
-  *blockStart = -*blockStart;
-  *blockEnd = -*blockEnd;
-  return HEAP_OK;
+    int32_t *blockEnd = blockTrailer(blockStart);
+    if (blockUnused(blockStart) || *blockStart != *blockEnd)
+    {
+        return HEAP_ERROR_CORRUPTED_HEAP;
+    }
+    *blockStart = -*blockStart;
+    *blockEnd = -*blockEnd;
+    return HEAP_OK;
 }
 
 // splitAndMarkBlockUsed
@@ -596,27 +598,27 @@ static int32_t markBlockUnused(int32_t *blockStart)
 //  useful block.
 static int32_t splitAndMarkBlockUsed(int32_t *upperBlockStart, int32_t desiredRoom)
 {
-  int32_t leftoverRoom = blockRoom(upperBlockStart) - desiredRoom - 2;
-  // only split block if leftovers could actually make another useful block
-  if (leftoverRoom > 0)
-  {
-    int32_t *upperBlockEnd = upperBlockStart + desiredRoom + 1;
-    int32_t *lowerBlockStart = upperBlockEnd + 1;
-    int32_t *lowerBlockEnd = blockTrailer(upperBlockStart);
-    *upperBlockStart = desiredRoom; // marked used
-    *upperBlockEnd = desiredRoom;
-    *lowerBlockStart = -leftoverRoom; // marked unused
-    *lowerBlockEnd = -leftoverRoom;
-  }
-  // can't split block - just mark it at used
-  else
-  {
-    if (markBlockUsed(upperBlockStart))
+    int32_t leftoverRoom = blockRoom(upperBlockStart) - desiredRoom - 2;
+    // only split block if leftovers could actually make another useful block
+    if (leftoverRoom > 0)
     {
-      return 0; // NULL Free failed
+        int32_t *upperBlockEnd = upperBlockStart + desiredRoom + 1;
+        int32_t *lowerBlockStart = upperBlockEnd + 1;
+        int32_t *lowerBlockEnd = blockTrailer(upperBlockStart);
+        *upperBlockStart = desiredRoom; // marked used
+        *upperBlockEnd = desiredRoom;
+        *lowerBlockStart = -leftoverRoom; // marked unused
+        *lowerBlockEnd = -leftoverRoom;
     }
-  }
-  return HEAP_OK;
+    // can't split block - just mark it at used
+    else
+    {
+        if (markBlockUsed(upperBlockStart))
+        {
+            return 0; // NULL Free failed
+        }
+    }
+    return HEAP_OK;
 }
 
 // mergeBlockWithBelow
@@ -626,12 +628,12 @@ static int32_t splitAndMarkBlockUsed(int32_t *upperBlockStart, int32_t desiredRo
 //  WARNING: Does not check that the block below actually exists.
 static void mergeBlockWithBelow(int32_t *upperBlockStart)
 {
-  int32_t *upperBlockEnd = blockTrailer(upperBlockStart);
-  int32_t *lowerBlockStart = upperBlockEnd + 1;
-  int32_t *lowerBlockEnd = blockTrailer(lowerBlockStart);
+    int32_t *upperBlockEnd = blockTrailer(upperBlockStart);
+    int32_t *lowerBlockStart = upperBlockEnd + 1;
+    int32_t *lowerBlockEnd = blockTrailer(lowerBlockStart);
 
-  int32_t room = lowerBlockEnd - upperBlockStart - 1;
-  *upperBlockStart = -room;
-  *lowerBlockEnd = -room;
-  return;
+    int32_t room = lowerBlockEnd - upperBlockStart - 1;
+    *upperBlockStart = -room;
+    *lowerBlockEnd = -room;
+    return;
 }
